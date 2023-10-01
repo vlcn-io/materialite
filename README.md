@@ -14,3 +14,9 @@ Which key-value store to use?
 - https://materialize.com/blog/differential-from-scratch/
 - DBSP & Feldera paper(s)
 - 
+
+# The Browser Problem
+
+- Storage calls must be async
+- Lack of threads in WASM?
+- Want sync diffi flow and async persist? Can we spawn a thread for this? Does dataflow need to be in JS with wasm for persist?
