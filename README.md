@@ -20,3 +20,5 @@ Which key-value store to use?
 - Storage calls must be async
 - Lack of threads in WASM?
 - Want sync diffi flow and async persist? Can we spawn a thread for this? Does dataflow need to be in JS with wasm for persist?
+
+- Can have a relaxed durability write API which queues to persist at some future time or when a strongly durable write is made.
