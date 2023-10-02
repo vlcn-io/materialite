@@ -11,3 +11,5 @@ clap = { version = "4.4.6", features = ["derive"] }
 [dev-dependencies]
 assert_cmd = "2.0.12"
 predicates = "3.0.4"
+tempfile = "3.8.0"
+walkdir = "2.4.0"
