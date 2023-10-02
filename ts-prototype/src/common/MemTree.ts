@@ -18,4 +18,18 @@
  * Persistor sends state to other threads too... The merge delta of (2) -> (4) gets reported to other threads...
  * This merge delta goes into (3) on other threads as we only are concerned with reactivity here and do not need
  * to flush back to persist again as it is coming from the persist layer.
+ *
  */
+
+/**
+ * Can we do a simple QL for setting values too?
+ * Type.pk(:id) { ...attr: Value }
+ * Type.new(?:id) { ...attr: Value }
+ */
+export class MemTree {
+  #map: Map<string, any> = new Map();
+
+  constructor() {
+
+  }
+}
