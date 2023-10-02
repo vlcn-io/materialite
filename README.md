@@ -12,7 +12,8 @@ Which key-value store to use?
 # Tutorials
 - https://github.com/pingcap/talent-plan/tree/master/courses/rust/projects/project-2
 - https://skyzh.github.io/mini-lsm/
-- 
+- https://github.com/chrislessard/LSM-Tree - Python LSM Tree
+- https://www.alibabacloud.com/blog/starting-from-zero-build-an-lsm-database-with-500-lines-of-code_598114
 
 # Reading
 
@@ -20,6 +21,7 @@ Which key-value store to use?
 - https://materialize.com/blog/differential-from-scratch/
 - DBSP & Feldera paper(s)
 - https://github.com/jamii/dida
+
 
 # The Browser Problem
 
