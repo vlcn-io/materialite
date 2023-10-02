@@ -67,3 +67,74 @@ We can do:
 - Count via incr or decr on match or mismatch. Well.. need to know if something previously matching no longer matches. Must have PKs of matching items. Count my use sub-queries via `where exists`
 - Disaggregate each into own reactive thing that feeds a graph of other queries...
 
+
+
+# Plan
+
+1. LSM Tree
+  Key: [type, attr, subj_id]
+  Value: value
+
+  - Types encoded as varints as well as attrs to save space. Static mapping from type name to int and attr name to int.
+  - Attrs can be subjects themselves with `subj_id` referring to them via key. Type names are stable via indirection to varints.
+
+2. Query language
+  - Select, order, count, limit, sub-queries, where clauses, where exists for relational filtering
+  - TreeQL
+
+  Compiler, operations / query plan, run operations against indices. Like Aphrodite but against KV store.
+
+  What if you implemented it all with: map, reduce, filter? E.g., Aphrodite / Linq.
+
+3. Range trees and reactivity
+  - Simple `where`
+  - Sub queries all all each in turn reactive queries that feed into a graph of queries? Changing where bindings or data on the way up
+
+4. Persisting
+  - In-memory log created in main thread as db interacted with
+  - Log shuttled to worker
+  - Worker orders logs received 
+  - Worker persists them in turn
+  - Any locking? Retries? Read tracking? Rollbacks?
+    - Could do read tracking to allow replaying of transaction when clients modify same data.
+
+5. Cross process rx
+  - Cross process RX only happens after persist
+  - Updates in-memory structures of clients...
+  - How to keep consistent across process? Each process independently updating its reactive state. Then
+    receiving updates from persister who is actual source of truth. It is another CRDT problem? Each client is trying
+    to move forward without coordinating. Coordinating would incur async call in browser.
+
+    Since each client will receive changes from others in a diff order? Or can we ensure same order across all?
+    In-mem repr is synced rather than logs? In-mem rep always applies over cross channel rep? Well needs to be logs
+    otherwise always syncing full in mem rep? Unless dirty tracking of in mem rep? Dirty in mem precedence? Undirtied when sync starts or when confirmed?
+
+    Dirty ignores updates from RX until dirty is synced. Once dirty is synced, however, we need the official new state?
+    Or no since dirty over-wrote anything before it? Yes, that. Persist worker needs to buffer events to send out after persist completes and is acknowledge so client can begin overwrites again.
+
+    Persister itself may have a buffer? Not to disk immediately such that we can sync at high frequency from clients and have
+    minimal dirty time.
+
+# Impl Plan
+
+https://www.youtube.com/watch?v=I6jB0nM9SKU
+
+1. Create the mem table which will back the things
+2. Mem table is occasionally flushed to disk as writes build up
+3. Flushing is sending to persistor who merges together mem tables in defined order. Persistor can do RX via MemTable merge? Rather
+   than write event broadcast? Since persistor mem table is correctly ordered. Yes yes :) Simple simple.
+
+Start by reading and writing full mem table to / from disk? Fully in-mem DB to start is what that means.
+
+How are we reading from LSM tree? Building indices and pages and the like...
+
+SSTs need to be binary searchable. This is easily done via a footer that indicates where entries start since entries are var length. The footer is not var length and is used to jump / binary search within our block.
+https://skyzh.github.io/mini-lsm/01-block.html
+
+4kb blocks. Load a block into mem at a time. Blocks are loaded if key we are looking for is within block's key range.
+We know block key ranges since footers contain tables of starting key of each block. SST is merged trees re-partitioned into
+blocks such that the blocks are sequential.
+
+Optimizing reads
+  - Summary table storing min/max key ranges of SSTs on disk so we can jump to correct SST.
+  - Bloom filter to track if keys do not exist.
