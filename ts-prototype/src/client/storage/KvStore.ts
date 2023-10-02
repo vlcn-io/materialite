@@ -1,7 +1,15 @@
 import { MemTree } from "../../common/MemTree";
 import { AttrNum, Key, Schema, TypeNum, SubjectKey } from "../schema/Schema";
+import { Tx } from "./Transaction";
 
-export class KvStore {
+/**
+ * KV Store in the client should likey pull pages in...
+ * to have them locally in cache.
+ * 
+ * Or... you can hoist your query to the worker and do all the round-trips there.
+ * Well transaction memory isn't in the worker. And the query may apply custom map/reduce functions.
+ */
+export class KvStore implements Tx {
   readonly #transactions: MemTree[] = [];
   // #schema is used for validating
   // storage key creation.
@@ -16,24 +24,15 @@ export class KvStore {
   /**
    * Starts a new transaction
    */
-  tx(): number {
-    for (let i = 0; i < this.#transactions.length; i++) {
-      if (this.#transactions[i] === undefined) {
-        this.#transactions[i] = new MemTree();
-        return i;
-      }
-    }
-
-    const txId = this.#transactions.length;
-    this.#transactions.push(new MemTree());
-    return txId;
+  tx(): Tx {
+    
   }
 
   /**
    * Commits the transaction, rolling 
    * @param txId transaction to commit
    */
-  commit(txId: number) {
+  commit() {
 
   }
 
@@ -42,42 +41,38 @@ export class KvStore {
    * @param txId transaction this read is a part of, if any
    * @param storageKey lookup key
    */
-  get(txId: number, key: SubjectKey) {
+  get(key: SubjectKey) {
 
   }
 
-  set(txId: number, key: SubjectKey, value: any) {
+  set(key: SubjectKey, value: any) {
 
   }
 
   // TODO: numbers and varints and natural sort ordering?
-  getGte(txId: number, key: SubjectKey) {
+  getGte(key: SubjectKey) {
     // Range check will always go to storage since client only has partially materialized views?
     // Storage may of course have all the pages in cache, however.
+
+    // greater than type:attr:key but less than type:attr+1
   }
 
-  getLte(txId: number, key: SubjectKey) {
+  getLte(key: SubjectKey) {
 
   }
 
-  rm(txId: number, key: SubjectKey) {
+  rm(key: SubjectKey) {
 
   }
 
   // Range operators need bounds at the type:attr barrier.
   // Rm is a negative cache and actually removed on sync with persistor.
-  rmGte(txId: number, key: SubjectKey) {
+  // rmGte(txId: number, key: SubjectKey) {
+  //   // Maybe do not support range removals to start?
+  //   // The issue is it complicates the negative caching quite a bit.
+  // }
 
-  }
-
-  rmLte(txId: number, key: SubjectKey) {
-
-  }
-
-  storageKeyFromOrdinals(type: TypeNum, attr: AttrNum, id: Key): SubjectKey {
-    // validate that attr exists in type?
-    throw new Error('unimplemented');
-  }
+  // rmLte(txId: number, key: SubjectKey) {}
 
   storageKeyFromNames(type: string, attr: string, id: Key): SubjectKey {
     throw new Error('unimplemented');

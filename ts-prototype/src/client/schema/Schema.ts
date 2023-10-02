@@ -26,8 +26,7 @@ export type Schema = {
 };
 
 export type StorageKey = Uint8Array;
-type HexKey = string;
-export type SubjectKey = `${TypeNum}:${AttrNum}:${HexKey}`;
+export type SubjectKey = [TypeNum, AttrNum, Key];
 type Predicate = AttrNum;
 type Value = any;
 export type Key = any;
