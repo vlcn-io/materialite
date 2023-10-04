@@ -1,5 +1,4 @@
 
-var TreeBase = require('./treebase');
 
 function Node(data) {
     this.data = data;

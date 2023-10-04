@@ -1,0 +1,12 @@
+{
+  "private": true,
+  "version": "0.0.0",
+  "packageManager": "pnpm@7.9.0",
+  "engines": {
+    "node": ">=19",
+    "pnpm": ">=7"
+  },
+  "dependencies": {
+    "@changesets/cli": "^2.26.1"
+  }
+}
