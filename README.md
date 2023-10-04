@@ -1,5 +1,11 @@
 # materialite
 
+Write "A New DB Architecture for Apps" with Geoffrey?
+
+- Event sourced
+- IVM
+- Rx
+- CRDT rebasing of log(s)
 
 # KV
 

@@ -16,6 +16,10 @@ export class Multiset {
     return new Multiset([...this.entires, ...b.negate().entires]);
   }
 
+  differenceAndConsolidate(b: Multiset): Multiset {
+    return this.difference(b).consolidate();
+  }
+
   concat(b: Multiset): Multiset {
     return new Multiset([...this.entires, ...b.entires]);
   }
