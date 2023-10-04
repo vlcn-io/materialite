@@ -1,4 +1,11 @@
-import { Entry, Multiset, Value } from "./multiset";
+import { Index } from ".";
+import {
+  Entry,
+  JoinableValue,
+  Multiset,
+  PrimitiveValue,
+  Value,
+} from "./multiset";
 
 export class CollectionSequence<T extends Value> {
   #multisets: Multiset<T>[];
@@ -73,6 +80,40 @@ export class DifferenceSequence<T extends Value> {
     return new DifferenceSequence(
       this.#differenceSets.map((s) => s.consolidate())
     );
+  }
+
+  static join<
+    K extends PrimitiveValue,
+    V extends PrimitiveValue | PrimitiveValue[]
+  >(
+    left: DifferenceSequence<JoinableValue<K, V>>,
+    right: DifferenceSequence<JoinableValue<K, V>>
+  ) {
+    const indexA = new Index();
+    const indexB = new Index();
+    const out = [];
+
+    for (let i = 0; i < Math.max(left.length, right.length); ++i) {
+      const a = left.#differenceSets[i] ?? new Multiset([]);
+      const b = right.#differenceSets[i] ?? new Multiset([]);
+      const deltaA = new Index();
+      const deltaB = new Index();
+
+      for (const [[key, value], multiplicity] of a.entires) {
+        deltaA.add(key, [value, multiplicity]);
+      }
+      for (const [[key, value], multiplicity] of b.entires) {
+        deltaB.add(key, [value, multiplicity]);
+      }
+
+      let result = deltaA.join(indexB);
+      indexA.extend(deltaA);
+      result = result.concat(indexA.join(deltaB));
+      indexB.extend(deltaB);
+      out.push(result.consolidate());
+    }
+
+    return new DifferenceSequence(out);
   }
 
   // join(other: DifferenceSequence<T>): DifferenceSequence<> {

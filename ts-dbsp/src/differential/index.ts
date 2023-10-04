@@ -29,7 +29,7 @@ export class Index<
     return this.#index.get(key) ?? [];
   }
 
-  join(other: Index<K, V>): Multiset<JoinableValue> {
+  join(other: Index<K, V>): Multiset<JoinableValue<K, readonly [V, V]>> {
     const ret: (readonly [readonly [K, readonly [V, V]], number])[] = [];
     for (const [key, entry] of this.#index) {
       const otherEntry = other.#index.get(key);

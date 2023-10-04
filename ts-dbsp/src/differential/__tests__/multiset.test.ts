@@ -50,3 +50,29 @@ test("map then difference, minor change", () => {
     [3, -1],
   ]);
 });
+
+test("difference", () => {
+  // no-op
+  // all change
+  // disjoint
+});
+
+test("test difference and consolidate", () => {
+  // no-op
+  // all change
+  // disjoint
+});
+
+test("test concat", () => {});
+
+test("negate", () => {});
+
+test("map", () => {});
+
+test("filter", () => {});
+
+test("reduce", () => {});
+
+test("iterate", () => {});
+
+test("equals", () => {});

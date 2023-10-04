@@ -1,7 +1,10 @@
 export type Entry<T extends Value> = readonly [T, Multiplicity];
 export type Multiplicity = number;
 export type PrimitiveValue = string | number | boolean | bigint;
-export type JoinableValue = readonly [PrimitiveValue, Value];
+export type JoinableValue<
+  K extends PrimitiveValue,
+  V extends Value
+> = readonly [K, V];
 export type Value =
   | PrimitiveValue
   | readonly PrimitiveValue[]
@@ -66,20 +69,6 @@ export class Multiset<T extends Value> {
     }
     return ret;
   }
-
-  // join<V>(
-  //   right: Multiset<T>
-  // ) {
-  //   const ret = new Map<T, Entry<T>[]>();
-  //   for (const [value, multiplicity] of this.entires) {
-  //     const existing = ret.get(value);
-  //     if (existing === undefined) {
-  //       ret.set(value, [[value, multiplicity]]);
-  //     } else {
-  //       existing.push([value, multiplicity]);
-  //     }
-  //   }
-  // }
 
   iterate(f: (values: Multiset<T>) => Multiset<T>) {
     // apply f to the multiset in turn until the multiset stops changing
