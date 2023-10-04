@@ -21,7 +21,7 @@
  *
  */
 
-import { SubjectKey } from "../client/schema/Schema";
+import { IndexKey } from "../client/schema/Schema";
 
 /**
  * Can we do a simple QL for setting values too?
@@ -29,11 +29,15 @@ import { SubjectKey } from "../client/schema/Schema";
  * Type.new(?:id) { ...attr: Value }
  */
 export class MemTree {
-  #leastKey: SubjectKey | null = null;
+  #leastKey: IndexKey | null = null;
   // TODO: this needs to be a TreeMap so we can do range requests!
   #map: Map<string, any> = new Map();
 
   constructor() {
 
+  }
+
+  get(key: IndexKey): any {
+    return this.#map.get(key);
   }
 }

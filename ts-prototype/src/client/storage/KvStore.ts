@@ -1,6 +1,6 @@
 import { MemTree } from "../../common/MemTree";
-import { AttrNum, Key, Schema, TypeNum, SubjectKey } from "../schema/Schema";
-import { Tx } from "./Transaction";
+import { Key, IndexKey, Schema } from "../schema/Schema";
+import { Transaction, Tx } from "./Transaction";
 
 /**
  * KV Store in the client should likey pull pages in...
@@ -10,7 +10,7 @@ import { Tx } from "./Transaction";
  * Well transaction memory isn't in the worker. And the query may apply custom map/reduce functions.
  */
 export class KvStore implements Tx {
-  readonly #transactions: MemTree[] = [];
+  readonly #childTransactions: MemTree[] = [];
   // #schema is used for validating
   // storage key creation.
   // Also maybe for unpacking values?
@@ -25,7 +25,9 @@ export class KvStore implements Tx {
    * Starts a new transaction
    */
   tx(): Tx {
-    
+    const child = new Transaction(this);
+    this.#childTransactions.push(child);
+    return child;
   }
 
   /**
@@ -41,27 +43,27 @@ export class KvStore implements Tx {
    * @param txId transaction this read is a part of, if any
    * @param storageKey lookup key
    */
-  get(key: SubjectKey) {
+  get(key: IndexKey) {
 
   }
 
-  set(key: SubjectKey, value: any) {
+  set(key: IndexKey, value: any) {
 
   }
 
   // TODO: numbers and varints and natural sort ordering?
-  getGte(key: SubjectKey) {
+  getGte(key: IndexKey) {
     // Range check will always go to storage since client only has partially materialized views?
     // Storage may of course have all the pages in cache, however.
 
     // greater than type:attr:key but less than type:attr+1
   }
 
-  getLte(key: SubjectKey) {
+  getLte(key: IndexKey) {
 
   }
 
-  rm(key: SubjectKey) {
+  rm(key: IndexKey) {
 
   }
 
@@ -74,7 +76,7 @@ export class KvStore implements Tx {
 
   // rmLte(txId: number, key: SubjectKey) {}
 
-  storageKeyFromNames(type: string, attr: string, id: Key): SubjectKey {
+  storageKeyFromNames(type: string, attr: string, id: Key): IndexKey {
     throw new Error('unimplemented');
   }
 }

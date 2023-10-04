@@ -14,6 +14,7 @@ Which key-value store to use?
 - https://skyzh.github.io/mini-lsm/
 - https://github.com/chrislessard/LSM-Tree - Python LSM Tree
 - https://www.alibabacloud.com/blog/starting-from-zero-build-an-lsm-database-with-500-lines-of-code_598114
+- https://www.youtube.com/watch?v=9F4AzqBp8Ng LSM Tree Range Query
 
 # Reading
 

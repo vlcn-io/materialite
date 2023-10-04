@@ -26,9 +26,6 @@ export type Schema = {
 };
 
 export type StorageKey = Uint8Array;
-export type SubjectKey = [TypeNum, AttrNum, Key];
-type Predicate = AttrNum;
-type Value = any;
-export type Key = any;
-
-export type Triple = [SubjectKey, Predicate, Value];
+export type IndexKey = readonly [TypeNum, AttrNum, Key];
+export type Key = string | number | bigint;
+export type Value = any;
