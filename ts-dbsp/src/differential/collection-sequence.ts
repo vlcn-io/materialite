@@ -75,11 +75,11 @@ export class DifferenceSequence<T extends Value> {
     );
   }
 
-  join(other: DifferenceSequence<T>): DifferenceSequence<> {
-    const ret = [];
-    for (let i = 0; i < Math.max(this.length, other.length); ++i) {
-      const a = this.#differenceSets[i] ?? new Multiset([]);
-      const b = other.#differenceSets[i] ?? new Multiset([]);
-    }
-  }
+  // join(other: DifferenceSequence<T>): DifferenceSequence<> {
+  // const ret = [];
+  // for (let i = 0; i < Math.max(this.length, other.length); ++i) {
+  //   const a = this.#differenceSets[i] ?? new Multiset([]);
+  //   const b = other.#differenceSets[i] ?? new Multiset([]);
+  // }
+  // }
 }

@@ -1,6 +1,9 @@
-import { Entry, Multiset, Value } from "./multiset";
+import { Entry, JoinableValue, Multiset, PrimitiveValue } from "./multiset";
 
-export class Index<K extends Value, V extends Value> {
+export class Index<
+  K extends PrimitiveValue,
+  V extends PrimitiveValue | PrimitiveValue[]
+> {
   readonly #index = new Map<K, Entry<V>[]>();
 
   constructor() {}
@@ -26,7 +29,7 @@ export class Index<K extends Value, V extends Value> {
     return this.#index.get(key) ?? [];
   }
 
-  join(other: Index<K, V>): Multiset<readonly [K, readonly [V, V]]> {
+  join(other: Index<K, V>): Multiset<JoinableValue> {
     const ret: (readonly [readonly [K, readonly [V, V]], number])[] = [];
     for (const [key, entry] of this.#index) {
       const otherEntry = other.#index.get(key);

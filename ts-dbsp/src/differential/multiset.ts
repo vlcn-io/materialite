@@ -1,6 +1,11 @@
 export type Entry<T extends Value> = readonly [T, Multiplicity];
 export type Multiplicity = number;
-export type Value = string | number | boolean | bigint | readonly Value[];
+export type PrimitiveValue = string | number | boolean | bigint;
+export type JoinableValue = readonly [PrimitiveValue, Value];
+export type Value =
+  | PrimitiveValue
+  | readonly PrimitiveValue[]
+  | readonly Value[];
 
 /**
  * A naive implementation of a multi-set.
@@ -62,29 +67,19 @@ export class Multiset<T extends Value> {
     return ret;
   }
 
-  join<V>(
-    left: readonly (readonly [Value, V])[],
-    right: readonly (readonly [Value, V])[]
-  ) {
-    const ret = new Map<Value, V[]>();
-    for (const [value, v] of left) {
-      const existing = ret.get(value);
-      if (existing === undefined) {
-        ret.set(value, [v]);
-      } else {
-        existing.push(v);
-      }
-    }
-    for (const [value, v] of right) {
-      const existing = ret.get(value);
-      if (existing === undefined) {
-        ret.set(value, [v]);
-      } else {
-        existing.push(v);
-      }
-    }
-    return ret.entries();
-  }
+  // join<V>(
+  //   right: Multiset<T>
+  // ) {
+  //   const ret = new Map<T, Entry<T>[]>();
+  //   for (const [value, multiplicity] of this.entires) {
+  //     const existing = ret.get(value);
+  //     if (existing === undefined) {
+  //       ret.set(value, [[value, multiplicity]]);
+  //     } else {
+  //       existing.push([value, multiplicity]);
+  //     }
+  //   }
+  // }
 
   iterate(f: (values: Multiset<T>) => Multiset<T>) {
     // apply f to the multiset in turn until the multiset stops changing
@@ -141,6 +136,25 @@ export class Multiset<T extends Value> {
     return this.entires.toString();
   }
 }
+
+// export function join(
+//   left: Multiset<JoinableValue>,
+//   right: Multiset<JoinableValue>
+// ) {
+//   const ret = new Map<PrimitiveValue, Entry<JoinableValue[1]>[]>();
+//   for (const [value, multiplicity] of left.entires) {
+//     if (multiplicity === 0) {
+//       continue;
+//     }
+
+//     let existing = ret.get(value[0]);
+//     if (existing === undefined) {
+//       existing = [];
+//       ret.set(value[0], existing);
+//     }
+//     existing.push([value[1], multiplicity]);
+//   }
+// }
 
 /*
 const ret = this.#toNormalizedMap();
