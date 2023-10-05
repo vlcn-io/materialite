@@ -197,24 +197,54 @@ export class JoinOperator<
   }
 }
 
-// Reduce operator should require key-value pair data.
 export class ReduceOperator<
   K extends PrimitiveValue,
   V extends Value,
   O extends Value = V
 > extends UnaryOperator<JoinableValue<K, V>, JoinableValue<K, O>> {
-  readonly #indexA = new Index<K, V>();
+  readonly #index = new Index<K, V>();
   readonly #indexOut = new Index<K, O>();
 
   constructor(
     input: DifferenceStreamReader<JoinableValue<K, V>>,
     output: DifferenceStreamWriter<JoinableValue<K, O>>,
-    f: (input: Multiset<JoinableValue<K, V>>) => Multiset<JoinableValue<K, O>>
+    f: (input: Entry<V>[]) => Entry<O>[]
   ) {
-    const subtractValues = (first: [O, number], second: [O, number]) => {
-      const result = new TMap();
+    const subtractValues = (first: Entry<O>[], second: Entry<O>[]) => {
+      const result = new TMap<O, number>();
+      for (const [v1, m1] of first) {
+        result.set(v1, (result.get(v1) || 0) + m1);
+      }
+      for (const [v2, m2] of second) {
+        result.set(v2, (result.get(v2) || 0) - m2);
+      }
+
+      return result.entries().filter(([_, m]) => m !== 0);
     };
-    const inner = () => {};
+    const inner = () => {
+      for (const collection of this.inputMessages) {
+        const keysTodo = new Set<K>();
+        const result: [[K, O], number][] = [];
+        for (const [[key, value], mult] of collection.entries) {
+          this.#index.add(key, [value, mult]);
+          keysTodo.add(key);
+        }
+        for (const key of keysTodo) {
+          const curr = this.#index.get(key);
+          const currOut = this.#indexOut.get(key);
+          const out = f(curr);
+          const delta = subtractValues(out, currOut);
+          for (const [value, mult] of delta) {
+            result.push([[key, value], mult]);
+            this.#indexOut.add(key, [value, mult]);
+          }
+        }
+        this.output.sendData(new Multiset(result));
+        const keys = [...keysTodo.values()];
+        this.#index.compact(keys);
+        this.#indexOut.compact(keys);
+      }
+    };
     super(input, output, inner);
   }
 }
