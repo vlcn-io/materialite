@@ -19,4 +19,7 @@
  *
  * Mutating in place and emitting the difference may be fine given that the downstream incremental state is immutable...
  * And cached for future reads of it?
+ *
+ * Emit difference rather than calculate the difference.
+ * Since we know the difference for each array operation.
  */

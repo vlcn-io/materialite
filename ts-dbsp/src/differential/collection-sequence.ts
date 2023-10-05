@@ -116,6 +116,37 @@ export class DifferenceSequence<T extends Value> {
     return new DifferenceSequence(out);
   }
 
+  // Apply a function to all record values, grouped by key
+  static reduce<
+    K extends PrimitiveValue,
+    V extends PrimitiveValue | PrimitiveValue[]
+  >(
+    left: DifferenceSequence<JoinableValue<K, V>>,
+    right: DifferenceSequence<JoinableValue<K, V>>
+  ) {
+    function subtractValues(
+      first: Multiset<JoinableValue<K, V>>,
+      second: Multiset<JoinableValue<K, V>>
+    ) {
+      const ret = new Map<JoinableValue<K, V>, number>();
+      for (const [v1, m1] of first.entires) {
+        ret.set(v1, ret.get(v1) ?? 0 + m1);
+      }
+      for (const [v2, m2] of second.entires) {
+        ret.set(v2, ret.get(v2) ?? 0 - m2);
+      }
+
+      return [...ret.entries()].filter(([_, m]) => m !== 0);
+    }
+
+    for (const collection of left.#differenceSets) {
+      const keysTodo = new Set();
+      const ret = [];
+      for (const [[key, value], multiplicity] of collection.entires) {
+      }
+    }
+  }
+
   // join(other: DifferenceSequence<T>): DifferenceSequence<> {
   // const ret = [];
   // for (let i = 0; i < Math.max(this.length, other.length); ++i) {

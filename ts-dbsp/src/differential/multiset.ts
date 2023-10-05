@@ -48,12 +48,14 @@ export class Multiset<T extends Value> {
     );
   }
 
-  filter(f: (value: Value) => boolean): Multiset<T> {
+  filter(f: (value: T) => boolean): Multiset<T> {
     return new Multiset(this.entires.filter(([value, _]) => f(value)));
   }
 
-  reduce(f: (values: Multiset<T>) => Multiset<T>): Map<Value, Multiset<T>> {
-    const byKey = new Map<Value, Entry<T>[]>();
+  reduce<R extends Value>(
+    f: (values: Multiset<T>) => Multiset<R>
+  ): Map<T, Multiset<R>> {
+    const byKey = new Map<T, Entry<T>[]>();
     for (const [value, multiplicity] of this.entires) {
       const existing = byKey.get(value);
       if (existing === undefined) {
@@ -63,7 +65,7 @@ export class Multiset<T extends Value> {
       }
     }
 
-    const ret = new Map<Value, Multiset<T>>();
+    const ret = new Map<T, Multiset<R>>();
     for (const [value, entries] of byKey) {
       ret.set(value, f(new Multiset(entries)));
     }
