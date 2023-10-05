@@ -27,8 +27,8 @@ export class Multiset<T extends Value> {
     return this.difference(b).consolidate();
   }
 
-  concat(b: Multiset<T>): Multiset<T> {
-    return new Multiset([...this.entries, ...b.entries]);
+  concat<O extends Value>(b: Multiset<O>): Multiset<T | O> {
+    return new Multiset<T | O>([...this.entries, ...b.entries]);
   }
 
   negate(): Multiset<T> {
@@ -125,6 +125,12 @@ export class Multiset<T extends Value> {
 
   toString() {
     return this.entries.toString();
+  }
+
+  _extend(other: Multiset<T>) {
+    for (const e of other.entries) {
+      (this.entries as Entry<T>[]).push(e);
+    }
   }
 }
 

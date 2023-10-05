@@ -11,3 +11,9 @@ Once we have these complex views, we can do simple queries against them for whic
 - Demo against Signia?
 - React / DOM diffing?
 - Arbitrary logic and runtime? Immutable JS stuff? React state updates? Redux?
+
+# Next Steps
+
+- Turn this into an incremental reactive graph
+- Output are always differences... how can we re-construct a view over a stream of differences?
+  - A DB on the other side of the stream? For maintaining (post deltas) and querying the resulting view?

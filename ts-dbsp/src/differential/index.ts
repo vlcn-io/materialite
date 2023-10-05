@@ -1,9 +1,13 @@
-import { Entry, JoinableValue, Multiset, PrimitiveValue } from "./multiset";
+import { TMap } from "./collections/TMap";
+import {
+  Entry,
+  JoinableValue,
+  Multiset,
+  PrimitiveValue,
+  Value,
+} from "./multiset";
 
-export class Index<
-  K extends PrimitiveValue,
-  V extends PrimitiveValue | PrimitiveValue[]
-> {
+export class Index<K extends PrimitiveValue, V extends Value> {
   readonly #index = new Map<K, Entry<V>[]>();
 
   constructor() {}
@@ -29,8 +33,10 @@ export class Index<
     return this.#index.get(key) ?? [];
   }
 
-  join(other: Index<K, V>): Multiset<JoinableValue<K, readonly [V, V]>> {
-    const ret: (readonly [readonly [K, readonly [V, V]], number])[] = [];
+  join<VO extends Value = V>(
+    other: Index<K, VO>
+  ): Multiset<JoinableValue<K, readonly [V, VO]>> {
+    const ret: (readonly [readonly [K, readonly [V, VO]], number])[] = [];
     for (const [key, entry] of this.#index) {
       const otherEntry = other.#index.get(key);
       if (otherEntry === undefined) {
@@ -46,8 +52,10 @@ export class Index<
   }
 
   compact(keys: K[] = []) {
-    function consolidateValues(values: Entry<V>[]) {
-      const consolidated = new Map<V, number>();
+    function consolidateValues(values: Entry<V>[]): [V, number][] {
+      // TODO: tmap needs to be something better for consolidation...
+      // Maybe we use _actual_ tuple types and the rest is normal object equality.
+      const consolidated = new TMap<V, number>();
       for (const [value, multiplicity] of values) {
         if (multiplicity === 0) {
           continue;

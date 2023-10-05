@@ -16,7 +16,7 @@ export class TMap<K, V> {
     }
   }
 
-  get(key: K) {
+  get(key: K): V {
     if (Array.isArray(key)) {
       const ret = this.#map.get(JSON.stringify(key));
       if (ret === undefined) {
@@ -34,9 +34,9 @@ export class TMap<K, V> {
     return this.#map.delete(key);
   }
 
-  entries() {
+  entries(): [K, V][] {
     const entries = this.#map.entries();
-    const ret = [];
+    const ret: [K, V][] = [];
     for (const [key, value] of entries) {
       if (Array.isArray(value) && value[0] === marker) {
         ret.push([value[1], value[2]]);
