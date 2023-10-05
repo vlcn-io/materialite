@@ -15,13 +15,14 @@ import {
   Operator,
   UnaryOperator,
 } from "./graph";
+type TODO = any;
 
-export class DifferenceStreamBuilder<T extends Value> {
+export class DifferenceStreamBuilder<I extends Value> {
   readonly #writer;
   readonly #graph;
 
   constructor(graph: GraphBuilder) {
-    this.#writer = new DifferenceStreamWriter<T>();
+    this.#writer = new DifferenceStreamWriter<I>();
     this.#graph = graph;
   }
 
@@ -33,14 +34,93 @@ export class DifferenceStreamBuilder<T extends Value> {
     return this.#writer;
   }
 
-  map(f: any) {}
+  map<O extends Value>(f: (x: I) => O) {
+    const output = new DifferenceStreamBuilder<O>(this.#graph);
+    const operator = new MapOperator<I, O>(
+      this.connectReader(),
+      output.writer,
+      f
+    );
+    this.#graph.addOperator(operator);
+    return output;
+  }
+
+  filter(f: (x: I) => boolean) {
+    const output = new DifferenceStreamBuilder<I>(this.#graph);
+    const operator = new FilterOperator<I>(
+      this.connectReader(),
+      output.writer,
+      f
+    );
+    this.#graph.addOperator(operator);
+    return output;
+  }
+
+  negate() {
+    const output = new DifferenceStreamBuilder<I>(this.#graph);
+    const operator = new NegateOperator<I>(this.connectReader(), output.writer);
+    this.#graph.addOperator(operator);
+    return output;
+  }
+
+  concat(other: DifferenceStreamBuilder<I>) {
+    const output = new DifferenceStreamBuilder<I>(this.#graph);
+    const operator = new ConcatOperator<I, I>(
+      this.connectReader(),
+      other.connectReader(),
+      output.writer
+    );
+    this.#graph.addOperator(operator);
+    return output;
+  }
+
+  // TODO: better typings for join...
+  join(other: DifferenceStreamBuilder<I>) {
+    const output = new DifferenceStreamBuilder(this.#graph);
+    const operator = new JoinOperator(
+      this.connectReader() as TODO,
+      other.connectReader() as TODO,
+      output.writer as TODO
+    );
+    this.#graph.addOperator(operator);
+    return output;
+  }
+
+  // TODO: better type since this requires key-value structure
+  count() {
+    const output = new DifferenceStreamBuilder(this.#graph);
+    const operator = new CountOperator(
+      this.connectReader() as TODO,
+      output.writer as TODO
+    );
+    this.#graph.addOperator(operator);
+    return output;
+  }
+
+  reduce<O extends Value>(fn: (i: Entry<I>[]) => Entry<O>[]) {
+    const output = new DifferenceStreamBuilder<O>(this.#graph);
+    const operator = new ReduceOperator(
+      this.connectReader() as TODO,
+      output.writer as TODO,
+      fn
+    );
+    this.#graph.addOperator(operator);
+    return output;
+  }
+
+  debug() {
+    const output = new DifferenceStreamBuilder<I>(this.#graph);
+    const operator = new DebugOperator(this.connectReader(), output.writer);
+    this.#graph.addOperator(operator);
+    return output;
+  }
 }
 
 export class GraphBuilder {
   readonly #operators: Operator<any>[] = [];
 
-  newInput() {
-    const streamBuilder = new DifferenceStreamBuilder(this);
+  newInput<T extends Value>() {
+    const streamBuilder = new DifferenceStreamBuilder<T>(this);
     return [streamBuilder, streamBuilder.writer] as const;
   }
 
@@ -263,6 +343,20 @@ export class CountOperator<
         count += mult;
       }
       return [[count, 1]];
+    };
+    super(input, output, inner);
+  }
+}
+
+export class DebugOperator extends UnaryOperator<any, any> {
+  constructor(
+    input: DifferenceStreamReader<any>,
+    output: DifferenceStreamWriter<any>
+  ) {
+    const inner = () => {
+      for (const collection of this.inputMessages) {
+        console.log(collection);
+      }
     };
     super(input, output, inner);
   }
