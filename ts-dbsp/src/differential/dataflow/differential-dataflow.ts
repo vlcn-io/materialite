@@ -108,9 +108,9 @@ export class DifferenceStreamBuilder<I extends Value> {
     return output;
   }
 
-  debug() {
+  debug(f: (i: Multiset<I>) => void) {
     const output = new DifferenceStreamBuilder<I>(this.#graph);
-    const operator = new DebugOperator(this.connectReader(), output.writer);
+    const operator = new DebugOperator(this.connectReader(), output.writer, f);
     this.#graph.addOperator(operator);
     return output;
   }
@@ -351,11 +351,12 @@ export class CountOperator<
 export class DebugOperator extends UnaryOperator<any, any> {
   constructor(
     input: DifferenceStreamReader<any>,
-    output: DifferenceStreamWriter<any>
+    output: DifferenceStreamWriter<any>,
+    f: (input: Multiset<any>) => void
   ) {
     const inner = () => {
       for (const collection of this.inputMessages) {
-        console.log(collection);
+        f(collection);
       }
     };
     super(input, output, inner);
