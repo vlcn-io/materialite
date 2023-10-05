@@ -1,4 +1,5 @@
 import { Index } from ".";
+import { TMap } from "./collections/TMap";
 import {
   Entry,
   JoinableValue,
@@ -128,7 +129,7 @@ export class DifferenceSequence<T extends Value> {
       first: Multiset<JoinableValue<K, V>>,
       second: Multiset<JoinableValue<K, V>>
     ) {
-      const ret = new Map<JoinableValue<K, V>, number>();
+      const ret = new TMap<JoinableValue<K, V>, number>();
       for (const [v1, m1] of first.entries) {
         ret.set(v1, ret.get(v1) ?? 0 + m1);
       }
