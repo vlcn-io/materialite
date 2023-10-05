@@ -13,6 +13,10 @@ importers:
         version: 2.26.1
 
   ts-dbsp:
+    dependencies:
+      map2:
+        specifier: ^1.1.2
+        version: 1.1.2
     devDependencies:
       vitest:
         specifier: ^0.34.6
@@ -1542,6 +1546,10 @@ packages:
   /map-obj@4.3.0:
     resolution: {integrity: sha512-hdN1wVrZbb29eBGiGjJbeP8JbKjq1urkHJ/LIP/NY48MZ1QVXUsQBV1G1zvYFHn1XE06cwjBsOI2K3Ulnj1YXQ==}
     engines: {node: '>=8'}
+    dev: false
+
+  /map2@1.1.2:
+    resolution: {integrity: sha512-Kdt76+hzoMwA+Kiih0xtvBuuMrNbdBSZfZ4oC2hLBwp2uk3b3FopFEc/NkWu43ba1Fj93vmjxJ2DC0rfaI9W+w==}
     dev: false
 
   /meow@6.1.1:

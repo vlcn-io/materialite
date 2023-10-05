@@ -11,5 +11,8 @@
   "license": "ISC",
   "devDependencies": {
     "vitest": "^0.34.6"
+  },
+  "dependencies": {
+    "map2": "^1.1.2"
   }
 }

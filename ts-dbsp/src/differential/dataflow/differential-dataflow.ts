@@ -248,3 +248,22 @@ export class ReduceOperator<
     super(input, output, inner);
   }
 }
+
+export class CountOperator<
+  K extends PrimitiveValue,
+  V extends Value
+> extends ReduceOperator<K, V, number> {
+  constructor(
+    input: DifferenceStreamReader<JoinableValue<K, V>>,
+    output: DifferenceStreamWriter<JoinableValue<K, number>>
+  ) {
+    const inner = (vals: Entry<V>[]): [Entry<number>] => {
+      let count = 0;
+      for (const [_, mult] of vals) {
+        count += mult;
+      }
+      return [[count, 1]];
+    };
+    super(input, output, inner);
+  }
+}
