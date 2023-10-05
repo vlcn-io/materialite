@@ -19,6 +19,9 @@ export class TMap<K, V> {
   get(key: K) {
     if (Array.isArray(key)) {
       const ret = this.#map.get(JSON.stringify(key));
+      if (ret === undefined) {
+        return ret;
+      }
       return ret[2];
     }
     return this.#map.get(key);

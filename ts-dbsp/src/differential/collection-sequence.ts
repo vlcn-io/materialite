@@ -47,7 +47,7 @@ export class DifferenceSequence<T extends Value> {
   sum(): Multiset<T> {
     const collected: Entry<T>[] = [];
     for (const diff of this.#differenceSets) {
-      collected.push(...diff.entires);
+      collected.push(...diff.entries);
     }
     return new Multiset(collected).consolidate();
   }
@@ -99,10 +99,10 @@ export class DifferenceSequence<T extends Value> {
       const deltaA = new Index();
       const deltaB = new Index();
 
-      for (const [[key, value], multiplicity] of a.entires) {
+      for (const [[key, value], multiplicity] of a.entries) {
         deltaA.add(key, [value, multiplicity]);
       }
-      for (const [[key, value], multiplicity] of b.entires) {
+      for (const [[key, value], multiplicity] of b.entries) {
         deltaB.add(key, [value, multiplicity]);
       }
 
@@ -129,10 +129,10 @@ export class DifferenceSequence<T extends Value> {
       second: Multiset<JoinableValue<K, V>>
     ) {
       const ret = new Map<JoinableValue<K, V>, number>();
-      for (const [v1, m1] of first.entires) {
+      for (const [v1, m1] of first.entries) {
         ret.set(v1, ret.get(v1) ?? 0 + m1);
       }
-      for (const [v2, m2] of second.entires) {
+      for (const [v2, m2] of second.entries) {
         ret.set(v2, ret.get(v2) ?? 0 - m2);
       }
 
@@ -142,7 +142,7 @@ export class DifferenceSequence<T extends Value> {
     for (const collection of left.#differenceSets) {
       const keysTodo = new Set();
       const ret = [];
-      for (const [[key, value], multiplicity] of collection.entires) {
+      for (const [[key, value], multiplicity] of collection.entries) {
       }
     }
   }

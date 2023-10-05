@@ -8,6 +8,12 @@ test("setting and getting", () => {
 
   map.set(1, "bar");
   expect(map.get(1)).toBe("bar");
+
+  map.delete(1);
+  expect(map.get(1)).toBe(undefined);
+
+  map.delete([1, 2]);
+  expect(map.get([1, 2])).toBe(undefined);
 });
 
 test("entries", () => {

@@ -15,12 +15,12 @@ export type Value =
  * I.e., no optimization is going on here.
  */
 export class Multiset<T extends Value> {
-  constructor(public readonly entires: readonly Entry<T>[]) {}
+  constructor(public readonly entries: readonly Entry<T>[]) {}
 
   // Is this how we really want to do difference?
   // Or should we do it in a normalize way which will actually shrink the size of the multiset?
   difference(b: Multiset<T>): Multiset<T> {
-    return new Multiset([...this.entires, ...b.negate().entires]);
+    return new Multiset([...this.entries, ...b.negate().entries]);
   }
 
   differenceAndConsolidate(b: Multiset<T>): Multiset<T> {
@@ -28,12 +28,12 @@ export class Multiset<T extends Value> {
   }
 
   concat(b: Multiset<T>): Multiset<T> {
-    return new Multiset([...this.entires, ...b.entires]);
+    return new Multiset([...this.entries, ...b.entries]);
   }
 
   negate(): Multiset<T> {
     return new Multiset(
-      this.entires.map(([value, multiplicity]) => [value, -multiplicity])
+      this.entries.map(([value, multiplicity]) => [value, -multiplicity])
     );
   }
 
@@ -44,19 +44,19 @@ export class Multiset<T extends Value> {
 
   map<R extends Value>(f: (value: T) => R): Multiset<R> {
     return new Multiset(
-      this.entires.map(([value, multiplicity]) => [f(value), multiplicity])
+      this.entries.map(([value, multiplicity]) => [f(value), multiplicity])
     );
   }
 
   filter(f: (value: T) => boolean): Multiset<T> {
-    return new Multiset(this.entires.filter(([value, _]) => f(value)));
+    return new Multiset(this.entries.filter(([value, _]) => f(value)));
   }
 
   reduce<R extends Value>(
     f: (values: Multiset<T>) => Multiset<R>
   ): Map<T, Multiset<R>> {
     const byKey = new Map<T, Entry<T>[]>();
-    for (const [value, multiplicity] of this.entires) {
+    for (const [value, multiplicity] of this.entries) {
       const existing = byKey.get(value);
       if (existing === undefined) {
         byKey.set(value, [[value, multiplicity]]);
@@ -102,7 +102,7 @@ export class Multiset<T extends Value> {
 
   #toNormalizedMap(): Map<T, Multiplicity> {
     const ret = new Map<T, Multiplicity>();
-    for (const [value, multiplicity] of this.entires) {
+    for (const [value, multiplicity] of this.entries) {
       if (multiplicity == 0) {
         continue;
       }
@@ -124,7 +124,7 @@ export class Multiset<T extends Value> {
   }
 
   toString() {
-    return this.entires.toString();
+    return this.entries.toString();
   }
 }
 

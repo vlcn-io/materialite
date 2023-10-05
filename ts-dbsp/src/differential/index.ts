@@ -46,7 +46,7 @@ export class Index<
   }
 
   compact(keys: K[] = []) {
-    function conslidateValues(values: Entry<V>[]) {
+    function consolidateValues(values: Entry<V>[]) {
       const consolidated = new Map<V, number>();
       for (const [value, multiplicity] of values) {
         if (multiplicity === 0) {
@@ -68,14 +68,15 @@ export class Index<
       return [...consolidated.entries()];
     }
 
-    const iterableKeys = keys.length != 0 ? keys : this.#index.keys();
+    // spread `keys` b/c if we do not then when we add below the iterator will continue.
+    const iterableKeys = keys.length != 0 ? keys : [...this.#index.keys()];
     for (const key of iterableKeys) {
       const entries = this.#index.get(key);
       if (entries === undefined) {
         continue;
       }
       this.#index.delete(key);
-      const consolidated = conslidateValues(entries);
+      const consolidated = consolidateValues(entries);
       if (consolidated.length != 0) {
         this.#index.set(key, consolidated);
       }
