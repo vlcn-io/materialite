@@ -23,3 +23,9 @@
  * Emit difference rather than calculate the difference.
  * Since we know the difference for each array operation.
  */
+
+// class IncArray {}
+
+// On commit, we signal.
+// Operators that are waiting data from other inputs pull that data.
+// Pulling drains the input, causing it to not signal.

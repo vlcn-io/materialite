@@ -5,6 +5,7 @@
   },
   "include": ["./src/"],
   "references": [
+    { "path": "../materialite-ts" },
     { "path": "../ts-datastructures" },
     { "path": "../ts-dbsp" },
     { "path": "../ts-db" }

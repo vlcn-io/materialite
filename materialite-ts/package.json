@@ -1,0 +1,21 @@
+{
+  "name": "materialite-ts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "module": "true",
+  "scripts": {
+    "test": "vitest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^5.2.2",
+    "vitest": "^0.34.6"
+  },
+  "dependencies": {
+    "map2": "^1.1.2",
+    "@vlcn.io/datastructures-and-algos": "workspace:*"
+  }
+}

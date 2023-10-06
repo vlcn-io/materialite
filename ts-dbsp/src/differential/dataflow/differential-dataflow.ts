@@ -1,5 +1,4 @@
 import { Index } from "..";
-import { inspect } from "../../inspect";
 import { TMap } from "../collections/TMap";
 import {
   Entry,
@@ -294,6 +293,10 @@ export class ReduceOperator<
     f: (input: Entry<V>[]) => Entry<O>[]
   ) {
     const subtractValues = (first: Entry<O>[], second: Entry<O>[]) => {
+      // TODO: Update to your better tuple map...
+      // subsequent joins can get us `[[v1, v2], v3]` structures...
+      // we should have the join operaetor flatten those out...
+      // and have an arbitrarily deep map so we can handle these key structures?
       const result = new TMap<O, number>();
       for (const [v1, m1] of first) {
         result.set(v1, (result.get(v1) || 0) + m1);

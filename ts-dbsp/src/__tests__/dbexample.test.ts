@@ -1,6 +1,6 @@
 import { test } from "vitest";
 import { GraphBuilder } from "../differential/dataflow/differential-dataflow";
-import { Multiset } from "../differential/multiset";
+import { Entry, Multiset } from "../differential/multiset";
 import { inspect } from "../inspect";
 
 /**
@@ -40,6 +40,13 @@ test("tables", () => {
     track_id: number;
     playlist_id: number;
   };
+  type MaterializedTrack = {
+    id: number;
+    name: string;
+    album_name: string;
+    artists: string[];
+    length: number;
+  };
 
   // const tracks = new Map<number, Track>();
   // const artists = new Map<number, Artist>();
@@ -52,9 +59,9 @@ test("tables", () => {
   const graphBuilder = new GraphBuilder();
   const [tracksStream, tracksStreamWriter] =
     graphBuilder.newInput<[number, Track]>();
-  const [artistsStream, artistsStreamWriter] =
+  const [artistStream, artistStreamWriter] =
     graphBuilder.newInput<[number, Artist]>();
-  const [trackArtistsStream, trackArtistsStreamWriter] =
+  const [trackArtistStream, trackArtistStreamWriter] =
     graphBuilder.newInput<[number, TrackArtist]>();
   const [albumsStream, albumsStreamWriter] =
     graphBuilder.newInput<[number, Album]>();
@@ -64,15 +71,7 @@ test("tables", () => {
     graphBuilder.newInput<[number, TrackPlaylist]>();
 
   // create a view of the items in a playlist
-  /**
-   * SELECT track.title, artist.name, album.name, track.length FROM track
-   * JOIN track_artist ON track.id = track_artist.track_id
-   * JOIN artist ON artist.id = track_artist.artist_id
-   * JOIN album ON album.id = track.album_id
-   * JOIN playlist_track ON playlist_track.track_id = track.id
-   * WHERE playlist_track.playlist_id = 1
-   */
-  const playlistView = playlistStream
+  /*const playlistView =*/ playlistStream
     // filter down to playlist 1
     .filter(([_, playlist]) => playlist.id === 1)
     // join in the playlist->track table
@@ -91,10 +90,39 @@ test("tables", () => {
     })
     // join in album
     .join(albumsStream)
-    // re-key by artist_id
+    // re-key by track_id
+    .map((v: any) => {
+      const [_, [track, album]] = v;
+      return [track.id, [track, album]];
+    })
+    .join(trackArtistStream)
+    // re-key by atrist_id
+    .map((v: any) => {
+      const [_, [[track, album], trackArtist]] = v;
+      return [trackArtist.artist_id, [track, album]];
+    })
     // join in artist id
+    .join(artistStream)
     // re-key by track id
+    .map((v: any) => {
+      const [_, [[track, album], artist]] = v;
+      return [track.id, [track, album, artist]];
+    })
     // reduce to a single row per track
+    .reduce((tracks: Entry<[Track, Album, Artist]>[]) => {
+      if (tracks.length == 0) {
+        return [];
+      }
+      const firstTrack = tracks[0]![0];
+      const track: MaterializedTrack = {
+        id: firstTrack[0].id,
+        name: firstTrack[0].name,
+        album_name: firstTrack[1].name,
+        artists: tracks.map((t) => t[0][2].name),
+        length: firstTrack[0].length,
+      };
+      return [[track, 1]];
+    })
     .debug(inspect);
 
   const graph = graphBuilder.build();
@@ -124,6 +152,18 @@ test("tables", () => {
     }
   }
 
+  const trackArtists: TrackArtist[] = [];
+  for (let i = 0; i < tracks.length; i++) {
+    trackArtists.push({
+      track_id: i,
+      artist_id: i % 10,
+    });
+  }
+  const artists = Array.from({ length: 10 }, (_, i) => ({
+    id: i,
+    name: `Artist ${i}`,
+  }));
+
   // Just add them all in a single mutliset
   playlistStreamWriter.sendData(
     new Multiset(playlists.map((p) => [[p.id, p], 1]))
@@ -133,6 +173,10 @@ test("tables", () => {
   );
   tracksStreamWriter.sendData(new Multiset(tracks.map((t) => [[t.id, t], 1])));
   albumsStreamWriter.sendData(new Multiset(albums.map((a) => [[a.id, a], 1])));
+  trackArtistStreamWriter.sendData(
+    new Multiset(trackArtists.map((ta) => [[ta.track_id, ta], 1]))
+  );
+  artistStreamWriter.sendData(new Multiset(artists.map((a) => [[a.id, a], 1])));
 
   graph.step();
 

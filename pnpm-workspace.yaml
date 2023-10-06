@@ -1,4 +1,5 @@
 packages:
+  - "materialite-ts"
   - "ts-buildall"
   - "ts-datastructures"
   - "ts-db"
