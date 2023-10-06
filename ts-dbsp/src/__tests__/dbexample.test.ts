@@ -1,4 +1,4 @@
-import { expect, test } from "vitest";
+import { test } from "vitest";
 /**
  * Craft an example where we have a bunch of relations and compute over those relations.
  *

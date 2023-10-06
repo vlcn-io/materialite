@@ -5,4 +5,8 @@ export class Table<K, V> {
   constructor() {
     this.#entries = new Map();
   }
+
+  get size() {
+    return this.#entries.size;
+  }
 }

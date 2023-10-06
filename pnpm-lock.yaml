@@ -12,7 +12,19 @@ importers:
         specifier: ^2.26.1
         version: 2.26.1
 
+  ts-buildall:
+    devDependencies:
+      typescript:
+        specifier: ^5.2.2
+        version: 5.2.2
+
   ts-datastructures: {}
+
+  ts-db:
+    devDependencies:
+      vitest:
+        specifier: ^0.34.6
+        version: 0.34.6
 
   ts-dbsp:
     dependencies:

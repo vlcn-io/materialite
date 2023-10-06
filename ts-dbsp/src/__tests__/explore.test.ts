@@ -1,4 +1,4 @@
-import { expect, test } from "vitest";
+import { test } from "vitest";
 import { GraphBuilder } from "../differential/dataflow/differential-dataflow";
 import { Multiset } from "../differential/multiset";
 import util from "util";
