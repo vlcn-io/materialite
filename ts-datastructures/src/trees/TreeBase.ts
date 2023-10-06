@@ -1,230 +1,228 @@
-// export function TreeBase() {}
+type Node<V> = {
+  data: V;
+  left: Node<V> | null;
+  right: Node<V> | null;
+  getChild(isRight: boolean): Node<V> | null;
+};
 
-// // removes all nodes from the tree
-// TreeBase.prototype.clear = function() {
-//     this._root = null;
-//     this.size = 0;
-// };
+export abstract class TreeBase<V> {
+  #root: Node<V> | null = null;
+  #size = 0;
 
-// // returns node data if found, null otherwise
-// TreeBase.prototype.find = function(data) {
-//     var res = this._root;
+  protected abstract _comparator(a: V, b: V): number;
 
-//     while(res !== null) {
-//         var c = this._comparator(data, res.data);
-//         if(c === 0) {
-//             return res.data;
-//         }
-//         else {
-//             res = res.get_child(c > 0);
-//         }
-//     }
+  clear() {
+    this.#root = null;
+    this.#size = 0;
+  }
 
-//     return null;
-// };
+  get size() {
+    return this.#size;
+  }
 
-// // returns iterator to node if found, null otherwise
-// TreeBase.prototype.findIter = function(data) {
-//     var res = this._root;
-//     var iter = this.iterator();
+  get root() {
+    return this.#root;
+  }
 
-//     while(res !== null) {
-//         var c = this._comparator(data, res.data);
-//         if(c === 0) {
-//             iter._cursor = res;
-//             return iter;
-//         }
-//         else {
-//             iter._ancestors.push(res);
-//             res = res.get_child(c > 0);
-//         }
-//     }
+  find(data: V) {
+    let res = this.#root;
 
-//     return null;
-// };
+    while (res !== null) {
+      const c = this._comparator(data, res.data);
+      if (c === 0) {
+        return res.data;
+      } else {
+        res = res.getChild(c > 0);
+      }
+    }
 
-// // Returns an iterator to the tree node at or immediately after the item
-// TreeBase.prototype.lowerBound = function(item) {
-//     var cur = this._root;
-//     var iter = this.iterator();
-//     var cmp = this._comparator;
+    return null;
+  }
 
-//     while(cur !== null) {
-//         var c = cmp(item, cur.data);
-//         if(c === 0) {
-//             iter._cursor = cur;
-//             return iter;
-//         }
-//         iter._ancestors.push(cur);
-//         cur = cur.get_child(c > 0);
-//     }
+  findIter(data: V) {
+    let res = this.#root;
+    const iter = this.iterator();
 
-//     for(var i=iter._ancestors.length - 1; i >= 0; --i) {
-//         cur = iter._ancestors[i];
-//         if(cmp(item, cur.data) < 0) {
-//             iter._cursor = cur;
-//             iter._ancestors.length = i;
-//             return iter;
-//         }
-//     }
+    while (res !== null) {
+      const c = this._comparator(data, res.data);
+      if (c === 0) {
+        iter.cursor = res;
+        return iter;
+      } else {
+        iter.ancestors.push(res);
+        res = res.getChild(c > 0);
+      }
+    }
 
-//     iter._ancestors.length = 0;
-//     return iter;
-// };
+    return null;
+  }
 
-// // Returns an iterator to the tree node immediately after the item
-// TreeBase.prototype.upperBound = function(item) {
-//     var iter = this.lowerBound(item);
-//     var cmp = this._comparator;
+  iterator() {
+    return new Iterator(this);
+  }
 
-//     while(iter.data() !== null && cmp(iter.data(), item) === 0) {
-//         iter.next();
-//     }
+  lowerBound(data: V) {
+    let cur = this.#root;
+    const iter = this.iterator();
 
-//     return iter;
-// };
+    while (cur !== null) {
+      const c = this._comparator(data, cur.data);
+      if (c === 0) {
+        iter.cursor = cur;
+        return iter;
+      }
+      iter.ancestors.push(cur);
+      cur = cur.getChild(c > 0);
+    }
 
-// // returns null if tree is empty
-// TreeBase.prototype.min = function() {
-//     var res = this._root;
-//     if(res === null) {
-//         return null;
-//     }
+    for (let i = iter.ancestors.length - 1; i >= 0; --i) {
+      cur = iter.ancestors[i]!;
+      if (this._comparator(data, cur.data) < 0) {
+        iter.cursor = cur;
+        iter.ancestors.length = i;
+        return iter;
+      }
+    }
 
-//     while(res.left !== null) {
-//         res = res.left;
-//     }
+    iter.ancestors.length = 0;
+    return iter;
+  }
 
-//     return res.data;
-// };
+  upperBound(data: V) {
+    const iter = this.lowerBound(data);
 
-// // returns null if tree is empty
-// TreeBase.prototype.max = function() {
-//     var res = this._root;
-//     if(res === null) {
-//         return null;
-//     }
+    while (iter.data !== null && this._comparator(iter.data, data) === 0) {
+      iter.next();
+    }
 
-//     while(res.right !== null) {
-//         res = res.right;
-//     }
+    return iter;
+  }
 
-//     return res.data;
-// };
+  min() {
+    let res = this.#root;
+    if (res === null) {
+      return null;
+    }
 
-// // returns a null iterator
-// // call next() or prev() to point to an element
-// TreeBase.prototype.iterator = function() {
-//     return new Iterator(this);
-// };
+    while (res.left !== null) {
+      res = res.left;
+    }
 
-// // calls cb on each node's data, in order
-// TreeBase.prototype.each = function(cb) {
-//     var it=this.iterator(), data;
-//     while((data = it.next()) !== null) {
-//         if(cb(data) === false) {
-//             return;
-//         }
-//     }
-// };
+    return res.data;
+  }
 
-// // calls cb on each node's data, in reverse order
-// TreeBase.prototype.reach = function(cb) {
-//     var it=this.iterator(), data;
-//     while((data = it.prev()) !== null) {
-//         if(cb(data) === false) {
-//             return;
-//         }
-//     }
-// };
+  max() {
+    let res = this.#root;
+    if (res === null) {
+      return null;
+    }
 
-// function Iterator(tree) {
-//     this._tree = tree;
-//     this._ancestors = [];
-//     this._cursor = null;
-// }
+    while (res.right !== null) {
+      res = res.right;
+    }
 
-// Iterator.prototype.data = function() {
-//     return this._cursor !== null ? this._cursor.data : null;
-// };
+    return res.data;
+  }
 
-// // if null-iterator, returns first node
-// // otherwise, returns next node
-// Iterator.prototype.next = function() {
-//     if(this._cursor === null) {
-//         var root = this._tree._root;
-//         if(root !== null) {
-//             this._minNode(root);
-//         }
-//     }
-//     else {
-//         if(this._cursor.right === null) {
-//             // no greater node in subtree, go up to parent
-//             // if coming from a right child, continue up the stack
-//             var save;
-//             do {
-//                 save = this._cursor;
-//                 if(this._ancestors.length) {
-//                     this._cursor = this._ancestors.pop();
-//                 }
-//                 else {
-//                     this._cursor = null;
-//                     break;
-//                 }
-//             } while(this._cursor.right === save);
-//         }
-//         else {
-//             // get the next node from the subtree
-//             this._ancestors.push(this._cursor);
-//             this._minNode(this._cursor.right);
-//         }
-//     }
-//     return this._cursor !== null ? this._cursor.data : null;
-// };
+  *each() {
+    const iter = this.iterator();
+    let data;
+    while ((data = iter.next()) !== null) {
+      yield data;
+    }
+  }
 
-// // if null-iterator, returns last node
-// // otherwise, returns previous node
-// Iterator.prototype.prev = function() {
-//     if(this._cursor === null) {
-//         var root = this._tree._root;
-//         if(root !== null) {
-//             this._maxNode(root);
-//         }
-//     }
-//     else {
-//         if(this._cursor.left === null) {
-//             var save;
-//             do {
-//                 save = this._cursor;
-//                 if(this._ancestors.length) {
-//                     this._cursor = this._ancestors.pop();
-//                 }
-//                 else {
-//                     this._cursor = null;
-//                     break;
-//                 }
-//             } while(this._cursor.left === save);
-//         }
-//         else {
-//             this._ancestors.push(this._cursor);
-//             this._maxNode(this._cursor.left);
-//         }
-//     }
-//     return this._cursor !== null ? this._cursor.data : null;
-// };
+  *reach() {
+    const iter = this.iterator();
+    let data;
+    while ((data = iter.prev()) !== null) {
+      yield data;
+    }
+  }
+}
 
-// Iterator.prototype._minNode = function(start) {
-//     while(start.left !== null) {
-//         this._ancestors.push(start);
-//         start = start.left;
-//     }
-//     this._cursor = start;
-// };
+class Iterator<V> {
+  readonly #tree;
+  readonly ancestors: Node<V>[] = [];
+  cursor: Node<V> | null = null;
 
-// Iterator.prototype._maxNode = function(start) {
-//     while(start.right !== null) {
-//         this._ancestors.push(start);
-//         start = start.right;
-//     }
-//     this._cursor = start;
-// };
+  constructor(tree: TreeBase<V>) {
+    this.#tree = tree;
+    this.ancestors = [];
+    this.cursor = null;
+  }
+
+  get data() {
+    return this.cursor !== null ? this.cursor.data : null;
+  }
+
+  next() {
+    if (this.cursor === null) {
+      const root = this.#tree.root;
+      if (root !== null) {
+        this.#minNode(root);
+      }
+    } else {
+      if (this.cursor.right === null) {
+        let save: Node<V> | null;
+        do {
+          save = this.cursor;
+          if (this.ancestors.length) {
+            this.cursor = this.ancestors.pop()!;
+          } else {
+            this.cursor = null;
+            break;
+          }
+        } while (this.cursor.right === save);
+      } else {
+        this.ancestors.push(this.cursor);
+        this.#minNode(this.cursor.right);
+      }
+    }
+    return this.cursor !== null ? this.cursor.data : null;
+  }
+
+  // if null-iterator, returns last node
+  // otherwise, returns previous node
+  prev() {
+    if (this.cursor === null) {
+      const root = this.#tree.root;
+      if (root !== null) {
+        this.#maxNode(root);
+      }
+    } else {
+      if (this.cursor.left === null) {
+        let save: Node<V> | null;
+        do {
+          save = this.cursor;
+          if (this.ancestors.length) {
+            this.cursor = this.ancestors.pop()!;
+          } else {
+            this.cursor = null;
+            break;
+          }
+        } while (this.cursor.left === save);
+      } else {
+        this.ancestors.push(this.cursor);
+        this.#maxNode(this.cursor.left);
+      }
+    }
+    return this.cursor !== null ? this.cursor.data : null;
+  }
+
+  #minNode(start: Node<V>) {
+    while (start.left !== null) {
+      this.ancestors.push(start);
+      start = start.left;
+    }
+    this.cursor = start;
+  }
+
+  #maxNode(start: Node<V>) {
+    while (start.right !== null) {
+      this.ancestors.push(start);
+      start = start.right;
+    }
+    this.cursor = start;
+  }
+}
