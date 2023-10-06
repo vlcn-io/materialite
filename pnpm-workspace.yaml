@@ -1,4 +1,5 @@
 packages:
-  - "ts-dbsp"
-  - "ts-protoype"
+  - "ts-buildall"
   - "ts-datastructures"
+  - "ts-db"
+  - "ts-dbsp"
