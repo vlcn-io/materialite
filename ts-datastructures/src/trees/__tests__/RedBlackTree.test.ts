@@ -68,6 +68,10 @@ test("can fulfill a gte range request via lower bound", () => {
 
   const out: number[] = [];
   const iter = tree.lowerBound(5);
+  // can't do this yet due to next being eagerly called in for
+  // for (const data of iter) {
+  //   out.push(data);
+  // }
   while (iter.data !== null) {
     out.push(iter.data!);
     iter.next();

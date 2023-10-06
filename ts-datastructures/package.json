@@ -1,12 +1,11 @@
 {
-  "name": "ts-datastructures",
+  "name": "@vlcn.io/datastructures-and-algos",
   "version": "1.0.0",
   "module": "true",
   "description": "",
   "exports": {
-    "RedBlackTree": {
-      "default": "./dist/RedBlackTree.js"
-    }
+    "./RedBlackTree": "./dist/trees/RedBlackTree.js",
+    "./shuffle": "./dist/shuffle.js"
   },
   "scripts": {
     "test": "vitest"

@@ -8,21 +8,21 @@ import {
 } from "./multiset";
 
 export class Index<K extends PrimitiveValue, V extends Value> {
-  readonly #index = new Map<K, Entry<V>[]>();
+  private readonly index = new Map<K, Entry<V>[]>();
 
   constructor() {}
 
   add(key: K, value: Entry<V>) {
-    let existing = this.#index.get(key);
+    let existing = this.index.get(key);
     if (existing === undefined) {
       existing = [];
-      this.#index.set(key, existing);
+      this.index.set(key, existing);
     }
     existing.push(value);
   }
 
   extend(index: Index<K, V>) {
-    for (const [key, value] of index.#index) {
+    for (const [key, value] of index.index) {
       for (const entry of value) {
         this.add(key, entry);
       }
@@ -30,15 +30,15 @@ export class Index<K extends PrimitiveValue, V extends Value> {
   }
 
   get(key: K): Entry<V>[] {
-    return this.#index.get(key) ?? [];
+    return this.index.get(key) ?? [];
   }
 
   join<VO extends Value = V>(
     other: Index<K, VO>
   ): Multiset<JoinableValue<K, readonly [V, VO]>> {
     const ret: (readonly [readonly [K, readonly [V, VO]], number])[] = [];
-    for (const [key, entry] of this.#index) {
-      const otherEntry = other.#index.get(key);
+    for (const [key, entry] of this.index) {
+      const otherEntry = other.index.get(key);
       if (otherEntry === undefined) {
         continue;
       }
@@ -77,16 +77,16 @@ export class Index<K extends PrimitiveValue, V extends Value> {
     }
 
     // spread `keys` b/c if we do not then when we add below the iterator will continue.
-    const iterableKeys = keys.length != 0 ? keys : [...this.#index.keys()];
+    const iterableKeys = keys.length != 0 ? keys : [...this.index.keys()];
     for (const key of iterableKeys) {
-      const entries = this.#index.get(key);
+      const entries = this.index.get(key);
       if (entries === undefined) {
         continue;
       }
-      this.#index.delete(key);
+      this.index.delete(key);
       const consolidated = consolidateValues(entries);
       if (consolidated.length != 0) {
-        this.#index.set(key, consolidated);
+        this.index.set(key, consolidated);
       }
     }
   }

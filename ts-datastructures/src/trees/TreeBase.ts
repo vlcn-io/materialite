@@ -1,5 +1,5 @@
 export interface INode<V> {
-  data: V | undefined;
+  data: V | null;
   left: INode<V> | null;
   right: INode<V> | null;
   getChild(isRight: boolean): INode<V> | null;
@@ -62,7 +62,7 @@ export abstract class TreeBase<V> {
   }
 
   iterator() {
-    return new Iterator(this);
+    return new TreeIterator(this);
   }
 
   // Returns an iterator to the tree node at or immediately after the item
@@ -149,7 +149,7 @@ export abstract class TreeBase<V> {
   }
 }
 
-class Iterator<V> {
+class TreeIterator<V> implements IterableIterator<V> {
   readonly #tree;
   readonly ancestors: INode<V>[] = [];
   cursor: INode<V> | null = null;
@@ -164,7 +164,11 @@ class Iterator<V> {
     return this.cursor !== null ? this.cursor.data : null;
   }
 
-  next() {
+  [Symbol.iterator](): IterableIterator<V> {
+    return this;
+  }
+
+  next(): IteratorResult<V> {
     if (this.cursor === null) {
       const root = this.#tree.root;
       if (root !== null) {
@@ -187,7 +191,10 @@ class Iterator<V> {
         this.#minNode(this.cursor.right);
       }
     }
-    return this.cursor !== null ? this.cursor.data : null;
+    return {
+      done: this.cursor === null,
+      value: this.cursor !== null ? this.cursor.data : null,
+    } as IteratorResult<V>;
   }
 
   // if null-iterator, returns last node

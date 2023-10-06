@@ -15,6 +15,7 @@
     "vitest": "^0.34.6"
   },
   "dependencies": {
-    "map2": "^1.1.2"
+    "map2": "^1.1.2",
+    "@vlcn.io/datastructures-and-algos": "workspace:*"
   }
 }

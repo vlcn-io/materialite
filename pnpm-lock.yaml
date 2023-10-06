@@ -32,6 +32,9 @@ importers:
 
   ts-dbsp:
     dependencies:
+      '@vlcn.io/datastructures-and-algos':
+        specifier: workspace:*
+        version: link:../ts-datastructures
       map2:
         specifier: ^1.1.2
         version: 1.1.2

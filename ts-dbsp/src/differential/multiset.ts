@@ -8,7 +8,8 @@ export type JoinableValue<
 export type Value =
   | PrimitiveValue
   | readonly PrimitiveValue[]
-  | readonly Value[];
+  | readonly Value[]
+  | Record<string, any>;
 
 /**
  * A naive implementation of a multi-set.

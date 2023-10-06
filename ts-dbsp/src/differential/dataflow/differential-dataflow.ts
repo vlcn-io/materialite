@@ -1,4 +1,5 @@
 import { Index } from "..";
+import { inspect } from "../../inspect";
 import { TMap } from "../collections/TMap";
 import {
   Entry,
@@ -75,7 +76,7 @@ export class DifferenceStreamBuilder<I extends Value> {
   }
 
   // TODO: better typings for join...
-  join(other: DifferenceStreamBuilder<I>) {
+  join(other: DifferenceStreamBuilder<any>) {
     const output = new DifferenceStreamBuilder(this.#graph);
     const operator = new JoinOperator(
       this.connectReader() as TODO,
@@ -258,6 +259,8 @@ export class JoinOperator<
         this.#inputBPending.push(deltaB);
       }
 
+      // TODO: join should still be able to operate even if one of the inputs is empty...
+      // right?
       while (this.#inputAPending.length > 0 && this.#inputBPending.length > 0) {
         const result = new Multiset<JoinableValue<K, readonly [V1, V2]>>([]);
         const deltaA = this.#inputAPending.shift()!;

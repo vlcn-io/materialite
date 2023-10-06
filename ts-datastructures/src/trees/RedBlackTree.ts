@@ -1,12 +1,12 @@
 import { INode, TreeBase } from "./TreeBase";
 
 export class RBNode<V> implements INode<V> {
-  data: V | undefined;
+  data: V | null;
   left: RBNode<V> | null = null;
   right: RBNode<V> | null = null;
   red = true;
 
-  constructor(data?: V) {
+  constructor(data: V) {
     this.data = data;
   }
 
@@ -40,7 +40,7 @@ export class RBTree<V> extends TreeBase<V> {
       ret = true;
       this._size++;
     } else {
-      const head = new RBNode<V>(undefined); // fake tree root
+      const head = new RBNode<V>(undefined as any); // fake tree root
 
       let dir = false;
       let last = false;
@@ -114,7 +114,7 @@ export class RBTree<V> extends TreeBase<V> {
       return false;
     }
 
-    const head = new RBNode<V>(undefined); // fake tree root
+    const head = new RBNode<V>(undefined as any); // fake tree root
     let node: RBNode<V> = head;
     node.right = this._root as RBNode<V>;
     let p: RBNode<V> | null = null; // parent
