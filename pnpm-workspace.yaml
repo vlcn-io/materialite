@@ -1,3 +1,4 @@
 packages:
   - "ts-dbsp"
   - "ts-protoype"
+  - "ts-datastructures"

@@ -1,0 +1,17 @@
+{
+  "name": "ts-datastructures",
+  "version": "1.0.0",
+  "module": "true",
+  "description": "",
+  "exports": {
+    "RedBlackTree": {
+      "default": "./dist/RedBlackTree.js"
+    }
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

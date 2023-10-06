@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "module": "true",
   "scripts": {
     "test": "vitest"
   },
@@ -10,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "typescript": "^5.2.2",
     "vitest": "^0.34.6"
   },
   "dependencies": {

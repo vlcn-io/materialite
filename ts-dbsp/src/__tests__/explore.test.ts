@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 import { GraphBuilder } from "../differential/dataflow/differential-dataflow";
 import { Multiset } from "../differential/multiset";
+import util from "util";
 
 test("dataflow graph from example", () => {
   const graphBuilder = new GraphBuilder();
@@ -9,6 +10,11 @@ test("dataflow graph from example", () => {
     .map((x: number) => x + 5)
     .filter((d) => d % 2 === 0)
     .debug((c) => console.log(c.entries));
+  // debug step can emit something to React to update state?
+  // processing pipeline deduplication? i.e., query deduplication?
+  // direct dom operations seem a bit better in the incremental world...
+  // we need filter to retract values... does this setup retract values?
+  // bind params to filter to change the value we filter against?
 
   const graph = graphBuilder.build();
 
@@ -18,6 +24,9 @@ test("dataflow graph from example", () => {
     graph.step();
   }
 
+  inputAWriter.sendData(new Multiset([[5, -1]]));
+  graph.step();
+
   // console.log(
   //   Array.from({ length: 10 }, (_, i) => i)
   //     .map((x) => x + 5)
@@ -25,30 +34,30 @@ test("dataflow graph from example", () => {
   // );
 });
 
-type Record = [number, string];
+function inspect(e: any) {
+  console.log(util.inspect(e, false, null, true));
+}
+
+type Record = [number, string[]];
 test("incremental joining", () => {
   const graphBuilder = new GraphBuilder();
   const [inputA, inputAWriter] = graphBuilder.newInput<Record>();
   const [inputB, inputBWriter] = graphBuilder.newInput<Record>();
 
   inputA.join(inputB).debug((c) => {
-    console.log("[");
-    for (const e of c.entries) {
-      console.log(e);
-    }
-    console.log("]");
+    inspect(c);
   });
   const graph = graphBuilder.build();
 
   const recordsA = [
-    [1, "Aa"],
-    [2, "Ab"],
-    [3, "Ac"],
+    [1, ["Aa"]],
+    [2, ["Ab"]],
+    [3, ["Ac"]],
   ] as Record[];
   const recordsB = [
-    [1, "Ba"],
-    [2, "Bb"],
-    [3, "Bc"],
+    [1, ["Ba"]],
+    [2, ["Bb"]],
+    [3, ["Bc"]],
   ] as Record[];
   for (let i = 0; i < recordsA.length; i++) {
     inputAWriter.sendData(new Multiset([[recordsA[i]!, 1]]));
@@ -73,6 +82,9 @@ test("incremental joining", () => {
  * What's our use case that we needed a solution to this problem?
  *   A query over a large dataset that can be mutated over time.
  *    Try that case out.
+ *   We want to know the exact _row_ that changed and the new values...
+ *
+ * Test out a data source of tables with hundreds of pipelines against it.
  */
 
 // TODO: write a reactive graph that steps on transaction commit.
