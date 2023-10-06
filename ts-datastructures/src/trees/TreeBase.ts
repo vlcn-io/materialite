@@ -1,34 +1,37 @@
-type Node<V> = {
-  data: V;
-  left: Node<V> | null;
-  right: Node<V> | null;
-  getChild(isRight: boolean): Node<V> | null;
-};
+export interface INode<V> {
+  data: V | undefined;
+  left: INode<V> | null;
+  right: INode<V> | null;
+  getChild(isRight: boolean): INode<V> | null;
+  setChild(isRight: boolean, val: INode<V> | null): void;
+}
 
 export abstract class TreeBase<V> {
-  #root: Node<V> | null = null;
-  #size = 0;
+  _root: INode<V> | null = null;
+  _size = 0;
 
   protected abstract _comparator(a: V, b: V): number;
 
+  // removes all nodes from the tree
   clear() {
-    this.#root = null;
-    this.#size = 0;
+    this._root = null;
+    this._size = 0;
   }
 
   get size() {
-    return this.#size;
+    return this._size;
   }
 
   get root() {
-    return this.#root;
+    return this._root;
   }
 
+  // returns node data if found, null otherwise
   find(data: V) {
-    let res = this.#root;
+    let res = this._root;
 
     while (res !== null) {
-      const c = this._comparator(data, res.data);
+      const c = this._comparator(data, res.data!);
       if (c === 0) {
         return res.data;
       } else {
@@ -39,12 +42,13 @@ export abstract class TreeBase<V> {
     return null;
   }
 
+  // returns iterator to node if found, null otherwise
   findIter(data: V) {
-    let res = this.#root;
+    let res = this._root;
     const iter = this.iterator();
 
     while (res !== null) {
-      const c = this._comparator(data, res.data);
+      const c = this._comparator(data, res.data!);
       if (c === 0) {
         iter.cursor = res;
         return iter;
@@ -61,12 +65,13 @@ export abstract class TreeBase<V> {
     return new Iterator(this);
   }
 
+  // Returns an iterator to the tree node at or immediately after the item
   lowerBound(data: V) {
-    let cur = this.#root;
+    let cur = this._root;
     const iter = this.iterator();
 
     while (cur !== null) {
-      const c = this._comparator(data, cur.data);
+      const c = this._comparator(data, cur.data!);
       if (c === 0) {
         iter.cursor = cur;
         return iter;
@@ -77,7 +82,7 @@ export abstract class TreeBase<V> {
 
     for (let i = iter.ancestors.length - 1; i >= 0; --i) {
       cur = iter.ancestors[i]!;
-      if (this._comparator(data, cur.data) < 0) {
+      if (this._comparator(data, cur.data!) < 0) {
         iter.cursor = cur;
         iter.ancestors.length = i;
         return iter;
@@ -88,18 +93,20 @@ export abstract class TreeBase<V> {
     return iter;
   }
 
+  // Returns an iterator to the tree node immediately after the item
   upperBound(data: V) {
     const iter = this.lowerBound(data);
 
-    while (iter.data !== null && this._comparator(iter.data, data) === 0) {
+    while (iter.data !== null && this._comparator(iter.data!, data) === 0) {
       iter.next();
     }
 
     return iter;
   }
 
+  // returns null if tree is empty
   min() {
-    let res = this.#root;
+    let res = this._root;
     if (res === null) {
       return null;
     }
@@ -111,8 +118,9 @@ export abstract class TreeBase<V> {
     return res.data;
   }
 
+  // returns null if tree is empty
   max() {
-    let res = this.#root;
+    let res = this._root;
     if (res === null) {
       return null;
     }
@@ -143,8 +151,8 @@ export abstract class TreeBase<V> {
 
 class Iterator<V> {
   readonly #tree;
-  readonly ancestors: Node<V>[] = [];
-  cursor: Node<V> | null = null;
+  readonly ancestors: INode<V>[] = [];
+  cursor: INode<V> | null = null;
 
   constructor(tree: TreeBase<V>) {
     this.#tree = tree;
@@ -164,7 +172,7 @@ class Iterator<V> {
       }
     } else {
       if (this.cursor.right === null) {
-        let save: Node<V> | null;
+        let save: INode<V> | null;
         do {
           save = this.cursor;
           if (this.ancestors.length) {
@@ -192,7 +200,7 @@ class Iterator<V> {
       }
     } else {
       if (this.cursor.left === null) {
-        let save: Node<V> | null;
+        let save: INode<V> | null;
         do {
           save = this.cursor;
           if (this.ancestors.length) {
@@ -210,7 +218,7 @@ class Iterator<V> {
     return this.cursor !== null ? this.cursor.data : null;
   }
 
-  #minNode(start: Node<V>) {
+  #minNode(start: INode<V>) {
     while (start.left !== null) {
       this.ancestors.push(start);
       start = start.left;
@@ -218,7 +226,7 @@ class Iterator<V> {
     this.cursor = start;
   }
 
-  #maxNode(start: Node<V>) {
+  #maxNode(start: INode<V>) {
     while (start.right !== null) {
       this.ancestors.push(start);
       start = start.right;

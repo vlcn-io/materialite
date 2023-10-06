@@ -18,7 +18,11 @@ importers:
         specifier: ^5.2.2
         version: 5.2.2
 
-  ts-datastructures: {}
+  ts-datastructures:
+    devDependencies:
+      vitest:
+        specifier: ^0.34.6
+        version: 0.34.6
 
   ts-db:
     devDependencies:

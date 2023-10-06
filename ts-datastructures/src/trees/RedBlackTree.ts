@@ -1,215 +1,216 @@
-// function Node(data) {
-//     this.data = data;
-//     this.left = null;
-//     this.right = null;
-//     this.red = true;
-// }
+import { INode, TreeBase } from "./TreeBase";
 
-// Node.prototype.get_child = function(dir) {
-//     return dir ? this.right : this.left;
-// };
+export class RBNode<V> implements INode<V> {
+  data: V | undefined;
+  left: RBNode<V> | null = null;
+  right: RBNode<V> | null = null;
+  red = true;
 
-// Node.prototype.set_child = function(dir, val) {
-//     if(dir) {
-//         this.right = val;
-//     }
-//     else {
-//         this.left = val;
-//     }
-// };
+  constructor(data?: V) {
+    this.data = data;
+  }
 
-// function RBTree(comparator) {
-//     this._root = null;
-//     this._comparator = comparator;
-//     this.size = 0;
-// }
+  getChild(dir: boolean) {
+    return dir ? this.right : this.left;
+  }
 
-// RBTree.prototype = new TreeBase();
+  setChild(dir: boolean, val: RBNode<V> | null) {
+    if (dir) {
+      this.right = val;
+    } else {
+      this.left = val;
+    }
+  }
+}
 
-// // returns true if inserted, false if duplicate
-// RBTree.prototype.insert = function(data) {
-//     var ret = false;
+export class RBTree<V> extends TreeBase<V> {
+  protected readonly _comparator: (a: V, b: V) => number;
 
-//     if(this._root === null) {
-//         // empty tree
-//         this._root = new Node(data);
-//         ret = true;
-//         this.size++;
-//     }
-//     else {
-//         var head = new Node(undefined); // fake tree root
+  constructor(comparator: (a: V, b: V) => number) {
+    super();
+    this._comparator = comparator;
+  }
 
-//         var dir = 0;
-//         var last = 0;
+  insert(data: V) {
+    let ret = false;
 
-//         // setup
-//         var gp = null; // grandparent
-//         var ggp = head; // grand-grand-parent
-//         var p = null; // parent
-//         var node = this._root;
-//         ggp.right = this._root;
+    if (this._root === null) {
+      // empty tree
+      this._root = new RBNode(data);
+      ret = true;
+      this._size++;
+    } else {
+      const head = new RBNode<V>(undefined); // fake tree root
 
-//         // search down
-//         while(true) {
-//             if(node === null) {
-//                 // insert new node at the bottom
-//                 node = new Node(data);
-//                 p.set_child(dir, node);
-//                 ret = true;
-//                 this.size++;
-//             }
-//             else if(is_red(node.left) && is_red(node.right)) {
-//                 // color flip
-//                 node.red = true;
-//                 node.left.red = false;
-//                 node.right.red = false;
-//             }
+      let dir = false;
+      let last = false;
 
-//             // fix red violation
-//             if(is_red(node) && is_red(p)) {
-//                 var dir2 = ggp.right === gp;
+      // setup
+      let gp: RBNode<V> | null = null; // grandparent
+      let ggp = head; // grand-grand-parent
+      let p: RBNode<V> | null = null; // parent
+      let node: RBNode<V> | null = this._root as RBNode<V>;
+      ggp.right = this._root as RBNode<V>;
 
-//                 if(node === p.get_child(last)) {
-//                     ggp.set_child(dir2, single_rotate(gp, !last));
-//                 }
-//                 else {
-//                     ggp.set_child(dir2, double_rotate(gp, !last));
-//                 }
-//             }
+      // search down
+      while (true) {
+        if (node === null) {
+          // insert new node at the bottom
+          node = new RBNode(data);
+          p!.setChild(dir, node);
+          ret = true;
+          this._size++;
+        } else if (is_red(node.left) && is_red(node.right)) {
+          // color flip
+          node.red = true;
+          node.left!.red = false;
+          node.right!.red = false;
+        }
 
-//             var cmp = this._comparator(node.data, data);
+        // fix red violation
+        if (is_red(node) && is_red(p)) {
+          const dir2 = ggp.right === gp;
 
-//             // stop if found
-//             if(cmp === 0) {
-//                 break;
-//             }
+          if (node === p!.getChild(last)) {
+            ggp.setChild(dir2, single_rotate(gp!, !last));
+          } else {
+            ggp.setChild(dir2, double_rotate(gp!, !last));
+          }
+        }
 
-//             last = dir;
-//             dir = cmp < 0;
+        const cmp = this._comparator(node.data!, data);
 
-//             // update helpers
-//             if(gp !== null) {
-//                 ggp = gp;
-//             }
-//             gp = p;
-//             p = node;
-//             node = node.get_child(dir);
-//         }
+        // stop if found
+        if (cmp === 0) {
+          break;
+        }
 
-//         // update root
-//         this._root = head.right;
-//     }
+        last = dir;
+        dir = cmp < 0;
 
-//     // make root black
-//     this._root.red = false;
+        // update helpers
+        if (gp !== null) {
+          ggp = gp;
+        }
+        gp = p;
+        p = node;
+        node = node.getChild(dir);
+      }
 
-//     return ret;
-// };
+      // update root
+      this._root = head.right;
+    }
 
-// // returns true if removed, false if not found
-// RBTree.prototype.remove = function(data) {
-//     if(this._root === null) {
-//         return false;
-//     }
+    // make root black
+    if (this._root !== null) {
+      (this._root as RBNode<V>).red = false;
+    }
 
-//     var head = new Node(undefined); // fake tree root
-//     var node = head;
-//     node.right = this._root;
-//     var p = null; // parent
-//     var gp = null; // grand parent
-//     var found = null; // found item
-//     var dir = 1;
+    return ret;
+  }
 
-//     while(node.get_child(dir) !== null) {
-//         var last = dir;
+  remove(data: V) {
+    if (this._root === null) {
+      return false;
+    }
 
-//         // update helpers
-//         gp = p;
-//         p = node;
-//         node = node.get_child(dir);
+    const head = new RBNode<V>(undefined); // fake tree root
+    let node: RBNode<V> = head;
+    node.right = this._root as RBNode<V>;
+    let p: RBNode<V> | null = null; // parent
+    let gp: RBNode<V> | null = null; // grand parent
+    let found: RBNode<V> | null = null; // found item
+    let dir = false;
 
-//         var cmp = this._comparator(data, node.data);
+    while (node.getChild(dir) !== null) {
+      const last = dir;
 
-//         dir = cmp > 0;
+      // update helpers
+      gp = p;
+      p = node;
+      node = node.getChild(dir)!;
 
-//         // save found node
-//         if(cmp === 0) {
-//             found = node;
-//         }
+      const cmp = this._comparator(data, node.data!);
 
-//         // push the red node down
-//         if(!is_red(node) && !is_red(node.get_child(dir))) {
-//             if(is_red(node.get_child(!dir))) {
-//                 var sr = single_rotate(node, dir);
-//                 p.set_child(last, sr);
-//                 p = sr;
-//             }
-//             else if(!is_red(node.get_child(!dir))) {
-//                 var sibling = p.get_child(!last);
-//                 if(sibling !== null) {
-//                     if(!is_red(sibling.get_child(!last)) && !is_red(sibling.get_child(last))) {
-//                         // color flip
-//                         p.red = false;
-//                         sibling.red = true;
-//                         node.red = true;
-//                     }
-//                     else {
-//                         var dir2 = gp.right === p;
+      dir = cmp > 0;
 
-//                         if(is_red(sibling.get_child(last))) {
-//                             gp.set_child(dir2, double_rotate(p, last));
-//                         }
-//                         else if(is_red(sibling.get_child(!last))) {
-//                             gp.set_child(dir2, single_rotate(p, last));
-//                         }
+      // save found node
+      if (cmp === 0) {
+        found = node;
+      }
 
-//                         // ensure correct coloring
-//                         var gpc = gp.get_child(dir2);
-//                         gpc.red = true;
-//                         node.red = true;
-//                         gpc.left.red = false;
-//                         gpc.right.red = false;
-//                     }
-//                 }
-//             }
-//         }
-//     }
+      // push the red node down
+      if (!is_red(node) && !is_red(node.getChild(dir))) {
+        if (is_red(node.getChild(!dir))) {
+          const sr = single_rotate(node, dir);
+          p!.setChild(last, sr);
+          p = sr;
+        } else if (!is_red(node.getChild(!dir))) {
+          const sibling = p!.getChild(!last);
+          if (sibling !== null) {
+            if (
+              !is_red(sibling.getChild(!last)) &&
+              !is_red(sibling.getChild(last))
+            ) {
+              // color flip
+              p!.red = false;
+              sibling.red = true;
+              node.red = true;
+            } else {
+              const dir2 = gp!.right === p;
 
-//     // replace and remove if found
-//     if(found !== null) {
-//         found.data = node.data;
-//         p.set_child(p.right === node, node.get_child(node.left === null));
-//         this.size--;
-//     }
+              if (is_red(sibling.getChild(last))) {
+                gp!.setChild(dir2, double_rotate(p, last));
+              } else if (is_red(sibling.getChild(!last))) {
+                gp!.setChild(dir2, single_rotate(p, last));
+              }
 
-//     // update root and make it black
-//     this._root = head.right;
-//     if(this._root !== null) {
-//         this._root.red = false;
-//     }
+              // ensure correct coloring
+              const gpc = gp!.getChild(dir2)!;
+              gpc.red = true;
+              node.red = true;
+              gpc.left!.red = false;
+              gpc.right!.red = false;
+            }
+          }
+        }
+      }
+    }
 
-//     return found !== null;
-// };
+    // replace and remove if found
+    if (found !== null) {
+      found.data = node.data;
+      p!.setChild(p!.right === node, node.getChild(node.left === null));
+      this._size--;
+    }
 
-// function is_red(node) {
-//     return node !== null && node.red;
-// }
+    // update root and make it black
+    this._root = head.right;
+    if (this._root !== null) {
+      (this._root as RBNode<V>).red = false;
+    }
 
-// function single_rotate(root, dir) {
-//     var save = root.get_child(!dir);
+    return found !== null;
+  }
+}
 
-//     root.set_child(!dir, save.get_child(dir));
-//     save.set_child(dir, root);
+function is_red<V>(node: RBNode<V> | null) {
+  return node !== null && node.red;
+}
 
-//     root.red = true;
-//     save.red = false;
+function single_rotate<V>(root: RBNode<V>, dir: boolean) {
+  var save = root.getChild(!dir)!;
 
-//     return save;
-// }
+  root.setChild(!dir, save.getChild(dir));
+  save.setChild(dir, root);
 
-// function double_rotate(root, dir) {
-//     root.set_child(!dir, single_rotate(root.get_child(!dir), !dir));
-//     return single_rotate(root, dir);
-// }
+  root.red = true;
+  save.red = false;
 
-// module.exports = RBTree;
+  return save;
+}
+
+function double_rotate<V>(root: RBNode<V>, dir: boolean) {
+  root.setChild(!dir, single_rotate(root.getChild(!dir)!, !dir));
+  return single_rotate(root, dir);
+}
