@@ -15,14 +15,6 @@ export class DifferenceStreamReader<T extends Value = any> {
   }
 
   drain(version: Version) {
-    if (this.queue.length === 0) {
-      // Push a dummy entry to the queue.
-      // This is ok since at each db version commit all inputs
-      // will either have data or intentionally not have data.
-      // Nothing will be awaiting data.
-      return [new Multiset<T>([])];
-    }
-
     const ret: Multiset<T>[] = [];
     while (this.queue.length > 0 && this.queue[0]![0] === version) {
       ret.push(this.queue.shift()![1]);
@@ -66,9 +58,9 @@ export class DifferenceStreamWriter<T extends Value> {
   }
 
   // queues data and notifies readers
-  sendData(data: [Version, Multiset<T>]) {
-    this.queueData(data);
-    this.notify(data[0]);
+  sendData(version: Version, data: Multiset<T>) {
+    this.queueData([version, data]);
+    this.notify(version);
   }
 
   notify(version: Version) {

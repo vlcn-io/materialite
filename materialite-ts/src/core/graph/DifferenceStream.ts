@@ -17,6 +17,7 @@ export class DifferenceStream<T> {
   map<O>(f: (value: T) => O): DifferenceStream<O> {
     const output = new DifferenceStream<O>(false);
     // const operator = new MapO
+    return output;
   }
 
   queueData(data: [Version, Multiset<T>]) {
@@ -24,6 +25,7 @@ export class DifferenceStream<T> {
   }
 
   notify(version: Version) {
-    // tell the write to notify all readers
+    // tell the writer to notify all readers
+    this.#writer.notify(version);
   }
 }
