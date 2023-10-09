@@ -1,5 +1,5 @@
-import { isTuple } from "./tuple";
-import { objectId } from "./objectTracking";
+import { isTuple } from "@vlcn.io/datastructures-and-algos/tuple";
+import { objectId } from "@vlcn.io/datastructures-and-algos/objectTracking";
 
 /**
  * Compares two values.

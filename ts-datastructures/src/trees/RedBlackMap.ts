@@ -1,5 +1,9 @@
 import { RBTree } from "./RedBlackTree";
 
+// TODO: an implicit contract of JS maps is that things come out in insertion order...
+// We could keep track of the insertion order of items for iteration...
+// this could also solve the concurrent modification problem.
+// Would speed up un-ordered iteration
 export class RBMap<K, V> implements Map<K, V> {
   readonly #tree;
 

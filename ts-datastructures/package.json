@@ -6,6 +6,9 @@
   "exports": {
     "./RedBlackTree": "./dist/trees/RedBlackTree.js",
     "./RedBlackMap": "./dist/trees/RedBlackMap.js",
+    "./tuple": "./dist/tuple.js",
+    "./objectTracking": "./dist/objectTracking.js",
+    "./TuplableMap": "./dist/TuplableMap.js",
     "./shuffle": "./dist/shuffle.js"
   },
   "scripts": {

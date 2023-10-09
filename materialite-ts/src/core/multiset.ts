@@ -1,6 +1,5 @@
-import { RBMap } from "@vlcn.io/datastructures-and-algos/RedBlackMap";
-import { Tuple2 } from "./tuple";
-import { comparator } from "./consolidation";
+import { TuplableMap } from "@vlcn.io/datastructures-and-algos/TuplableMap";
+import { Tuple2 } from "@vlcn.io/datastructures-and-algos/tuple";
 
 export type Entry<T extends Value> = readonly [T, Multiplicity];
 export type Multiplicity = number;
@@ -101,8 +100,8 @@ export class Multiset<T extends Value> {
     return true;
   }
 
-  #toNormalizedMap(): RBMap<T, Multiplicity> {
-    const ret = new RBMap<T, Multiplicity>(comparator);
+  #toNormalizedMap(): TuplableMap<T, Multiplicity> {
+    const ret = new TuplableMap<T, Multiplicity>();
     for (const [value, multiplicity] of this.entries) {
       if (multiplicity == 0) {
         continue;

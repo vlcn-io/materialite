@@ -1,6 +1,6 @@
 import { test, expect } from "vitest";
 import { comparator } from "../consolidation";
-import { makeTuple } from "../tuple";
+import { makeTuple } from "@vlcn.io/datastructures-and-algos/tuple";
 
 test("tuple compare", () => {
   const t1 = makeTuple([1, 2, 3] as const);
