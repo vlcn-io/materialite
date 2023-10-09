@@ -5,8 +5,13 @@ import { Version } from "../types";
  */
 export class DifferenceStreamReader<T extends Value = any> {
   readonly #queue;
+  readonly #operator: Operator<T>;
   constructor(queue: [Version, Multiset<T>][]) {
     this.#queue = queue;
+  }
+
+  notify(version: Version) {
+    this.#operator.run(version);
   }
 
   drain(version: Version) {
@@ -39,10 +44,29 @@ export class DifferenceStreamReader<T extends Value = any> {
  */
 export class DifferenceStreamWriter<T extends Value> {
   readonly #queues: [Version, Multiset<T>][][] = [];
+  readonly #readers: DifferenceStreamReader<T>[] = [];
 
+  // prepares data but does not yet send it to readers
   queueData(data: [Version, Multiset<T>]) {
     for (const q of this.#queues) {
       q.push(data);
+    }
+  }
+
+  // queues data and notifies readers
+  // we gots a problem. Middle nodes will need to await data.
+  // rather than optimistic pull. It might not be calculated yet if we optimistic pull.
+  // We could make our way through the graph in a breadth first way.
+  // 1. `DirtySources` are roots
+  // 2. Go through each telling them to run
+  // 3. Then visit their children and so on...
+  // Each level will be ready. Well what if a low level feeds into a high level? This doesn't work.
+  // We do need some sort of frontiering and versions I suppose.
+  sendData(data: Multiset<T>) {}
+
+  notify(version: Version) {
+    for (const r of this.#readers) {
+      r.notify(version);
     }
   }
 

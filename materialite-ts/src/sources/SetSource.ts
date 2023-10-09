@@ -5,7 +5,11 @@
 
 import { DifferenceStream } from "../core/graph/DifferenceStream";
 import { Multiset } from "../core/multiset";
-import { ISourceInternal, MaterialiteForSourceInternal } from "../core/types";
+import {
+  ISourceInternal,
+  MaterialiteForSourceInternal,
+  Version,
+} from "../core/types";
 
 // When the user explicitly finalizes them?
 // TODO: all mutation methods should take in a `tx` so they can add themselves
@@ -17,7 +21,7 @@ export class SetSource<T> {
   readonly #stream;
   readonly #internal: ISourceInternal;
   readonly #materialite: MaterialiteForSourceInternal;
-  #opLog: (() => void)[] = [];
+  #opLog: ((v: Version) => void)[] = [];
 
   constructor(materialite: MaterialiteForSourceInternal) {
     this.#materialite = materialite;
@@ -25,10 +29,15 @@ export class SetSource<T> {
     const self = this;
     this.#internal = {
       // add values to queues, add values to the set
-      onCommitPhase1() {},
+      onCommitPhase1(version: Version) {
+        for (const op of self.#opLog) {
+          op(version);
+        }
+        self.#opLog = [];
+      },
       // release queues by telling the stream to send data
-      onCommitPhase2() {
-        self.#stream.notify(self.#materialite.version);
+      onCommitPhase2(version: Version) {
+        self.#stream.notify(version);
       },
       onRollback() {
         self.#opLog = [];
@@ -42,33 +51,48 @@ export class SetSource<T> {
 
   addAll(values: Iterable<T>): this {
     this.#materialite.addDirtySource(this.#internal);
-    this.#opLog.push(() => {
+    this.#opLog.push((version) => {
       const v: [T, number][] = [];
       for (const value of values) {
         v.push([value, 1]);
       }
-      this.#stream.queueData([this.#materialite.version, new Multiset(v)]);
+      this.#stream.queueData([version, new Multiset(v)]);
     });
     return this;
   }
 
+  // TODO: consecutive adds of the same value will create a multiset with a count > 1??
+  // making delete problematic?
   add(value: T): this {
     this.#materialite.addDirtySource(this.#internal);
-    this.#opLog.push(() => {
-      this.#stream.queueData([
-        this.#materialite.version,
-        new Multiset([[value, 1]]),
-      ]);
+    this.#opLog.push((version) => {
+      this.#stream.queueData([version, new Multiset([[value, 1]])]);
     });
     return this;
   }
 
-  clear(): void {
-    this.#materialite.addDirtySource(this.#internal);
-  }
+  // can't do clear given a lack of knowledge of what exists in the set
+  // users can implement clear via deleteAll
+  // clear(): void {
+  //   this.#materialite.addDirtySource(this.#internal);
+  // }
 
   delete(value: T): void {
     this.#materialite.addDirtySource(this.#internal);
+    this.#opLog.push((version) => {
+      this.#stream.queueData([version, new Multiset([[value, -1]])]);
+    });
+  }
+
+  deleteAll(values: Iterable<T>): void {
+    this.#materialite.addDirtySource(this.#internal);
+    this.#opLog.push((version) => {
+      const v: [T, number][] = [];
+      for (const value of values) {
+        v.push([value, -1]);
+      }
+      this.#stream.queueData([version, new Multiset(v)]);
+    });
   }
 
   // no read methods. To read is to materialize a view
