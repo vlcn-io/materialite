@@ -4,10 +4,10 @@ import { Version } from "../types";
  * A read handle for a dataflow edge that receives data from a writer.
  */
 export class DifferenceStreamReader<T extends Value = any> {
-  readonly #queue;
+  protected readonly queue;
   readonly #operator: Operator<T>;
   constructor(queue: [Version, Multiset<T>][]) {
-    this.#queue = queue;
+    this.queue = queue;
   }
 
   notify(version: Version) {
@@ -15,7 +15,7 @@ export class DifferenceStreamReader<T extends Value = any> {
   }
 
   drain(version: Version) {
-    if (this.#queue.length === 0) {
+    if (this.queue.length === 0) {
       // Push a dummy entry to the queue.
       // This is ok since at each db version commit all inputs
       // will either have data or intentionally not have data.
@@ -24,18 +24,30 @@ export class DifferenceStreamReader<T extends Value = any> {
     }
 
     const ret: Multiset<T>[] = [];
-    while (this.#queue.length > 0 && this.#queue[0]![0] === version) {
-      ret.push(this.#queue.shift()![1]);
+    while (this.queue.length > 0 && this.queue[0]![0] === version) {
+      ret.push(this.queue.shift()![1]);
     }
     return ret;
   }
 
   get length() {
-    return this.#queue.length;
+    return this.queue.length;
   }
 
   isEmpty() {
-    return this.#queue.length === 0;
+    return this.queue.length === 0;
+  }
+}
+
+export class DifferenceStreamRederFromRoot<
+  T extends Value = any
+> extends DifferenceStreamReader<T> {
+  drain(version: Version) {
+    if (this.queue.length === 0) {
+      return [new Multiset<T>([])];
+    } else {
+      return super.drain(version);
+    }
   }
 }
 
@@ -43,37 +55,46 @@ export class DifferenceStreamReader<T extends Value = any> {
  * Write handle
  */
 export class DifferenceStreamWriter<T extends Value> {
-  readonly #queues: [Version, Multiset<T>][][] = [];
-  readonly #readers: DifferenceStreamReader<T>[] = [];
+  readonly queues: [Version, Multiset<T>][][] = [];
+  readonly readers: DifferenceStreamReader<T>[] = [];
 
   // prepares data but does not yet send it to readers
   queueData(data: [Version, Multiset<T>]) {
-    for (const q of this.#queues) {
+    for (const q of this.queues) {
       q.push(data);
     }
   }
 
   // queues data and notifies readers
-  // we gots a problem. Middle nodes will need to await data.
-  // rather than optimistic pull. It might not be calculated yet if we optimistic pull.
-  // We could make our way through the graph in a breadth first way.
-  // 1. `DirtySources` are roots
-  // 2. Go through each telling them to run
-  // 3. Then visit their children and so on...
-  // Each level will be ready. Well what if a low level feeds into a high level? This doesn't work.
-  // We do need some sort of frontiering and versions I suppose.
-  sendData(data: Multiset<T>) {}
+  sendData(data: [Version, Multiset<T>]) {
+    this.queueData(data);
+    this.notify(data[0]);
+  }
 
   notify(version: Version) {
-    for (const r of this.#readers) {
+    for (const r of this.readers) {
       r.notify(version);
     }
   }
 
   newReader() {
     const queue: [Version, Multiset<T>][] = [];
-    this.#queues.push(queue);
-    return new DifferenceStreamReader(queue);
+    this.queues.push(queue);
+    const reader = new DifferenceStreamReader(queue);
+    this.readers.push(reader);
+    return reader;
+  }
+}
+
+export class RootDifferenceStreamWriter<
+  T extends Value
+> extends DifferenceStreamWriter<T> {
+  newReader() {
+    const queue: [Version, Multiset<T>][] = [];
+    this.queues.push(queue);
+    const reader = new DifferenceStreamRederFromRoot(queue);
+    this.readers.push(reader);
+    return reader;
   }
 }
 
@@ -87,13 +108,13 @@ export class Operator<O extends Value> {
   constructor(
     protected readonly inputs: DifferenceStreamReader[],
     protected readonly output: DifferenceStreamWriter<O>,
-    fn: () => void
+    fn: (version: Version) => void
   ) {
     this.#fn = fn;
   }
 
-  run() {
-    this.#fn();
+  run(version: Version) {
+    this.#fn(version);
   }
 
   pendingWork() {
@@ -116,13 +137,13 @@ export class UnaryOperator<
   constructor(
     input: DifferenceStreamReader<I>,
     output: DifferenceStreamWriter<O>,
-    fn: () => void
+    fn: (version: Version) => void
   ) {
     super([input], output, fn);
   }
 
-  get inputMessages() {
-    return (this.inputs[0]?.drain() ?? []) as Multiset<I>[];
+  inputMessages(version: Version) {
+    return (this.inputs[0]?.drain(version) ?? []) as Multiset<I>[];
   }
 }
 
@@ -140,24 +161,11 @@ export class BinaryOperator<
     super([input1, input2], output, fn);
   }
 
-  get inputAMessages() {
-    return (this.inputs[0]?.drain() ?? []) as Multiset<I1>[];
+  inputAMessages(version: Version) {
+    return (this.inputs[0]?.drain(version) ?? []) as Multiset<I1>[];
   }
 
-  get inputBMessages() {
-    return (this.inputs[1]?.drain() ?? []) as Multiset<I2>[];
-  }
-}
-
-export class Graph {
-  readonly #operators;
-  constructor(operators: readonly Operator<any>[]) {
-    this.#operators = operators;
-  }
-
-  step() {
-    for (const operator of this.#operators) {
-      operator.run();
-    }
+  inputBMessages(version: Version) {
+    return (this.inputs[1]?.drain(version) ?? []) as Multiset<I2>[];
   }
 }

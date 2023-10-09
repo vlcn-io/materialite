@@ -1,17 +1,21 @@
 import { Multiset } from "../multiset";
 import { Version } from "../types";
-import { DifferenceStreamWriter } from "./graph";
+import { RootDifferenceStreamWriter } from "./graph";
 
 export class DifferenceStream<T> {
   readonly #writer;
 
-  constructor() {
+  constructor(root: boolean) {
     // set write to a new difference stream writer
-    this.#writer = new DifferenceStreamWriter<T>();
+    if (root) {
+      this.#writer = new RootDifferenceStreamWriter<T>();
+    } else {
+      this.#writer = new RootDifferenceStreamWriter<T>();
+    }
   }
 
   map<O>(f: (value: T) => O): DifferenceStream<O> {
-    const output = new DifferenceStream<O>();
+    const output = new DifferenceStream<O>(false);
     // const operator = new MapO
   }
 

@@ -25,7 +25,7 @@ export class SetSource<T> {
 
   constructor(materialite: MaterialiteForSourceInternal) {
     this.#materialite = materialite;
-    this.#stream = new DifferenceStream<T>();
+    this.#stream = new DifferenceStream<T>(true);
     const self = this;
     this.#internal = {
       // add values to queues, add values to the set
