@@ -11,6 +11,26 @@ importers:
       '@changesets/cli':
         specifier: ^2.26.1
         version: 2.26.1
+    devDependencies:
+      vitest:
+        specifier: ^0.34.6
+        version: 0.34.6
+
+  materialite-ts:
+    dependencies:
+      '@vlcn.io/datastructures-and-algos':
+        specifier: workspace:*
+        version: link:../ts-datastructures
+      map2:
+        specifier: ^1.1.2
+        version: 1.1.2
+    devDependencies:
+      typescript:
+        specifier: ^5.2.2
+        version: 5.2.2
+      vitest:
+        specifier: ^0.34.6
+        version: 0.34.6
 
   ts-buildall:
     devDependencies:

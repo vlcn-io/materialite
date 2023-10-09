@@ -32,5 +32,6 @@
     "composite": true,
     "incremental": true
   },
-  "include": ["./src"]
+  "include": ["./src"],
+  "references": [{ "path": "../ts-datastructures" }]
 }

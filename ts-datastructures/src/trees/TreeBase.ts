@@ -1,3 +1,5 @@
+import { ConcurrentModificationException } from "../Error";
+
 export interface INode<V> {
   data: V | null;
   left: INode<V> | null;
@@ -9,6 +11,7 @@ export interface INode<V> {
 export abstract class TreeBase<V> {
   _root: INode<V> | null = null;
   _size = 0;
+  _version = 0;
 
   protected abstract _comparator(a: V, b: V): number;
 
@@ -26,7 +29,7 @@ export abstract class TreeBase<V> {
     return this._root;
   }
 
-  // returns node data if found, null otherwise
+  // returns node data if found, undefined otherwise
   find(data: V) {
     let res = this._root;
 
@@ -39,7 +42,7 @@ export abstract class TreeBase<V> {
       }
     }
 
-    return null;
+    return undefined;
   }
 
   // returns iterator to node if found, null otherwise
@@ -152,12 +155,14 @@ export abstract class TreeBase<V> {
 class TreeIterator<V> implements IterableIterator<V> {
   readonly #tree;
   readonly ancestors: INode<V>[] = [];
+  readonly #treeVersion;
   cursor: INode<V> | null = null;
 
   constructor(tree: TreeBase<V>) {
     this.#tree = tree;
     this.ancestors = [];
     this.cursor = null;
+    this.#treeVersion = tree._version;
   }
 
   get data() {
@@ -169,6 +174,11 @@ class TreeIterator<V> implements IterableIterator<V> {
   }
 
   next(): IteratorResult<V> {
+    if (this.#tree._version !== this.#treeVersion) {
+      throw new ConcurrentModificationException(
+        `Tree modified during iteration which is not allowed.`
+      );
+    }
     if (this.cursor === null) {
       const root = this.#tree.root;
       if (root !== null) {

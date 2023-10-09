@@ -38,7 +38,8 @@ export class RBTree<V> extends TreeBase<V> {
       // empty tree
       this._root = new RBNode(data);
       ret = true;
-      this._size++;
+      ++this._version;
+      ++this._size;
     } else {
       const head = new RBNode<V>(undefined as any); // fake tree root
 
@@ -59,7 +60,8 @@ export class RBTree<V> extends TreeBase<V> {
           node = new RBNode(data);
           p!.setChild(dir, node);
           ret = true;
-          this._size++;
+          ++this._size;
+          ++this._version;
         } else if (is_red(node.left) && is_red(node.right)) {
           // color flip
           node.red = true;
@@ -120,7 +122,7 @@ export class RBTree<V> extends TreeBase<V> {
     let p: RBNode<V> | null = null; // parent
     let gp: RBNode<V> | null = null; // grand parent
     let found: RBNode<V> | null = null; // found item
-    let dir = false;
+    let dir = true;
 
     while (node.getChild(dir) !== null) {
       const last = dir;
@@ -180,8 +182,9 @@ export class RBTree<V> extends TreeBase<V> {
     // replace and remove if found
     if (found !== null) {
       found.data = node.data;
+      ++this._version;
       p!.setChild(p!.right === node, node.getChild(node.left === null));
-      this._size--;
+      --this._size;
     }
 
     // update root and make it black

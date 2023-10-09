@@ -5,6 +5,7 @@
   "description": "",
   "exports": {
     "./RedBlackTree": "./dist/trees/RedBlackTree.js",
+    "./RedBlackMap": "./dist/trees/RedBlackMap.js",
     "./shuffle": "./dist/shuffle.js"
   },
   "scripts": {

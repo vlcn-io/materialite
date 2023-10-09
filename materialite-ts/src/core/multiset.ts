@@ -1,10 +1,14 @@
+import { RBMap } from "@vlcn.io/datastructures-and-algos/RedBlackMap";
+import { Tuple2 } from "./tuple";
+import { comparator } from "./consolidation";
+
 export type Entry<T extends Value> = readonly [T, Multiplicity];
 export type Multiplicity = number;
 export type PrimitiveValue = string | number | boolean | bigint;
-export type JoinableValue<
-  K extends PrimitiveValue,
-  V extends Value
-> = readonly [K, V];
+export type JoinableValue<K extends PrimitiveValue, V extends Value> = Tuple2<
+  K,
+  V
+>;
 export type Value = any;
 
 /**
@@ -97,10 +101,8 @@ export class Multiset<T extends Value> {
     return true;
   }
 
-  #toNormalizedMap(): Map<T, Multiplicity> {
-    // probably use a red-black tree since we can use tuples as keys in it?
-    // because tuples are comparable.
-    const ret = new Map<T, Multiplicity>();
+  #toNormalizedMap(): RBMap<T, Multiplicity> {
+    const ret = new RBMap<T, Multiplicity>(comparator);
     for (const [value, multiplicity] of this.entries) {
       if (multiplicity == 0) {
         continue;
