@@ -1,18 +1,26 @@
 import { Multiset, Value } from "../multiset";
-
+import { Version } from "../types";
 /**
  * A read handle for a dataflow edge that receives data from a writer.
  */
 export class DifferenceStreamReader<T extends Value = any> {
   readonly #queue;
-  constructor(queue: Multiset<T>[]) {
+  constructor(queue: [Version, Multiset<T>][]) {
     this.#queue = queue;
   }
 
-  drain() {
+  drain(version: Version) {
+    if (this.#queue.length === 0) {
+      // Push a dummy entry to the queue.
+      // This is ok since at each db version commit all inputs
+      // will either have data or intentionally not have data.
+      // Nothing will be awaiting data.
+      return [new Multiset<T>([])];
+    }
+
     const ret: Multiset<T>[] = [];
-    while (this.#queue.length > 0) {
-      ret.push(this.#queue.shift()!);
+    while (this.#queue.length > 0 && this.#queue[0]![0] === version) {
+      ret.push(this.#queue.shift()![1]);
     }
     return ret;
   }
@@ -30,16 +38,16 @@ export class DifferenceStreamReader<T extends Value = any> {
  * Write handle
  */
 export class DifferenceStreamWriter<T extends Value> {
-  readonly #queues: Multiset<T>[][] = [];
+  readonly #queues: [Version, Multiset<T>][][] = [];
 
-  sendData(data: Multiset<T>) {
+  queueData(data: [Version, Multiset<T>]) {
     for (const q of this.#queues) {
       q.push(data);
     }
   }
 
   newReader() {
-    const queue: Multiset<T>[] = [];
+    const queue: [Version, Multiset<T>][] = [];
     this.#queues.push(queue);
     return new DifferenceStreamReader(queue);
   }

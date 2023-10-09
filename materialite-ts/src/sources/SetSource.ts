@@ -4,6 +4,8 @@
 // When the sink is removed?
 
 import { DifferenceStream } from "../core/graph/DifferenceStream";
+import { Multiset } from "../core/multiset";
+import { ISourceInternal, MaterialiteForSourceInternal } from "../core/types";
 
 // When the user explicitly finalizes them?
 // TODO: all mutation methods should take in a `tx` so they can add themselves
@@ -11,62 +13,69 @@ import { DifferenceStream } from "../core/graph/DifferenceStream";
 // and on-commit we can release the queues of all touched
 // sources.
 // Remember we can optimistically pull too... for the given tx id number anyway.
-export class SetSource<T> implements Set<T> {
-  #set: Set<T>;
-  #stream;
+export class SetSource<T> {
+  readonly #stream;
+  readonly #internal: ISourceInternal;
+  readonly #materialite: MaterialiteForSourceInternal;
+  #opLog: (() => void)[] = [];
 
-  constructor(from: T[] = []) {
-    this.#set = new Set(from);
+  constructor(materialite: MaterialiteForSourceInternal) {
+    this.#materialite = materialite;
     this.#stream = new DifferenceStream<T>();
+    const self = this;
+    this.#internal = {
+      // add values to queues, add values to the set
+      onCommitPhase1() {},
+      // release queues by telling the stream to send data
+      onCommitPhase2() {
+        self.#stream.notify(self.#materialite.version);
+      },
+      onRollback() {
+        self.#opLog = [];
+      },
+    };
   }
 
   get stream() {
     return this.#stream;
   }
 
+  addAll(values: Iterable<T>): this {
+    this.#materialite.addDirtySource(this.#internal);
+    this.#opLog.push(() => {
+      const v: [T, number][] = [];
+      for (const value of values) {
+        v.push([value, 1]);
+      }
+      this.#stream.queueData([this.#materialite.version, new Multiset(v)]);
+    });
+    return this;
+  }
+
   add(value: T): this {
-    this.#set.add(value);
+    this.#materialite.addDirtySource(this.#internal);
+    this.#opLog.push(() => {
+      this.#stream.queueData([
+        this.#materialite.version,
+        new Multiset([[value, 1]]),
+      ]);
+    });
     return this;
   }
 
   clear(): void {
-    this.#set.clear();
+    this.#materialite.addDirtySource(this.#internal);
   }
 
-  delete(value: T): boolean {
-    return this.#set.delete(value);
+  delete(value: T): void {
+    this.#materialite.addDirtySource(this.#internal);
   }
 
-  entries(): IterableIterator<[T, T]> {
-    return this.#set.entries();
-  }
+  // no read methods. To read is to materialize a view
+  // from a stream computation against the set.
 
-  forEach(
-    callbackfn: (value: T, value2: T, set: Set<T>) => void,
-    thisArg?: any
-  ): void {
-    this.#set.forEach(callbackfn, thisArg);
-  }
-
-  has(value: T): boolean {
-    return this.#set.has(value);
-  }
-
-  get size(): number {
-    return this.#set.size;
-  }
-
-  [Symbol.iterator](): IterableIterator<T> {
-    return this.#set.values();
-  }
-
-  keys(): IterableIterator<T> {
-    return this.#set.keys();
-  }
-
-  values(): IterableIterator<T> {
-    return this.#set.values();
-  }
-
-  [Symbol.toStringTag] = "SetSource";
+  // impl as a linear reduction?
+  // get size(): number {
+  //   return this.#set.size;
+  // }
 }
