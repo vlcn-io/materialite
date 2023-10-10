@@ -27,8 +27,12 @@ export class Materialite {
   }
 
   newArray() {}
-  newSet() {
-    return new SetSource(this.#internal);
+  newSet<T>(initialData?: Iterable<T>) {
+    const ret = new SetSource<T>(this.#internal);
+    if (initialData !== undefined) {
+      ret.addAll(initialData);
+    }
+    return ret;
   }
   newMap() {}
 

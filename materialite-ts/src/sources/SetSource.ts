@@ -31,7 +31,7 @@ export class SetSource<T> {
     this.#internal = {
       // add values to queues, add values to the set
       onCommitPhase1(version: Version) {
-        this.#stream.queueData([version, new Multiset(self.#pending)]);
+        self.#stream.queueData([version, new Multiset(self.#pending)]);
         self.#pending = [];
       },
       // release queues by telling the stream to send data

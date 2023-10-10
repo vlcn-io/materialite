@@ -1,6 +1,7 @@
 import { Multiset } from "../multiset";
 import { Version } from "../types";
 import { RootDifferenceStreamWriter } from "./graph";
+import { DebugOperator, MapOperator } from "./operators";
 
 export class DifferenceStream<T> {
   readonly #writer;
@@ -14,9 +15,19 @@ export class DifferenceStream<T> {
     }
   }
 
-  map<O>(_f: (value: T) => O): DifferenceStream<O> {
+  map<O>(f: (value: T) => O): DifferenceStream<O> {
     const output = new DifferenceStream<O>(false);
-    // const operator = new MapO
+    const reader = this.#writer.newReader();
+    const op = new MapOperator<T, O>(reader, output.#writer, f);
+    reader.setOperator(op as any);
+    return output;
+  }
+
+  debug(f: (i: Multiset<T>) => void) {
+    const output = new DifferenceStream<T>(false);
+    const reader = this.#writer.newReader();
+    const op = new DebugOperator(reader, output.#writer, f);
+    reader.setOperator(op);
     return output;
   }
 

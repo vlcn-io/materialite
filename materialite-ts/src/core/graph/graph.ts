@@ -5,9 +5,13 @@ import { Version } from "../types";
  */
 export class DifferenceStreamReader<T = any> {
   protected readonly queue;
-  readonly #operator: Operator<T>;
+  #operator: Operator<T>;
   constructor(queue: [Version, Multiset<T>][]) {
     this.queue = queue;
+  }
+
+  setOperator(operator: Operator<T>) {
+    this.#operator = operator;
   }
 
   notify(version: Version) {
