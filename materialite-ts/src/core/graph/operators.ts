@@ -151,17 +151,14 @@ export class JoinOperator<K, V1, V2> extends BinaryOperator<
   }
 }
 
-export class ReduceOperator<
-  K extends PrimitiveValue,
-  V,
-  O = V
-> extends UnaryOperator<JoinableValue<K, V>, JoinableValue<K, O>> {
+export class ReduceOperator<K, V, O = V> extends UnaryOperator<V, O> {
   readonly #index = new Index<K, V>();
   readonly #indexOut = new Index<K, O>();
 
   constructor(
-    input: DifferenceStreamReader<JoinableValue<K, V>>,
-    output: DifferenceStreamWriter<JoinableValue<K, O>>,
+    input: DifferenceStreamReader<V>,
+    output: DifferenceStreamWriter<O>,
+    getKey: (value: V) => K,
     f: (input: Entry<V>[]) => Entry<O>[]
   ) {
     const subtractValues = (first: Entry<O>[], second: Entry<O>[]) => {
@@ -188,8 +185,9 @@ export class ReduceOperator<
     const inner = (version: Version) => {
       for (const collection of this.inputMessages(version)) {
         const keysTodo = new Set<K>();
-        const result: [Tuple2<K, O>, number][] = [];
-        for (const [[key, value], mult] of collection.entries) {
+        const result: [O, number][] = [];
+        for (const [value, mult] of collection.entries) {
+          const key = getKey(value);
           this.#index.add(key, [value, mult]);
           keysTodo.add(key);
         }
@@ -199,7 +197,7 @@ export class ReduceOperator<
           const out = f(curr);
           const delta = subtractValues(out, currOut);
           for (const [value, mult] of delta) {
-            result.push([makeTuple2([key, value]), mult]);
+            result.push([value, mult]);
             this.#indexOut.add(key, [value, mult]);
           }
         }
@@ -213,14 +211,11 @@ export class ReduceOperator<
   }
 }
 
-export class CountOperator<K extends PrimitiveValue, V> extends ReduceOperator<
-  K,
-  V,
-  number
-> {
+export class CountOperator<K, V> extends ReduceOperator<K, V, number> {
   constructor(
-    input: DifferenceStreamReader<JoinableValue<K, V>>,
-    output: DifferenceStreamWriter<JoinableValue<K, number>>
+    input: DifferenceStreamReader<V>,
+    output: DifferenceStreamWriter<number>,
+    getKey: (value: V) => K
   ) {
     const inner = (vals: Entry<V>[]): [Entry<number>] => {
       let count = 0;
@@ -229,7 +224,7 @@ export class CountOperator<K extends PrimitiveValue, V> extends ReduceOperator<
       }
       return [[count, 1]];
     };
-    super(input, output, inner);
+    super(input, output, getKey, inner);
   }
 }
 

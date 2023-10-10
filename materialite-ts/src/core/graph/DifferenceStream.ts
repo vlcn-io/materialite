@@ -67,10 +67,14 @@ export class DifferenceStream<T> {
 
   join<K, R>(
     other: DifferenceStream<R>,
-    getKeyThis: (i: T) => K = (i) => (i as any)[0],
-    getKeyOther: (i: R) => K = (i) => (i as any)[0]
-  ): DifferenceStream<JoinResultVariadic<[T, R]>> {
-    const output = new DifferenceStream<JoinResultVariadic<[T, R]>>(false);
+    getKeyThis: (i: T) => K,
+    getKeyOther: (i: R) => K
+  ): DifferenceStream<
+    T extends JoinResultVariadic<[infer T1, ...infer T2]>
+      ? JoinResultVariadic<[T1, ...T2, R]>
+      : JoinResultVariadic<[T, R]>
+  > {
+    const output = new DifferenceStream<any>(false);
     const reader1 = this.#writer.newReader();
     const reader2 = other.#writer.newReader();
     const op = new JoinOperator<K, T, R>(
@@ -82,6 +86,14 @@ export class DifferenceStream<T> {
     );
     reader1.setOperator(op as any);
     reader2.setOperator(op as any);
+    return output;
+  }
+
+  reduce<K, O>(getKey: (i: T) => K, fn: (i: Entry<T>[]) => Entry<O>[]) {
+    const output = new DifferenceStream<O>(false);
+    const reader = this.#writer.newReader();
+    const operator = new ReduceOperator(reader, output.#writer, getKey, fn);
+    reader.setOperator(operator as any);
     return output;
   }
 
@@ -100,22 +112,10 @@ export class DifferenceStream<T> {
   //   return output;
   // }
 
-  count() {
+  count<K>(getKey: (i: T) => K) {
     const output = new DifferenceStream<number>(false);
     const reader = this.#writer.newReader();
-    const operator = new CountOperator(reader as TODO, output.#writer as TODO);
-    reader.setOperator(operator as any);
-    return output;
-  }
-
-  reduce<O>(fn: (i: Entry<T>[]) => Entry<T>[]) {
-    const output = new DifferenceStream<O>(false);
-    const reader = this.#writer.newReader();
-    const operator = new ReduceOperator(
-      reader as TODO,
-      output.#writer as TODO,
-      fn
-    );
+    const operator = new CountOperator(reader, output.#writer, getKey);
     reader.setOperator(operator as any);
     return output;
   }

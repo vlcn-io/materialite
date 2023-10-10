@@ -47,13 +47,13 @@ test("db/overtone example - materialize track view", () => {
     track_id: number;
     playlist_id: number;
   };
-  // type MaterializedTrack = {
-  //   id: number;
-  //   name: string;
-  //   album_name: string;
-  //   artists: string[];
-  //   length: number;
-  // };
+  type MaterializedTrack = {
+    id: number;
+    name: string;
+    album_name: string;
+    artists: string[];
+    length: number;
+  };
 
   const playlists = Array.from({ length: 10 }, (_, i) => ({
     id: i,
@@ -123,11 +123,30 @@ test("db/overtone example - materialize track view", () => {
       ([_playlist, _trackPlaylist, track]) => track.album_id,
       (album) => album.id
     )
-    // .join(albumSource.stream)
-    // .map(
-    //   ([_, [track, playlist, album]]) =>
-    //     [track.id, joinResult([track, playlist, album] as const)] as const
-    // )
+    .join(
+      trackArtistSource.stream,
+      ([_playlist, _trackPlaylist, track, _album]) => track.id,
+      (trackArtist) => trackArtist.track_id
+    )
+    .join(
+      artistSource.stream,
+      ([_playlist, _trackPlaylist, _track, _album, trackArtist]) =>
+        trackArtist.artist_id,
+      (artist) => artist.id
+    )
+    // .reduce((tracks) => {
+    //   if (tracks.length == 0) {
+    //     return [];
+    //   }
+    //   const firstTrack = tracks[0]![0];
+    //   const track: MaterializedTrack = {
+    //     id: firstTrack.id,
+    //     name: firstTrack[0].name,
+    //     album_name: firstTrack[1].name,
+    //     artists: tracks.map((t) => t[0][2].name),
+    //     length: firstTrack[0].length,
+    //   };
+    // })
     .debug(inspect);
 
   // .join(playlistTrackSource.stream)
@@ -140,6 +159,6 @@ test("db/overtone example - materialize track view", () => {
   trackSource.addAll(tracks);
   albumSource.addAll(albums);
   playlistTrackSource.addAll(playlistsTracks);
-  // trackArtistSource.extend(trackArtists);
-  // artistSource.extend(artists);
+  trackArtistSource.addAll(trackArtists);
+  artistSource.addAll(artists);
 });
