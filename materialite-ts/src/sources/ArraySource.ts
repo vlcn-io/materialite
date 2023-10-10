@@ -5,4 +5,4 @@
  * sorted array of indices for materialized view
  * multiset where index is identity?
  */
-export class ArraySource<T> {}
+export class ArraySource {}

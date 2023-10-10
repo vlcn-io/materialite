@@ -14,7 +14,7 @@ export class DifferenceStream<T> {
     }
   }
 
-  map<O>(f: (value: T) => O): DifferenceStream<O> {
+  map<O>(_f: (value: T) => O): DifferenceStream<O> {
     const output = new DifferenceStream<O>(false);
     // const operator = new MapO
     return output;

@@ -1,6 +1,5 @@
 import { expect, test } from "vitest";
 import { Index } from "../index";
-import { inspect } from "../../inspect";
 
 test("add and get", () => {
   const index = new Index<number, string>();
@@ -26,7 +25,6 @@ test("join", () => {
   index2.add(1, ["baz", 1]);
 
   const joined = index1.join(index2);
-  inspect(joined.entries);
   expect(joined.entries).toEqual([
     [[1, ["foo", "foo"]], 1],
     [[1, ["foo", "baz"]], 1],

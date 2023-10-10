@@ -2,12 +2,20 @@ const tupleSymbol = Symbol("tupleSymbol");
 const joinResultSymbol = Symbol("joinResultSymbol");
 
 export function makeTuple<T extends readonly any[]>(x: T): T {
-  (x as any)[tupleSymbol] = true;
+  Object.defineProperty(x, tupleSymbol, {
+    value: true,
+    writable: false,
+    enumerable: false,
+  });
   return x;
 }
 
 export function makeTuple2<T1, T2>(x: [T1, T2]): Tuple2<T1, T2> {
-  (x as any)[tupleSymbol] = true;
+  Object.defineProperty(x, tupleSymbol, {
+    value: true,
+    writable: false,
+    enumerable: false,
+  });
   return x as any;
 }
 
@@ -22,8 +30,16 @@ export type JoinResult<T> = readonly T[] & {
 };
 
 export function makeJoinResult<T>(x: T): JoinResult<T> {
-  (x as any)[joinResultSymbol] = true;
-  (x as any)[tupleSymbol] = true;
+  Object.defineProperty(x, tupleSymbol, {
+    value: true,
+    writable: false,
+    enumerable: false,
+  });
+  Object.defineProperty(x, joinResultSymbol, {
+    value: true,
+    writable: false,
+    enumerable: false,
+  });
   return x as any;
 }
 

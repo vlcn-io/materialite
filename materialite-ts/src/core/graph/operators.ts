@@ -1,4 +1,5 @@
-import { JoinableValue, Multiset } from "../multiset";
+import { Index } from "..";
+import { JoinableValue, Multiset, PrimitiveValue } from "../multiset";
 import { Version } from "../types";
 import {
   BinaryOperator,
@@ -87,58 +88,62 @@ export class ConcatOperator<I1, I2> extends BinaryOperator<I1, I2, I1 | I2> {
   }
 }
 
-// export class JoinOperator<K, V1, V2> extends BinaryOperator<
-//   JoinableValue<K, V1>,
-//   JoinableValue<K, V2>,
-//   [K, [V1, V2]]
-// > {
-//   readonly #indexA = new Index<K, V1>();
-//   readonly #indexB = new Index<K, V2>();
-//   readonly #inputAPending: Index<K, V1>[] = [];
-//   readonly #inputBPending: Index<K, V2>[] = [];
+export class JoinOperator<
+  K extends PrimitiveValue,
+  V1,
+  V2
+> extends BinaryOperator<
+  JoinableValue<K, V1>,
+  JoinableValue<K, V2>,
+  [K, readonly (V1 | V2)[]]
+> {
+  readonly #indexA = new Index<K, V1>();
+  readonly #indexB = new Index<K, V2>();
+  readonly #inputAPending: Index<K, V1>[] = [];
+  readonly #inputBPending: Index<K, V2>[] = [];
 
-//   constructor(
-//     inputA: DifferenceStreamReader<JoinableValue<K, V1>>,
-//     inputB: DifferenceStreamReader<JoinableValue<K, V2>>,
-//     output: DifferenceStreamWriter<[K, [V1, V2]]>
-//   ) {
-//     const inner = () => {
-//       for (const collection of this.inputAMessages) {
-//         const deltaA = new Index<K, V1>();
-//         for (const [[key, value], mult] of collection.entries) {
-//           deltaA.add(key, [value, mult]);
-//         }
-//         this.#inputAPending.push(deltaA);
-//       }
+  constructor(
+    inputA: DifferenceStreamReader<JoinableValue<K, V1>>,
+    inputB: DifferenceStreamReader<JoinableValue<K, V2>>,
+    output: DifferenceStreamWriter<[K, readonly (V1 | V2)[]]>
+  ) {
+    const inner = (version: Version) => {
+      for (const collection of this.inputAMessages(version)) {
+        const deltaA = new Index<K, V1>();
+        for (const [[key, value], mult] of collection.entries) {
+          deltaA.add(key, [value, mult]);
+        }
+        this.#inputAPending.push(deltaA);
+      }
 
-//       for (const collection of this.inputBMessages) {
-//         const deltaB = new Index<K, V2>();
-//         for (const [[key, value], mult] of collection.entries) {
-//           deltaB.add(key, [value, mult]);
-//         }
-//         this.#inputBPending.push(deltaB);
-//       }
+      for (const collection of this.inputBMessages(version)) {
+        const deltaB = new Index<K, V2>();
+        for (const [[key, value], mult] of collection.entries) {
+          deltaB.add(key, [value, mult]);
+        }
+        this.#inputBPending.push(deltaB);
+      }
 
-//       // TODO: join should still be able to operate even if one of the inputs is empty...
-//       // right?
-//       while (this.#inputAPending.length > 0 && this.#inputBPending.length > 0) {
-//         const result = new Multiset<JoinableValue<K, readonly [V1, V2]>>([]);
-//         const deltaA = this.#inputAPending.shift()!;
-//         const deltaB = this.#inputBPending.shift()!;
+      // TODO: join should still be able to operate even if one of the inputs is empty...
+      // right?
+      while (this.#inputAPending.length > 0 && this.#inputBPending.length > 0) {
+        const result = new Multiset<JoinableValue<K, readonly (V1 | V2)[]>>([]);
+        const deltaA = this.#inputAPending.shift()!;
+        const deltaB = this.#inputBPending.shift()!;
 
-//         result._extend(deltaA.join(this.#indexB));
-//         this.#indexA.extend(deltaA);
-//         result._extend(this.#indexA.join(deltaB));
-//         this.#indexB.extend(deltaB);
+        result._extend(deltaA.join(this.#indexB));
+        this.#indexA.extend(deltaA);
+        result._extend(this.#indexA.join(deltaB));
+        this.#indexB.extend(deltaB);
 
-//         this.output.sendData(result.consolidate() as any);
-//         this.#indexA.compact();
-//         this.#indexB.compact();
-//       }
-//     };
-//     super(inputA, inputB, output, inner);
-//   }
-// }
+        this.output.sendData(version, result.consolidate() as any);
+        this.#indexA.compact();
+        this.#indexB.compact();
+      }
+    };
+    super(inputA, inputB, output, inner);
+  }
+}
 
 // export class ReduceOperator<
 //   K extends PrimitiveValue,
