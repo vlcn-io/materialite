@@ -1,6 +1,7 @@
 import { test } from "vitest";
 import { Materialite } from "../materialite";
 import util from "util";
+import { DifferenceStream } from "../core/graph/DifferenceStream";
 
 function inspect(e: any) {
   console.log(util.inspect(e, false, null, true));
@@ -18,7 +19,7 @@ test("Materialite#setSource", () => {
 
 test("Materialite#setSource - nothing released until commit", () => {});
 
-test("map tables", () => {
+test("db/overtone example - materialize track view", () => {
   type Track = {
     id: number;
     name: string;
@@ -45,13 +46,13 @@ test("map tables", () => {
     track_id: number;
     playlist_id: number;
   };
-  type MaterializedTrack = {
-    id: number;
-    name: string;
-    album_name: string;
-    artists: string[];
-    length: number;
-  };
+  // type MaterializedTrack = {
+  //   id: number;
+  //   name: string;
+  //   album_name: string;
+  //   artists: string[];
+  //   length: number;
+  // };
 
   const playlists = Array.from(
     { length: 10 },
@@ -93,7 +94,7 @@ test("map tables", () => {
   for (const playlist of playlists) {
     for (let i = 0; i < 10; i++) {
       playlistsTracks.push([
-        i,
+        playlist[0]!,
         {
           track_id: j++,
           playlist_id: playlist[0]!,
@@ -128,10 +129,34 @@ test("map tables", () => {
 
   // TODO: what if operators are attached after the source is committed?
   // Maybe no initial construction allowed?
-  const playlistSource = materialite.newMap<number, Playlist>();
-  const trackSource = materialite.newMap<number, Track>();
-  const albumSource = materialite.newMap<number, Album>();
-  const trackPlaylistSource = materialite.newMap<number, TrackPlaylist>();
-  const trackArtistSource = materialite.newMap<number, TrackArtist>();
-  const artistSource = materialite.newMap<number, Artist>();
+  const playlistSource = materialite.newSet<readonly [number, Playlist]>();
+  const trackSource = materialite.newSet<readonly [number, Track]>();
+  const albumSource = materialite.newSet<readonly [number, Album]>();
+  const playlistTrackSource =
+    materialite.newSet<readonly [number, TrackPlaylist]>();
+  const trackArtistSource =
+    materialite.newSet<readonly [number, TrackArtist]>();
+  const artistSource = materialite.newSet<readonly [number, Artist]>();
+
+  // playlistTrackSource.stream.debug((v) => inspect(v));
+
+  DifferenceStream.join(
+    playlistSource.stream.filter(([id, _]) => id === 1),
+    playlistTrackSource.stream
+  )
+    .map(([_, [pl, tp]]) => {})
+    .debug(inspect);
+
+  // .join(playlistTrackSource.stream)
+  // .map(([_, [playlist, trackPlaylist]]) => {
+  //   return [trackPlaylist.track_id, playlist];
+  // })
+  // .debug((v) => inspect(v));
+
+  playlistSource.addAll(playlists);
+  // trackSource.extend(tracks);
+  // albumSource.extend(albums);
+  playlistTrackSource.addAll(playlistsTracks);
+  // trackArtistSource.extend(trackArtists);
+  // artistSource.extend(artists);
 });

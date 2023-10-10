@@ -5,10 +5,10 @@ import {
   makeJoinResult,
   makeTuple2,
 } from "@vlcn.io/datastructures-and-algos/tuple";
-import { Entry, JoinableValue, Multiset, PrimitiveValue } from "./multiset";
+import { Entry, JoinableValue, Multiset } from "./multiset";
 import { TuplableMap } from "@vlcn.io/datastructures-and-algos/TuplableMap";
 
-export class Index<K extends PrimitiveValue, V> {
+export class Index<K, V> {
   private readonly index = new Map<K, Entry<V>[]>();
 
   constructor() {}

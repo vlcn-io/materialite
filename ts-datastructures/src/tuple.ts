@@ -24,6 +24,10 @@ export function isTuple<T extends readonly any[]>(x: T): boolean {
 }
 
 export type Tuple2<T1, T2> = readonly [T1, T2] & { [tupleSymbol]: true };
+export type Tuple<T> = readonly T[] & { [tupleSymbol]: true };
+export type TupleVariadic<T extends readonly any[]> = [...T] & {
+  [tupleSymbol]: true;
+};
 export type JoinResult<T> = readonly T[] & {
   [joinResultSymbol]: true;
   [tupleSymbol]: true;

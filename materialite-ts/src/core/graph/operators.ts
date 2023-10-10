@@ -8,7 +8,12 @@ import {
   DifferenceStreamWriter,
   UnaryOperator,
 } from "./graph";
-import { Tuple2, makeTuple2 } from "@vlcn.io/datastructures-and-algos/tuple";
+import {
+  Tuple,
+  Tuple2,
+  TupleVariadic,
+  makeTuple2,
+} from "@vlcn.io/datastructures-and-algos/tuple";
 
 export class LinearUnaryOperator<I, O> extends UnaryOperator<I, O> {
   constructor(
@@ -90,14 +95,10 @@ export class ConcatOperator<I1, I2> extends BinaryOperator<I1, I2, I1 | I2> {
   }
 }
 
-export class JoinOperator<
-  K extends PrimitiveValue,
-  V1,
-  V2
-> extends BinaryOperator<
+export class JoinOperator<K, V1, V2> extends BinaryOperator<
   JoinableValue<K, V1>,
   JoinableValue<K, V2>,
-  [K, readonly (V1 | V2)[]]
+  JoinableValue<K, Tuple<V1 | V2>>
 > {
   readonly #indexA = new Index<K, V1>();
   readonly #indexB = new Index<K, V2>();
@@ -107,7 +108,7 @@ export class JoinOperator<
   constructor(
     inputA: DifferenceStreamReader<JoinableValue<K, V1>>,
     inputB: DifferenceStreamReader<JoinableValue<K, V2>>,
-    output: DifferenceStreamWriter<[K, readonly (V1 | V2)[]]>
+    output: DifferenceStreamWriter<JoinableValue<K, TupleVariadic<[V1, V2]>>>
   ) {
     const inner = (version: Version) => {
       for (const collection of this.inputAMessages(version)) {

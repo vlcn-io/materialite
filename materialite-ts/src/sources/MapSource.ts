@@ -3,6 +3,7 @@ import { DifferenceStream } from "../core/graph/DifferenceStream";
 import { Entry, JoinableValue, Multiset } from "../core/multiset";
 import { ISourceInternal, MaterialiteForSourceInternal } from "../core/types";
 import { Version } from "../core/types";
+import { inspect } from "../core/debug";
 
 export class MapSource<K, V> {
   readonly #materialite: MaterialiteForSourceInternal;
@@ -37,6 +38,10 @@ export class MapSource<K, V> {
         self.#pending = [];
       },
     };
+  }
+
+  get stream() {
+    return this.#stream;
   }
 
   // TODO: inspect join index growth

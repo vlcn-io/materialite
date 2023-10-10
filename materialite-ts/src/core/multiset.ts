@@ -1,10 +1,9 @@
 import { TuplableMap } from "@vlcn.io/datastructures-and-algos/TuplableMap";
-import { Tuple2 } from "@vlcn.io/datastructures-and-algos/tuple";
 
 export type Entry<T> = readonly [T, Multiplicity];
 export type Multiplicity = number;
 export type PrimitiveValue = string | number | boolean | bigint;
-export type JoinableValue<K, V> = Tuple2<K, V>;
+export type JoinableValue<K, V> = readonly [K, V];
 
 /**
  * A naive implementation of a multi-set.

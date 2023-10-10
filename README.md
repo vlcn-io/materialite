@@ -145,3 +145,10 @@ blocks such that the blocks are sequential.
 Optimizing reads
   - Summary table storing min/max key ranges of SSTs on disk so we can jump to correct SST.
   - Bloom filter to track if keys do not exist.
+
+
+# Other Art
+
+- https://github.com/comnik/functional-differential-programming
+- http://www.frankmcsherry.org/differential/dataflow/2015/04/07/differential.html
+- https://github.com/TimelyDataflow/differential-dataflow/issues/154
