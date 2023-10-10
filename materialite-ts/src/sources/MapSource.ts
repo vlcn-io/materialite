@@ -41,6 +41,11 @@ export class MapSource<K, V> {
 
   // TODO: inspect join index growth
   set(k: K, v: V) {
+    this.#set(k, v);
+    this.#materialite.addDirtySource(this.#internal);
+  }
+
+  #set(k: K, v: V) {
     const existing = this.#map.get(k) || this.#tempMap.get(k);
     if (existing !== undefined) {
       this.#pending.push([makeTuple2([k, existing]), -1]);
@@ -48,6 +53,14 @@ export class MapSource<K, V> {
       this.#tempMap.set(k, v);
     }
     this.#pending.push([makeTuple2([k, v]), 1]);
+    // do not mark dity here as it may auto-commit on bulk operations
+    // that are in progress
+  }
+
+  extend(entries: Iterable<readonly [K, V]>) {
+    for (const [k, v] of entries) {
+      this.#set(k, v);
+    }
     this.#materialite.addDirtySource(this.#internal);
   }
 

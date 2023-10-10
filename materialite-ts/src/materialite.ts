@@ -3,6 +3,7 @@ import {
   MaterialiteForSourceInternal,
   Version,
 } from "./core/types";
+import { MapSource } from "./sources/MapSource";
 import { SetSource } from "./sources/SetSource";
 
 export class Materialite {
@@ -27,14 +28,14 @@ export class Materialite {
   }
 
   newArray() {}
-  newSet<T>(initialData?: Iterable<T>) {
+  newSet<T>() {
     const ret = new SetSource<T>(this.#internal);
-    if (initialData !== undefined) {
-      ret.addAll(initialData);
-    }
     return ret;
   }
-  newMap() {}
+  newMap<K, V>() {
+    const ret = new MapSource<K, V>(this.#internal);
+    return ret;
+  }
 
   /**
    * Run the provided lambda in a transaciton.
