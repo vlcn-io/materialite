@@ -6,14 +6,27 @@ export function makeTuple<T extends readonly any[]>(x: T): T {
   return x;
 }
 
+export function makeTuple2<T1, T2>(x: [T1, T2]): Tuple2<T1, T2> {
+  (x as any)[tupleSymbol] = true;
+  return x as any;
+}
+
 export function isTuple<T extends readonly any[]>(x: T): boolean {
   return Array.isArray(x) && (x as any)[tupleSymbol] === true;
 }
 
 export type Tuple2<T1, T2> = readonly [T1, T2] & { [tupleSymbol]: true };
+export type JoinResult<T> = readonly T[] & {
+  [joinResultSymbol]: true;
+  [tupleSymbol]: true;
+};
 
-export function makeJoinResult<T extends readonly any[]>(x: T): T {
+export function makeJoinResult<T>(x: T): JoinResult<T> {
   (x as any)[joinResultSymbol] = true;
   (x as any)[tupleSymbol] = true;
-  return x;
+  return x as any;
+}
+
+export function isJoinResult<T>(x: T): boolean {
+  return Array.isArray(x) && (x as any)[joinResultSymbol] === true;
 }
