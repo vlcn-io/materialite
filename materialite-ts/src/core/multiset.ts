@@ -1,20 +1,16 @@
 import { TuplableMap } from "@vlcn.io/datastructures-and-algos/TuplableMap";
 import { Tuple2 } from "@vlcn.io/datastructures-and-algos/tuple";
 
-export type Entry<T extends Value> = readonly [T, Multiplicity];
+export type Entry<T> = readonly [T, Multiplicity];
 export type Multiplicity = number;
 export type PrimitiveValue = string | number | boolean | bigint;
-export type JoinableValue<K extends PrimitiveValue, V extends Value> = Tuple2<
-  K,
-  V
->;
-export type Value = any;
+export type JoinableValue<K extends PrimitiveValue, V> = Tuple2<K, V>;
 
 /**
  * A naive implementation of a multi-set.
  * I.e., no optimization is going on here.
  */
-export class Multiset<T extends Value> {
+export class Multiset<T> {
   constructor(public readonly entries: readonly Entry<T>[]) {}
 
   // Is this how we really want to do difference?
@@ -27,7 +23,7 @@ export class Multiset<T extends Value> {
     return this.difference(b).consolidate();
   }
 
-  concat<O extends Value>(b: Multiset<O>): Multiset<T | O> {
+  concat<O>(b: Multiset<O>): Multiset<T | O> {
     return new Multiset<T | O>([...this.entries, ...b.entries]);
   }
 
@@ -42,7 +38,7 @@ export class Multiset<T extends Value> {
     return new Multiset([...this.#toNormalizedMap()]);
   }
 
-  map<R extends Value>(f: (value: T) => R): Multiset<R> {
+  map<R>(f: (value: T) => R): Multiset<R> {
     return new Multiset(
       this.entries.map(([value, multiplicity]) => [f(value), multiplicity])
     );
@@ -52,9 +48,7 @@ export class Multiset<T extends Value> {
     return new Multiset(this.entries.filter(([value, _]) => f(value)));
   }
 
-  reduce<R extends Value>(
-    f: (values: Multiset<T>) => Multiset<R>
-  ): Map<T, Multiset<R>> {
+  reduce<R>(f: (values: Multiset<T>) => Multiset<R>): Map<T, Multiset<R>> {
     const byKey = new Map<T, Entry<T>[]>();
     for (const [value, multiplicity] of this.entries) {
       const existing = byKey.get(value);

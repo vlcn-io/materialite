@@ -1,19 +1,31 @@
-import { ISourceInternal, Version } from "./core/types";
+import {
+  ISourceInternal,
+  MaterialiteForSourceInternal,
+  Version,
+} from "./core/types";
+import { SetSource } from "./sources/SetSource";
 
 export class Materialite {
   #version: Version;
-
-  // weak refs to created sources
-  // so on-commit we can iterate our sources and release their queues
-  // maybe a list of `dirty sources` kept for the tx so we don't have to iterate all sources
   #dirtySources: Set<ISourceInternal> = new Set();
+
+  #currentTx: Version | null = null;
+  #internal: MaterialiteForSourceInternal;
 
   constructor() {
     this.#version = 0;
+    const self = this;
+    this.#internal = {
+      addDirtySource(source) {
+        self.#dirtySources.add(source);
+      },
+    };
   }
 
   newArray() {}
-  newSet() {}
+  newSet() {
+    return new SetSource(this.#internal);
+  }
   newMap() {}
 
   /**
@@ -34,5 +46,36 @@ export class Materialite {
    * if creating transactions within transactions failed as it would preclude the use of
    * libraries that use transactions internally.
    */
-  tx(fn: () => void) {}
+  tx(fn: () => void) {
+    if (this.#currentTx === null) {
+      this.#currentTx = ++this.#version;
+    }
+    try {
+      fn();
+      this.#commit();
+    } catch (e) {
+      this.#rollback();
+      throw e;
+    } finally {
+      this.#dirtySources.clear();
+    }
+  }
+
+  #rollback() {
+    this.#currentTx = null;
+    for (const source of this.#dirtySources) {
+      source.onRollback();
+    }
+  }
+
+  #commit() {
+    this.#version = this.#currentTx!;
+    this.#currentTx = null;
+    for (const source of this.#dirtySources) {
+      source.onCommitPhase1(this.#version);
+    }
+    for (const source of this.#dirtySources) {
+      source.onCommitPhase2(this.#version);
+    }
+  }
 }

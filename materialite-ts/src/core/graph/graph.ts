@@ -1,9 +1,9 @@
-import { Multiset, Value } from "../multiset";
+import { Multiset } from "../multiset";
 import { Version } from "../types";
 /**
  * A read handle for a dataflow edge that receives data from a writer.
  */
-export class DifferenceStreamReader<T extends Value = any> {
+export class DifferenceStreamReader<T = any> {
   protected readonly queue;
   readonly #operator: Operator<T>;
   constructor(queue: [Version, Multiset<T>][]) {
@@ -32,7 +32,7 @@ export class DifferenceStreamReader<T extends Value = any> {
 }
 
 export class DifferenceStreamRederFromRoot<
-  T extends Value = any
+  T
 > extends DifferenceStreamReader<T> {
   drain(version: Version) {
     if (this.queue.length === 0) {
@@ -46,7 +46,7 @@ export class DifferenceStreamRederFromRoot<
 /**
  * Write handle
  */
-export class DifferenceStreamWriter<T extends Value> {
+export class DifferenceStreamWriter<T> {
   readonly queues: [Version, Multiset<T>][][] = [];
   readonly readers: DifferenceStreamReader<T>[] = [];
 
@@ -78,9 +78,7 @@ export class DifferenceStreamWriter<T extends Value> {
   }
 }
 
-export class RootDifferenceStreamWriter<
-  T extends Value
-> extends DifferenceStreamWriter<T> {
+export class RootDifferenceStreamWriter<T> extends DifferenceStreamWriter<T> {
   newReader() {
     const queue: [Version, Multiset<T>][] = [];
     this.queues.push(queue);
@@ -93,7 +91,7 @@ export class RootDifferenceStreamWriter<
 /**
  * A dataflow operator (node) that has many incoming edges (read handles) and one outgoing edge (write handle).
  */
-export class Operator<O extends Value> {
+export class Operator<O> {
   readonly #fn;
   protected _pendingWork: boolean = false;
 
@@ -122,10 +120,7 @@ export class Operator<O extends Value> {
   }
 }
 
-export class UnaryOperator<
-  I extends Value,
-  O extends Value
-> extends Operator<O> {
+export class UnaryOperator<I, O> extends Operator<O> {
   constructor(
     input: DifferenceStreamReader<I>,
     output: DifferenceStreamWriter<O>,
@@ -139,16 +134,12 @@ export class UnaryOperator<
   }
 }
 
-export class BinaryOperator<
-  I1 extends Value,
-  I2 extends Value,
-  O extends Value
-> extends Operator<O> {
+export class BinaryOperator<I1, I2, O> extends Operator<O> {
   constructor(
     input1: DifferenceStreamReader<I1>,
     input2: DifferenceStreamReader<I2>,
     output: DifferenceStreamWriter<O>,
-    fn: () => void
+    fn: (version: Version) => void
   ) {
     super([input1, input2], output, fn);
   }
