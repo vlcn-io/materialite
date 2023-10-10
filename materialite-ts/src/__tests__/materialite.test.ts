@@ -55,110 +55,79 @@ test("db/overtone example - materialize track view", () => {
   //   length: number;
   // };
 
-  const playlists = Array.from(
-    { length: 10 },
-    (_, i) =>
-      [
-        i,
-        {
-          id: i,
-          name: `Playlist ${i}`,
-        },
-      ] as const
-  );
-  const tracks = Array.from(
-    { length: 100 },
-    (_, i) =>
-      [
-        i,
-        {
-          id: i,
-          name: `Track ${i}`,
-          album_id: Math.floor(i / 10),
-          length: i * 1000,
-        },
-      ] as const
-  );
-  const albums = Array.from(
-    { length: 10 },
-    (_, i) =>
-      [
-        i,
-        {
-          id: i,
-          name: `Album ${i}`,
-        },
-      ] as const
-  );
-  const playlistsTracks: (readonly [number, TrackPlaylist])[] = [];
+  const playlists = Array.from({ length: 10 }, (_, i) => ({
+    id: i,
+    name: `Playlist ${i}`,
+  }));
+  const tracks = Array.from({ length: 100 }, (_, i) => ({
+    id: i,
+    name: `Track ${i}`,
+    album_id: Math.floor(i / 10),
+    length: i * 1000,
+  }));
+  const albums = Array.from({ length: 10 }, (_, i) => ({
+    id: i,
+    name: `Album ${i}`,
+  }));
+  const playlistsTracks: TrackPlaylist[] = [];
   let j = 0;
   for (const playlist of playlists) {
     for (let i = 0; i < 10; i++) {
-      playlistsTracks.push([
-        playlist[0]!,
-        {
-          track_id: j++,
-          playlist_id: playlist[0]!,
-        },
-      ] as const);
+      playlistsTracks.push({
+        track_id: j++,
+        playlist_id: playlist.id,
+      });
     }
   }
 
-  const trackArtists: (readonly [number, TrackArtist])[] = [];
+  const trackArtists: TrackArtist[] = [];
   for (let i = 0; i < tracks.length; i++) {
-    trackArtists.push([
-      i,
-      {
-        track_id: i,
-        artist_id: i % 10,
-      },
-    ]);
+    trackArtists.push({
+      track_id: i,
+      artist_id: i % 10,
+    });
   }
-  const artists = Array.from(
-    { length: 10 },
-    (_, i) =>
-      [
-        i,
-        {
-          id: i,
-          name: `Artist ${i}`,
-        },
-      ] as const
-  );
+  const artists = Array.from({ length: 10 }, (_, i) => ({
+    id: i,
+    name: `Artist ${i}`,
+  }));
 
   const materialite = new Materialite();
 
   // TODO: what if operators are attached after the source is committed?
   // Maybe no initial construction allowed?
-  const playlistSource = materialite.newSet<readonly [number, Playlist]>();
-  const trackSource = materialite.newSet<readonly [number, Track]>();
-  const albumSource = materialite.newSet<readonly [number, Album]>();
-  const playlistTrackSource =
-    materialite.newSet<readonly [number, TrackPlaylist]>();
-  const trackArtistSource =
-    materialite.newSet<readonly [number, TrackArtist]>();
-  const artistSource = materialite.newSet<readonly [number, Artist]>();
+  const playlistSource = materialite.newSet<Playlist>();
+  const trackSource = materialite.newSet<Track>();
+  const albumSource = materialite.newSet<Album>();
+  const playlistTrackSource = materialite.newSet<TrackPlaylist>();
+  const trackArtistSource = materialite.newSet<TrackArtist>();
+  const artistSource = materialite.newSet<Artist>();
 
   // playlistTrackSource.stream.debug((v) => inspect(v));
 
   // TODO: specify a key function in join rather than re-keying all the damn time.
   playlistSource.stream
-    .filter(([id, _]) => id === 1)
-    .join(playlistTrackSource.stream)
-    .map(
-      ([_, [playlist, trackPlaylist]]) =>
-        [trackPlaylist.track_id, playlist] as const
+    .filter((playlist) => playlist.id === 1)
+    .join(
+      playlistTrackSource.stream,
+      (playlist) => playlist.id,
+      (trackPlaylist) => trackPlaylist.playlist_id
     )
-    .join(trackSource.stream)
-    .map(
-      ([_, [playlist, track]]) =>
-        [track.album_id, joinResult([track, playlist] as const)] as const
+    .join(
+      trackSource.stream,
+      ([_playlist, trackPlaylist]) => trackPlaylist.track_id,
+      (track) => track.id
     )
-    .join(albumSource.stream)
-    .map(
-      ([_, [track, playlist, album]]) =>
-        [track.id, joinResult([track, playlist, album] as const)] as const
+    .join(
+      albumSource.stream,
+      ([_playlist, _trackPlaylist, track]) => track.album_id,
+      (album) => album.id
     )
+    // .join(albumSource.stream)
+    // .map(
+    //   ([_, [track, playlist, album]]) =>
+    //     [track.id, joinResult([track, playlist, album] as const)] as const
+    // )
     .debug(inspect);
 
   // .join(playlistTrackSource.stream)

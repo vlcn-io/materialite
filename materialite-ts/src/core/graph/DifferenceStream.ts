@@ -1,4 +1,5 @@
 import {
+  JoinResultVariadic,
   Tuple,
   Tuple2,
   TupleVariadic,
@@ -64,16 +65,21 @@ export class DifferenceStream<T> {
     return output;
   }
 
-  join<K, L, R>(
-    this: DifferenceStream<JoinableValue<K, L>>,
-    r: DifferenceStream<JoinableValue<K, R>>
-  ): DifferenceStream<JoinableValue<K, TupleVariadic<[L, R]>>> {
-    const output = new DifferenceStream<
-      JoinableValue<K, TupleVariadic<[L, R]>>
-    >(false);
+  join<K, R>(
+    other: DifferenceStream<R>,
+    getKeyThis: (i: T) => K = (i) => (i as any)[0],
+    getKeyOther: (i: R) => K = (i) => (i as any)[0]
+  ): DifferenceStream<JoinResultVariadic<[T, R]>> {
+    const output = new DifferenceStream<JoinResultVariadic<[T, R]>>(false);
     const reader1 = this.#writer.newReader();
-    const reader2 = r.#writer.newReader();
-    const op = new JoinOperator<K, L, R>(reader1, reader2, output.#writer);
+    const reader2 = other.#writer.newReader();
+    const op = new JoinOperator<K, T, R>(
+      reader1,
+      reader2,
+      output.#writer,
+      getKeyThis,
+      getKeyOther
+    );
     reader1.setOperator(op as any);
     reader2.setOperator(op as any);
     return output;

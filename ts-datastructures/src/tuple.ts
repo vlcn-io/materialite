@@ -32,8 +32,14 @@ export type JoinResult<T> = readonly T[] & {
   [joinResultSymbol]: true;
   [tupleSymbol]: true;
 };
+export type JoinResultVariadic<T extends readonly any[]> = readonly [...T] & {
+  [joinResultSymbol]: true;
+  [tupleSymbol]: true;
+};
 
-export function joinResult<T>(x: T): JoinResult<T> {
+export function joinResult<T extends readonly any[]>(
+  x: T
+): JoinResultVariadic<T> {
   Object.defineProperty(x, tupleSymbol, {
     value: true,
     writable: false,

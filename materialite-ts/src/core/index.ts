@@ -1,11 +1,9 @@
 import {
-  JoinResult,
-  Tuple2,
+  JoinResultVariadic,
   isJoinResult,
   joinResult,
-  makeTuple2,
 } from "@vlcn.io/datastructures-and-algos/tuple";
-import { Entry, JoinableValue, Multiset } from "./multiset";
+import { Entry, Multiset } from "./multiset";
 import { TuplableMap } from "@vlcn.io/datastructures-and-algos/TuplableMap";
 
 export class Index<K, V> {
@@ -34,10 +32,8 @@ export class Index<K, V> {
     return this.index.get(key) ?? [];
   }
 
-  join<VO>(
-    other: Index<K, VO>
-  ): Multiset<JoinableValue<K, readonly (V | VO)[]>> {
-    const ret: (readonly [Tuple2<K, JoinResult<V | VO>>, number])[] = [];
+  join<VO>(other: Index<K, VO>): Multiset<JoinResultVariadic<[V, VO]>> {
+    const ret: (readonly [JoinResultVariadic<[V, VO]>, number])[] = [];
     for (const [key, entry] of this.index) {
       const otherEntry = other.index.get(key);
       if (otherEntry === undefined) {
@@ -55,10 +51,7 @@ export class Index<K, V> {
           } else {
             value = [v1, v2];
           }
-          ret.push([
-            makeTuple2([key, joinResult(value as any)]),
-            m1 * m2,
-          ] as const);
+          ret.push([joinResult(value) as any, m1 * m2] as const);
         }
       }
     }

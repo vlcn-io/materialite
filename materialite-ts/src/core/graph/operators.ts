@@ -9,7 +9,8 @@ import {
   UnaryOperator,
 } from "./graph";
 import {
-  Tuple,
+  JoinResult,
+  JoinResultVariadic,
   Tuple2,
   TupleVariadic,
   makeTuple2,
@@ -96,9 +97,9 @@ export class ConcatOperator<I1, I2> extends BinaryOperator<I1, I2, I1 | I2> {
 }
 
 export class JoinOperator<K, V1, V2> extends BinaryOperator<
-  JoinableValue<K, V1>,
-  JoinableValue<K, V2>,
-  JoinableValue<K, Tuple<V1 | V2>>
+  V1,
+  V2,
+  JoinResultVariadic<[V1, V2]>
 > {
   readonly #indexA = new Index<K, V1>();
   readonly #indexB = new Index<K, V2>();
@@ -106,23 +107,25 @@ export class JoinOperator<K, V1, V2> extends BinaryOperator<
   readonly #inputBPending: Index<K, V2>[] = [];
 
   constructor(
-    inputA: DifferenceStreamReader<JoinableValue<K, V1>>,
-    inputB: DifferenceStreamReader<JoinableValue<K, V2>>,
-    output: DifferenceStreamWriter<JoinableValue<K, TupleVariadic<[V1, V2]>>>
+    inputA: DifferenceStreamReader<V1>,
+    inputB: DifferenceStreamReader<V2>,
+    output: DifferenceStreamWriter<JoinResultVariadic<[V1, V2]>>,
+    getKeyA: (value: V1) => K,
+    getKeyB: (value: V2) => K
   ) {
     const inner = (version: Version) => {
       for (const collection of this.inputAMessages(version)) {
         const deltaA = new Index<K, V1>();
-        for (const [[key, value], mult] of collection.entries) {
-          deltaA.add(key, [value, mult]);
+        for (const [value, mult] of collection.entries) {
+          deltaA.add(getKeyA(value), [value, mult]);
         }
         this.#inputAPending.push(deltaA);
       }
 
       for (const collection of this.inputBMessages(version)) {
         const deltaB = new Index<K, V2>();
-        for (const [[key, value], mult] of collection.entries) {
-          deltaB.add(key, [value, mult]);
+        for (const [value, mult] of collection.entries) {
+          deltaB.add(getKeyB(value), [value, mult]);
         }
         this.#inputBPending.push(deltaB);
       }
@@ -130,7 +133,7 @@ export class JoinOperator<K, V1, V2> extends BinaryOperator<
       // TODO: join should still be able to operate even if one of the inputs is empty...
       // right?
       while (this.#inputAPending.length > 0 && this.#inputBPending.length > 0) {
-        const result = new Multiset<JoinableValue<K, readonly (V1 | V2)[]>>([]);
+        const result = new Multiset<JoinResultVariadic<[V1, V2]>>([]);
         const deltaA = this.#inputAPending.shift()!;
         const deltaB = this.#inputBPending.shift()!;
 
