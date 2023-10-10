@@ -1,5 +1,6 @@
+import { TuplableMap } from "@vlcn.io/datastructures-and-algos/TuplableMap";
 import { Index } from "..";
-import { JoinableValue, Multiset, PrimitiveValue } from "../multiset";
+import { Entry, JoinableValue, Multiset, PrimitiveValue } from "../multiset";
 import { Version } from "../types";
 import {
   BinaryOperator,
@@ -7,6 +8,7 @@ import {
   DifferenceStreamWriter,
   UnaryOperator,
 } from "./graph";
+import { Tuple2, makeTuple2 } from "@vlcn.io/datastructures-and-algos/tuple";
 
 export class LinearUnaryOperator<I, O> extends UnaryOperator<I, O> {
   constructor(
@@ -145,93 +147,102 @@ export class JoinOperator<
   }
 }
 
-// export class ReduceOperator<
-//   K extends PrimitiveValue,
-//   V,
-//   O = V
-// > extends UnaryOperator<JoinableValue<K, V>, JoinableValue<K, O>> {
-//   readonly #index = new Index<K, V>();
-//   readonly #indexOut = new Index<K, O>();
+export class ReduceOperator<
+  K extends PrimitiveValue,
+  V,
+  O = V
+> extends UnaryOperator<JoinableValue<K, V>, JoinableValue<K, O>> {
+  readonly #index = new Index<K, V>();
+  readonly #indexOut = new Index<K, O>();
 
-//   constructor(
-//     input: DifferenceStreamReader<JoinableValue<K, V>>,
-//     output: DifferenceStreamWriter<JoinableValue<K, O>>,
-//     f: (input: Entry<V>[]) => Entry<O>[]
-//   ) {
-//     const subtractValues = (first: Entry<O>[], second: Entry<O>[]) => {
-//       // TODO: Update to your better tuple map...
-//       // subsequent joins can get us `[[v1, v2], v3]` structures...
-//       // we should have the join operaetor flatten those out...
-//       // and have an arbitrarily deep map so we can handle these key structures?
-//       const result = new TMap<O, number>();
-//       for (const [v1, m1] of first) {
-//         result.set(v1, (result.get(v1) || 0) + m1);
-//       }
-//       for (const [v2, m2] of second) {
-//         result.set(v2, (result.get(v2) || 0) - m2);
-//       }
+  constructor(
+    input: DifferenceStreamReader<JoinableValue<K, V>>,
+    output: DifferenceStreamWriter<JoinableValue<K, O>>,
+    f: (input: Entry<V>[]) => Entry<O>[]
+  ) {
+    const subtractValues = (first: Entry<O>[], second: Entry<O>[]) => {
+      const result = new TuplableMap<O, number>();
+      for (const [v1, m1] of first) {
+        const sum = (result.get(v1) || 0) + m1;
+        if (sum === 0) {
+          result.delete(v1);
+        } else {
+          result.set(v1, sum);
+        }
+      }
+      for (const [v2, m2] of second) {
+        const sum = (result.get(v2) || 0) - m2;
+        if (sum === 0) {
+          result.delete(v2);
+        } else {
+          result.set(v2, sum);
+        }
+      }
 
-//       return result.entries().filter(([_, m]) => m !== 0);
-//     };
-//     const inner = () => {
-//       for (const collection of this.inputMessages) {
-//         const keysTodo = new Set<K>();
-//         const result: [[K, O], number][] = [];
-//         for (const [[key, value], mult] of collection.entries) {
-//           this.#index.add(key, [value, mult]);
-//           keysTodo.add(key);
-//         }
-//         for (const key of keysTodo) {
-//           const curr = this.#index.get(key);
-//           const currOut = this.#indexOut.get(key);
-//           const out = f(curr);
-//           const delta = subtractValues(out, currOut);
-//           for (const [value, mult] of delta) {
-//             result.push([[key, value], mult]);
-//             this.#indexOut.add(key, [value, mult]);
-//           }
-//         }
-//         this.output.sendData(new Multiset(result));
-//         const keys = [...keysTodo.values()];
-//         this.#index.compact(keys);
-//         this.#indexOut.compact(keys);
-//       }
-//     };
-//     super(input, output, inner);
-//   }
-// }
+      return result.entries();
+    };
+    const inner = (version: Version) => {
+      for (const collection of this.inputMessages(version)) {
+        const keysTodo = new Set<K>();
+        const result: [Tuple2<K, O>, number][] = [];
+        for (const [[key, value], mult] of collection.entries) {
+          this.#index.add(key, [value, mult]);
+          keysTodo.add(key);
+        }
+        for (const key of keysTodo) {
+          const curr = this.#index.get(key);
+          const currOut = this.#indexOut.get(key);
+          const out = f(curr);
+          const delta = subtractValues(out, currOut);
+          for (const [value, mult] of delta) {
+            result.push([makeTuple2([key, value]), mult]);
+            this.#indexOut.add(key, [value, mult]);
+          }
+        }
+        this.output.sendData(version, new Multiset(result));
+        const keys = [...keysTodo.values()];
+        this.#index.compact(keys);
+        this.#indexOut.compact(keys);
+      }
+    };
+    super(input, output, inner);
+  }
+}
 
-// export class CountOperator<K extends PrimitiveValue, V> extends ReduceOperator<
-//   K,
-//   V,
-//   number
-// > {
-//   constructor(
-//     input: DifferenceStreamReader<JoinableValue<K, V>>,
-//     output: DifferenceStreamWriter<JoinableValue<K, number>>
-//   ) {
-//     const inner = (vals: Entry<V>[]): [Entry<number>] => {
-//       let count = 0;
-//       for (const [_, mult] of vals) {
-//         count += mult;
-//       }
-//       return [[count, 1]];
-//     };
-//     super(input, output, inner);
-//   }
-// }
+export class CountOperator<K extends PrimitiveValue, V> extends ReduceOperator<
+  K,
+  V,
+  number
+> {
+  constructor(
+    input: DifferenceStreamReader<JoinableValue<K, V>>,
+    output: DifferenceStreamWriter<JoinableValue<K, number>>
+  ) {
+    const inner = (vals: Entry<V>[]): [Entry<number>] => {
+      let count = 0;
+      for (const [_, mult] of vals) {
+        count += mult;
+      }
+      return [[count, 1]];
+    };
+    super(input, output, inner);
+  }
+}
 
-// export class DebugOperator extends UnaryOperator<any, any> {
-//   constructor(
-//     input: DifferenceStreamReader<any>,
-//     output: DifferenceStreamWriter<any>,
-//     f: (input: Multiset<any>) => void
-//   ) {
-//     const inner = () => {
-//       for (const collection of this.inputMessages) {
-//         f(collection);
-//       }
-//     };
-//     super(input, output, inner);
-//   }
-// }
+// TODO: linear reduce that does not require an index!
+// E.g., count can just sum over stream without remembering old values
+
+export class DebugOperator extends UnaryOperator<any, any> {
+  constructor(
+    input: DifferenceStreamReader<any>,
+    output: DifferenceStreamWriter<any>,
+    f: (input: Multiset<any>) => void
+  ) {
+    const inner = (version: Version) => {
+      for (const collection of this.inputMessages(version)) {
+        f(collection);
+      }
+    };
+    super(input, output, inner);
+  }
+}

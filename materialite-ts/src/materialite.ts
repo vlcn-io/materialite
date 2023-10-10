@@ -18,6 +18,10 @@ export class Materialite {
     this.#internal = {
       addDirtySource(source) {
         self.#dirtySources.add(source);
+        // auto-commit if not in a transaction
+        if (self.#currentTx === null) {
+          self.#commit();
+        }
       },
     };
   }

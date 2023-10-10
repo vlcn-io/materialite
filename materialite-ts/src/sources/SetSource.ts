@@ -4,7 +4,7 @@
 // When the sink is removed?
 
 import { DifferenceStream } from "../core/graph/DifferenceStream";
-import { Multiset } from "../core/multiset";
+import { Entry, Multiset } from "../core/multiset";
 import {
   ISourceInternal,
   MaterialiteForSourceInternal,
@@ -21,7 +21,8 @@ export class SetSource<T> {
   readonly #stream;
   readonly #internal: ISourceInternal;
   readonly #materialite: MaterialiteForSourceInternal;
-  #opLog: ((v: Version) => void)[] = [];
+
+  #pending: Entry<T>[] = [];
 
   constructor(materialite: MaterialiteForSourceInternal) {
     this.#materialite = materialite;
@@ -30,17 +31,15 @@ export class SetSource<T> {
     this.#internal = {
       // add values to queues, add values to the set
       onCommitPhase1(version: Version) {
-        for (const op of self.#opLog) {
-          op(version);
-        }
-        self.#opLog = [];
+        this.#stream.queueData([version, new Multiset(self.#pending)]);
+        self.#pending = [];
       },
       // release queues by telling the stream to send data
       onCommitPhase2(version: Version) {
         self.#stream.notify(version);
       },
       onRollback() {
-        self.#opLog = [];
+        self.#pending = [];
       },
     };
   }
@@ -50,24 +49,18 @@ export class SetSource<T> {
   }
 
   addAll(values: Iterable<T>): this {
+    for (const v of values) {
+      this.#pending.push([v, 1]);
+    }
     this.#materialite.addDirtySource(this.#internal);
-    this.#opLog.push((version) => {
-      const v: [T, number][] = [];
-      for (const value of values) {
-        v.push([value, 1]);
-      }
-      this.#stream.queueData([version, new Multiset(v)]);
-    });
     return this;
   }
 
   // TODO: consecutive adds of the same value will create a multiset with a count > 1??
   // making delete problematic?
   add(value: T): this {
+    this.#pending.push([value, 1]);
     this.#materialite.addDirtySource(this.#internal);
-    this.#opLog.push((version) => {
-      this.#stream.queueData([version, new Multiset([[value, 1]])]);
-    });
     return this;
   }
 
@@ -78,21 +71,15 @@ export class SetSource<T> {
   // }
 
   delete(value: T): void {
+    this.#pending.push([value, -1]);
     this.#materialite.addDirtySource(this.#internal);
-    this.#opLog.push((version) => {
-      this.#stream.queueData([version, new Multiset([[value, -1]])]);
-    });
   }
 
   deleteAll(values: Iterable<T>): void {
+    for (const v of values) {
+      this.#pending.push([v, -1]);
+    }
     this.#materialite.addDirtySource(this.#internal);
-    this.#opLog.push((version) => {
-      const v: [T, number][] = [];
-      for (const value of values) {
-        v.push([value, -1]);
-      }
-      this.#stream.queueData([version, new Multiset(v)]);
-    });
   }
 
   // no read methods. To read is to materialize a view
