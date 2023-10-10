@@ -15,3 +15,5 @@ test("Materialite#setSource", () => {
   set.add(1);
   set.delete(1);
 });
+
+test("Materialite#setSource - nothing released until commit", () => {});

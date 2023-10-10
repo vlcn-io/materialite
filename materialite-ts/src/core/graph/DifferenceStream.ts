@@ -1,8 +1,18 @@
-import { Multiset } from "../multiset";
+import { Entry, Multiset } from "../multiset";
 import { Version } from "../types";
 import { RootDifferenceStreamWriter } from "./graph";
-import { DebugOperator, MapOperator } from "./operators";
+import {
+  ConcatOperator,
+  CountOperator,
+  DebugOperator,
+  FilterOperator,
+  JoinOperator,
+  MapOperator,
+  NegateOperator,
+  ReduceOperator,
+} from "./operators";
 
+type TODO = any;
 export class DifferenceStream<T> {
   readonly #writer;
 
@@ -20,6 +30,66 @@ export class DifferenceStream<T> {
     const reader = this.#writer.newReader();
     const op = new MapOperator<T, O>(reader, output.#writer, f);
     reader.setOperator(op as any);
+    return output;
+  }
+
+  filter(f: (x: T) => boolean): DifferenceStream<T> {
+    const output = new DifferenceStream<T>(false);
+    const reader = this.#writer.newReader();
+    const op = new FilterOperator<T>(reader, output.#writer, f);
+    reader.setOperator(op);
+    return output;
+  }
+
+  negate() {
+    const output = new DifferenceStream<T>(false);
+    const reader = this.#writer.newReader();
+    const op = new NegateOperator<T>(reader, output.#writer);
+    reader.setOperator(op);
+    return output;
+  }
+
+  concat<T2>(other: DifferenceStream<T2>) {
+    const output = new DifferenceStream<T>(false);
+    const reader1 = this.#writer.newReader();
+    const reader2 = other.#writer.newReader();
+    const op = new ConcatOperator<T, T2>(reader1, reader2, output.#writer);
+    reader1.setOperator(op as any);
+    reader2.setOperator(op as any);
+    return output;
+  }
+
+  join(other: DifferenceStream<any>) {
+    const output = new DifferenceStream<T>(false);
+    const reader1 = this.#writer.newReader();
+    const reader2 = other.#writer.newReader();
+    const op = new JoinOperator(
+      reader1 as TODO,
+      reader2 as TODO,
+      output.#writer as TODO
+    );
+    reader1.setOperator(op as any);
+    reader2.setOperator(op as any);
+    return output;
+  }
+
+  count() {
+    const output = new DifferenceStream<number>(false);
+    const reader = this.#writer.newReader();
+    const operator = new CountOperator(reader as TODO, output.#writer as TODO);
+    reader.setOperator(operator as any);
+    return output;
+  }
+
+  reduce<O>(fn: (i: Entry<T>[]) => Entry<T>[]) {
+    const output = new DifferenceStream<O>(false);
+    const reader = this.#writer.newReader();
+    const operator = new ReduceOperator(
+      reader as TODO,
+      output.#writer as TODO,
+      fn
+    );
+    reader.setOperator(operator as any);
     return output;
   }
 
