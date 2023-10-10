@@ -33,7 +33,7 @@ export type JoinResult<T> = readonly T[] & {
   [tupleSymbol]: true;
 };
 
-export function makeJoinResult<T>(x: T): JoinResult<T> {
+export function joinResult<T>(x: T): JoinResult<T> {
   Object.defineProperty(x, tupleSymbol, {
     value: true,
     writable: false,

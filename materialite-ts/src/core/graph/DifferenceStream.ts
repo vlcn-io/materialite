@@ -64,14 +64,14 @@ export class DifferenceStream<T> {
     return output;
   }
 
-  static join<K, L, R>(
-    l: DifferenceStream<JoinableValue<K, L>>,
+  join<K, L, R>(
+    this: DifferenceStream<JoinableValue<K, L>>,
     r: DifferenceStream<JoinableValue<K, R>>
   ): DifferenceStream<JoinableValue<K, TupleVariadic<[L, R]>>> {
     const output = new DifferenceStream<
       JoinableValue<K, TupleVariadic<[L, R]>>
     >(false);
-    const reader1 = l.#writer.newReader();
+    const reader1 = this.#writer.newReader();
     const reader2 = r.#writer.newReader();
     const op = new JoinOperator<K, L, R>(reader1, reader2, output.#writer);
     reader1.setOperator(op as any);

@@ -2,6 +2,7 @@ import { test } from "vitest";
 import { Materialite } from "../materialite";
 import util from "util";
 import { DifferenceStream } from "../core/graph/DifferenceStream";
+import { joinResult } from "@vlcn.io/datastructures-and-algos/tuple";
 
 function inspect(e: any) {
   console.log(util.inspect(e, false, null, true));
@@ -140,11 +141,24 @@ test("db/overtone example - materialize track view", () => {
 
   // playlistTrackSource.stream.debug((v) => inspect(v));
 
-  DifferenceStream.join(
-    playlistSource.stream.filter(([id, _]) => id === 1),
-    playlistTrackSource.stream
-  )
-    .map(([_, [pl, tp]]) => {})
+  // TODO: specify a key function in join rather than re-keying all the damn time.
+  playlistSource.stream
+    .filter(([id, _]) => id === 1)
+    .join(playlistTrackSource.stream)
+    .map(
+      ([_, [playlist, trackPlaylist]]) =>
+        [trackPlaylist.track_id, playlist] as const
+    )
+    .join(trackSource.stream)
+    .map(
+      ([_, [playlist, track]]) =>
+        [track.album_id, joinResult([track, playlist] as const)] as const
+    )
+    .join(albumSource.stream)
+    .map(
+      ([_, [track, playlist, album]]) =>
+        [track.id, joinResult([track, playlist, album] as const)] as const
+    )
     .debug(inspect);
 
   // .join(playlistTrackSource.stream)
@@ -154,8 +168,8 @@ test("db/overtone example - materialize track view", () => {
   // .debug((v) => inspect(v));
 
   playlistSource.addAll(playlists);
-  // trackSource.extend(tracks);
-  // albumSource.extend(albums);
+  trackSource.addAll(tracks);
+  albumSource.addAll(albums);
   playlistTrackSource.addAll(playlistsTracks);
   // trackArtistSource.extend(trackArtists);
   // artistSource.extend(artists);

@@ -2,7 +2,7 @@ import {
   JoinResult,
   Tuple2,
   isJoinResult,
-  makeJoinResult,
+  joinResult,
   makeTuple2,
 } from "@vlcn.io/datastructures-and-algos/tuple";
 import { Entry, JoinableValue, Multiset } from "./multiset";
@@ -56,7 +56,7 @@ export class Index<K, V> {
             value = [v1, v2];
           }
           ret.push([
-            makeTuple2([key, makeJoinResult(value as any)]),
+            makeTuple2([key, joinResult(value as any)]),
             m1 * m2,
           ] as const);
         }
