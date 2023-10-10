@@ -152,3 +152,21 @@ Optimizing reads
 - https://github.com/comnik/functional-differential-programming
 - http://www.frankmcsherry.org/differential/dataflow/2015/04/07/differential.html
 - https://github.com/TimelyDataflow/differential-dataflow/issues/154
+
+# Next
+
+- TODO MVC where all state is materialized into a view?
+- TODO MVC where sinks are dom manipulators
+- Implement into SQLite to create views... Or just use Feldera.
+- Disk backed indices for joins and the like?
+- New LSM tree & DB. TreeSQL static queries -> view for the app?
+
+>>> - Rich Text CRDT in cr-sqlite?
+- In-memory synchronous cr-sqlite?
+- No more diff cr-sqlite?
+- Optimistic RX in JS?
+  - Vis simple queries. Force normal selects and do query parsing?
+
+>>> Native networking
+>>> Mirror Tables for strongly consistent read-only data
+>>> Optimistic tables

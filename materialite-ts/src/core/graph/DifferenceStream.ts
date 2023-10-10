@@ -1,10 +1,5 @@
-import {
-  JoinResultVariadic,
-  Tuple,
-  Tuple2,
-  TupleVariadic,
-} from "@vlcn.io/datastructures-and-algos/tuple";
-import { Entry, JoinableValue, Multiset } from "../multiset";
+import { JoinResultVariadic } from "@vlcn.io/datastructures-and-algos/tuple";
+import { Entry, Multiset } from "../multiset";
 import { Version } from "../types";
 import { RootDifferenceStreamWriter } from "./graph";
 import {
@@ -18,7 +13,6 @@ import {
   ReduceOperator,
 } from "./operators";
 
-type TODO = any;
 export class DifferenceStream<T> {
   readonly #writer;
 
@@ -89,28 +83,13 @@ export class DifferenceStream<T> {
     return output;
   }
 
-  reduce<K, O>(getKey: (i: T) => K, fn: (i: Entry<T>[]) => Entry<O>[]) {
+  reduce<K, O>(fn: (i: Entry<T>[]) => Entry<O>[], getKey: (i: T) => K) {
     const output = new DifferenceStream<O>(false);
     const reader = this.#writer.newReader();
     const operator = new ReduceOperator(reader, output.#writer, getKey, fn);
     reader.setOperator(operator as any);
     return output;
   }
-
-  // TODO: infer / lift join typings
-  // join(other: DifferenceStream<JoinableValue<any, any>>) {
-  //   const output = new DifferenceStream(false);
-  //   const reader1 = this.#writer.newReader();
-  //   const reader2 = other.#writer.newReader();
-  //   const op = new JoinOperator(
-  //     reader1 as TODO,
-  //     reader2 as TODO,
-  //     output.#writer as TODO
-  //   );
-  //   reader1.setOperator(op as any);
-  //   reader2.setOperator(op as any);
-  //   return output;
-  // }
 
   count<K>(getKey: (i: T) => K) {
     const output = new DifferenceStream<number>(false);

@@ -1,8 +1,6 @@
 import { test } from "vitest";
 import { Materialite } from "../materialite";
 import util from "util";
-import { DifferenceStream } from "../core/graph/DifferenceStream";
-import { joinResult } from "@vlcn.io/datastructures-and-algos/tuple";
 
 function inspect(e: any) {
   console.log(util.inspect(e, false, null, true));
@@ -46,13 +44,6 @@ test("db/overtone example - materialize track view", () => {
   type TrackPlaylist = {
     track_id: number;
     playlist_id: number;
-  };
-  type MaterializedTrack = {
-    id: number;
-    name: string;
-    album_name: string;
-    artists: string[];
-    length: number;
   };
 
   const playlists = Array.from({ length: 10 }, (_, i) => ({
@@ -105,7 +96,6 @@ test("db/overtone example - materialize track view", () => {
 
   // playlistTrackSource.stream.debug((v) => inspect(v));
 
-  // TODO: specify a key function in join rather than re-keying all the damn time.
   playlistSource.stream
     .filter((playlist) => playlist.id === 1)
     .join(
@@ -134,26 +124,25 @@ test("db/overtone example - materialize track view", () => {
         trackArtist.artist_id,
       (artist) => artist.id
     )
-    // .reduce((tracks) => {
-    //   if (tracks.length == 0) {
-    //     return [];
-    //   }
-    //   const firstTrack = tracks[0]![0];
-    //   const track: MaterializedTrack = {
-    //     id: firstTrack.id,
-    //     name: firstTrack[0].name,
-    //     album_name: firstTrack[1].name,
-    //     artists: tracks.map((t) => t[0][2].name),
-    //     length: firstTrack[0].length,
-    //   };
-    // })
+    .reduce(
+      (tracks) => {
+        if (tracks.length == 0) {
+          return [];
+        }
+        const [playlist, _, track, album, __] = tracks[0]![0];
+        const ret = {
+          id: track.id,
+          name: track.name,
+          album_name: album.name,
+          artists: tracks.map((t) => t[0][5].name),
+          length: track.length,
+          playlist: playlist.name,
+        };
+        return [[ret, 1]];
+      },
+      ([_, __, track]) => track.id
+    )
     .debug(inspect);
-
-  // .join(playlistTrackSource.stream)
-  // .map(([_, [playlist, trackPlaylist]]) => {
-  //   return [trackPlaylist.track_id, playlist];
-  // })
-  // .debug((v) => inspect(v));
 
   playlistSource.addAll(playlists);
   trackSource.addAll(tracks);
