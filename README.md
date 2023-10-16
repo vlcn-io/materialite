@@ -28,6 +28,10 @@ Which key-value store to use?
 - https://materialize.com/blog/differential-from-scratch/
 - DBSP & Feldera paper(s)
 - https://github.com/jamii/dida
+- Leveled compaction: https://github.com/facebook/rocksdb/wiki/Leveled-Compaction
+- Latest riffle paper: file:///Users/tantaman/Downloads/Riffle_UIST.pdf
+- DBSP: https://arxiv.org/pdf/2203.16684.pdf
+- Distributed process calculus: https://static.aminer.org/pdf/PDF/000/546/736/the_m_calculus_a_higher_order_distributed_process_calculus.pdf
 
 
 # The Browser Problem
