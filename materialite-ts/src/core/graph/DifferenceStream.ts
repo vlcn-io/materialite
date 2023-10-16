@@ -1,7 +1,7 @@
 import { JoinResultVariadic } from "@vlcn.io/datastructures-and-algos/tuple";
 import { Entry, Multiset } from "../multiset";
 import { Version } from "../types";
-import { RootDifferenceStreamWriter } from "./graph";
+import { DifferenceStreamReader, RootDifferenceStreamWriter } from "./graph";
 import {
   ConcatOperator,
   CountOperator,
@@ -114,5 +114,13 @@ export class DifferenceStream<T> {
   notify(version: Version) {
     // tell the writer to notify all readers
     this.#writer.notify(version);
+  }
+
+  newReader() {
+    return this.#writer.newReader();
+  }
+
+  removeReader(reader: DifferenceStreamReader<T>) {
+    this.#writer.removeReader(reader);
   }
 }

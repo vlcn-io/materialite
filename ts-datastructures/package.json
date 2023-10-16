@@ -9,7 +9,8 @@
     "./tuple": "./dist/tuple.js",
     "./objectTracking": "./dist/objectTracking.js",
     "./TuplableMap": "./dist/TuplableMap.js",
-    "./shuffle": "./dist/shuffle.js"
+    "./shuffle": "./dist/shuffle.js",
+    "./binary-search": "./dist/binary-search.js"
   },
   "scripts": {
     "test": "vitest"

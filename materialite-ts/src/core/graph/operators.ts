@@ -1,6 +1,6 @@
 import { TuplableMap } from "@vlcn.io/datastructures-and-algos/TuplableMap";
 import { Index } from "..";
-import { Entry, JoinableValue, Multiset, PrimitiveValue } from "../multiset";
+import { Entry, Multiset } from "../multiset";
 import { Version } from "../types";
 import {
   BinaryOperator,
@@ -9,11 +9,7 @@ import {
   UnaryOperator,
 } from "./graph";
 import {
-  JoinResult,
   JoinResultVariadic,
-  Tuple2,
-  TupleVariadic,
-  makeTuple2,
 } from "@vlcn.io/datastructures-and-algos/tuple";
 
 export class LinearUnaryOperator<I, O> extends UnaryOperator<I, O> {

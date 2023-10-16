@@ -5,12 +5,12 @@ import { Version } from "../types";
  */
 export class DifferenceStreamReader<T = any> {
   protected readonly queue;
-  #operator: Operator<T>;
+  #operator: IOperator;
   constructor(queue: [Version, Multiset<T>][]) {
     this.queue = queue;
   }
 
-  setOperator(operator: Operator<T>) {
+  setOperator(operator: IOperator) {
     this.#operator = operator;
   }
 
@@ -80,6 +80,14 @@ export class DifferenceStreamWriter<T> {
     this.readers.push(reader);
     return reader;
   }
+
+  removeReader(reader: DifferenceStreamReader<T>) {
+    const idx = this.readers.indexOf(reader);
+    if (idx !== -1) {
+      this.readers.splice(idx, 1);
+      this.queues.splice(idx, 1);
+    }
+  }
 }
 
 export class RootDifferenceStreamWriter<T> extends DifferenceStreamWriter<T> {
@@ -92,10 +100,13 @@ export class RootDifferenceStreamWriter<T> extends DifferenceStreamWriter<T> {
   }
 }
 
+interface IOperator {
+  run(version: Version): void;
+}
 /**
  * A dataflow operator (node) that has many incoming edges (read handles) and one outgoing edge (write handle).
  */
-export class Operator<O> {
+export class Operator<O> implements IOperator {
   readonly #fn;
   protected _pendingWork: boolean = false;
 

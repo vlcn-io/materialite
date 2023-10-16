@@ -4,17 +4,13 @@ import { Version } from "../core/types";
 import { sinkMutableArray } from "./updateMutableArray";
 
 /**
- * A sink that materializes a stream of differences into an array.
- *
- * This sink mutates the array in place. For immutable sinks, see:
- * - CopyOnWriteArraySink
- * - ImmListSink
+ * A sink that materializes a stream of differences into a new copy of an array.
  */
-export class ArraySink<T> {
+export class CopyOnWriteArraySink<T> {
   readonly #stream;
   readonly #comparator;
   readonly #reader;
-  readonly data: T[] = [];
+  data: readonly T[] = [];
 
   /**
    * @param stream The stream of differences that should be materialized into this sink
@@ -36,10 +32,12 @@ export class ArraySink<T> {
   }
 
   #run(version: Version) {
+    const newData = [...this.data];
     this.#reader.drain(version).forEach((collection) => {
       // now we incrementally update our sink.
-      sinkMutableArray(collection, this.data, this.#comparator);
+      sinkMutableArray(collection, newData, this.#comparator);
     });
+    this.data = newData;
   }
 
   destroy() {

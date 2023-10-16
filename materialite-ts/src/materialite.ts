@@ -3,7 +3,6 @@ import {
   MaterialiteForSourceInternal,
   Version,
 } from "./core/types";
-import { MapSource } from "./sources/MapSource";
 import { SetSource } from "./sources/SetSource";
 
 export class Materialite {
@@ -27,13 +26,8 @@ export class Materialite {
     };
   }
 
-  newArray() {}
   newSet<T>() {
     const ret = new SetSource<T>(this.#internal);
-    return ret;
-  }
-  newMap<K, V>() {
-    const ret = new MapSource<K, V>(this.#internal);
     return ret;
   }
 
