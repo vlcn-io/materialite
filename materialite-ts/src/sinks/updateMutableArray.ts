@@ -38,8 +38,6 @@ export function addAll<T>(data: T[], value: T, mult: number, idx: number) {
   }
 }
 
-// TODO: test this and that binary search returns first occurence
-// if it doesn't we need to decrement idx
 export function removeAll<T>(
   data: T[],
   value: T,
@@ -47,6 +45,7 @@ export function removeAll<T>(
   idx: number,
   comparator: Comparator<T>
 ) {
+  // TODO: wind back to least idx
   while (mult > 0) {
     const elem = data[idx];
     if (elem === undefined || comparator(elem, value) !== 0) {

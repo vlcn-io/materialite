@@ -77,8 +77,7 @@ function addAll<T>(data: List<T>, value: T, mult: number, idx: number) {
   }
 }
 
-// TODO: test this and that binary search returns first occurence
-// if it doesn't we need to decrement idx
+// TODO: wind back to least idx
 function removeAll<T>(
   data: List<T>,
   value: T,

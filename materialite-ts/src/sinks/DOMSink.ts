@@ -22,28 +22,29 @@
  * 2. Another differentaial dataflow pipeline which is sunk into a node at
  * its key position.
  * ^-- tear down is problematic. remove-re-add.
+ *
+ * Maybe everything is fine. Just return a node that itself has a differential
+ * dataflow stream going on but is sunk to a DOMSink.
  */
 import { Version } from "../core/types";
 import { DifferenceStream } from "../core/graph/DifferenceStream";
 import { Multiset } from "../core/multiset";
+import { binarySearch } from "@vlcn.io/datastructures-and-algos/binary-search";
 
 export class DOMSink<T extends Node, K extends string | number> {
   readonly #root;
   readonly #stream;
-  readonly #keyFn;
   readonly #comparator;
   readonly #reader;
   readonly #nodeMapping: [K, T][] = [];
 
   constructor(
     root: Node,
-    stream: DifferenceStream<T>,
-    keyFn: (n: T) => K,
-    comparator: (l: K, r: K) => number
+    stream: DifferenceStream<[K, T]>,
+    comparator: (l: [K, T], r: [K, T]) => number
   ) {
     this.#root = root;
     this.#stream = stream;
-    this.#keyFn = keyFn;
     this.#comparator = comparator;
     this.#reader = this.#stream.newReader();
     const self = this;
@@ -60,21 +61,49 @@ export class DOMSink<T extends Node, K extends string | number> {
     });
   }
 
-  #sink(collection: Multiset<T>) {
+  #sink(collection: Multiset<[K, T]>) {
     // do the sinking
     // -- update our mutable array
     // -- update the DOM based on the mutable array change
+    for (const entry of collection.entries) {
+      let [val, mult] = entry;
+      const idx = binarySearch(this.#nodeMapping, val, this.#comparator);
+      if (mult > 0) {
+        this.#addAll(val, mult, idx);
+      } else if (mult < 0 && idx !== -1) {
+        this.#removeAll(val, Math.abs(mult), idx);
+      }
+    }
+  }
+
+  #addAll(val: [K, T], mult: number, idx: number) {
+    while (mult > 0) {
+      if (idx === -1) {
+        // add to the end
+        this.#root.appendChild(val[1]);
+        this.#nodeMapping.push(val);
+      } else {
+        this.#root.insertBefore(val[1], this.#nodeMapping[idx]![1]);
+        this.#nodeMapping.splice(idx, 0, val);
+      }
+      mult -= 1;
+    }
+  }
+
+  #removeAll(val: [K, T], mult: number, idx: number) {
+    // TODO: wind back to least idx
+    while (mult > 0) {
+      const elem = this.#nodeMapping[idx];
+      if (elem === undefined || this.#comparator(elem, val) !== 0) {
+        break;
+      }
+      this.#root.removeChild(elem[1]);
+      this.#nodeMapping.splice(idx, 1);
+      mult -= 1;
+    }
   }
 
   destroy() {
     this.#stream.removeReader(this.#reader);
   }
-  // TODO: for a remove followed by add, we should just move the node? well
-  // only if the node is identical. For recursive structures we'll certainly
-  // need a solution here. To understand if the stream is a new stream or
-  // the stream just needs moving.
-  // For composability the user likely wants streams within the thing
-  // returning DOM nodes to this stream.
 }
-
-function sink() {}
