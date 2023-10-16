@@ -12,24 +12,38 @@ export class ImmListSink<T> extends Sink<T, List<T>> {
   }
 
   protected run(version: Version) {
+    const collections = this.reader.drain(version);
+    if (collections.length === 0) {
+      return;
+    }
+
+    let changed = false;
     const newData = this.#data.asMutable();
-    this.reader.drain(version).forEach((collection) => {
+    collections.forEach((collection) => {
       // now we incrementally update our sink.
-      this.#sink(collection, newData);
+      changed = changed || this.#sink(collection, newData);
     });
-    this.#data = newData.asImmutable();
+    const immNewData = newData.asImmutable();
+    this.#data = immNewData;
+    if (changed) {
+      this.notify(immNewData);
+    }
   }
 
   #sink(collection: Multiset<T>, data: List<T>) {
+    let changed = false;
     for (const entry of collection.entries) {
       let [value, mult] = entry;
       const idx = binarySearch(data, value, this.comparator);
       if (mult > 0) {
+        changed = true;
         addAll(data, value, mult, idx);
       } else if (mult < 0 && idx !== -1) {
+        changed = true;
         removeAll(data, value, Math.abs(mult), idx, this.comparator);
       }
     }
+    return changed;
   }
 }
 

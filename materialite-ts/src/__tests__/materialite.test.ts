@@ -142,11 +142,12 @@ test("db/overtone example - materialize track view", () => {
         return [[ret, 1]];
       },
       ([_, __, track]) => track.id
-    )
-    .debug(inspect);
+    );
 
   const sink = new ArraySink(stream);
-  sink.onChange(() => {});
+  sink.onChange((d) => {
+    console.log(d);
+  });
 
   playlistSource.addAll(playlists);
   trackSource.addAll(tracks);

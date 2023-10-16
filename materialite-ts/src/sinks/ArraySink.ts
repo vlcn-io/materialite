@@ -13,9 +13,15 @@ export class ArraySink<T> extends Sink<T, T[]> {
   readonly data: T[] = [];
 
   protected run(version: Version) {
+    let changed = false;
     this.reader.drain(version).forEach((collection) => {
       // now we incrementally update our sink.
-      sinkMutableArray(collection, this.data, this.comparator);
+      changed =
+        changed || sinkMutableArray(collection, this.data, this.comparator);
     });
+    // TODO: why is the sink called so damn often?
+    if (changed) {
+      this.notify(this.data);
+    }
   }
 }

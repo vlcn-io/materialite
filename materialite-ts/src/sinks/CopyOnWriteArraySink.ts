@@ -13,11 +13,21 @@ export class CopyOnWriteArraySink<T> extends Sink<T, readonly T[]> {
   }
 
   protected run(version: Version) {
+    const collections = this.reader.drain(version);
+    if (collections.length === 0) {
+      return;
+    }
+
     const newData = [...this.#data];
-    this.reader.drain(version).forEach((collection) => {
+    let changed = false;
+    collections.forEach((collection) => {
       // now we incrementally update our sink.
-      sinkMutableArray(collection, newData, this.comparator);
+      changed =
+        changed || sinkMutableArray(collection, newData, this.comparator);
     });
     this.#data = newData;
+    if (changed) {
+      this.notify(newData);
+    }
   }
 }

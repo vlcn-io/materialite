@@ -8,16 +8,21 @@ export function sinkMutableArray<T>(
   collection: Multiset<T>,
   data: T[],
   comparator: Comparator<T>
-) {
+): boolean {
+  let changed = false;
   for (const entry of collection.entries) {
     let [value, mult] = entry;
     const idx = binarySearch(data, value, comparator);
     if (mult > 0) {
+      changed = true;
       addAll(data, value, mult, idx);
     } else if (mult < 0 && idx !== -1) {
+      changed = true;
       removeAll(data, value, Math.abs(mult), idx, comparator);
     }
   }
+
+  return changed;
 }
 
 export function addAll<T>(data: T[], value: T, mult: number, idx: number) {

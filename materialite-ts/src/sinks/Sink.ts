@@ -29,9 +29,9 @@ export abstract class Sink<T, CT> {
     });
   }
 
-  protected notify() {
+  protected notify(d: CT) {
     for (const listener of this.#listeners) {
-      listener(this.data);
+      listener(d);
     }
   }
 
