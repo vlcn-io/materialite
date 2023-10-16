@@ -23,7 +23,7 @@ export class CopyOnWriteArraySink<T> extends Sink<T, readonly T[]> {
     collections.forEach((collection) => {
       // now we incrementally update our sink.
       changed =
-        changed || sinkMutableArray(collection, newData, this.comparator);
+        sinkMutableArray(collection, newData, this.comparator) || changed;
     });
     this.#data = newData;
     if (changed) {

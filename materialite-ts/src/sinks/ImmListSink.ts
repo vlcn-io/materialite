@@ -21,7 +21,7 @@ export class ImmListSink<T> extends Sink<T, List<T>> {
     const newData = this.#data.asMutable();
     collections.forEach((collection) => {
       // now we incrementally update our sink.
-      changed = changed || this.#sink(collection, newData);
+      changed = this.#sink(collection, newData) || changed;
     });
     const immNewData = newData.asImmutable();
     this.#data = immNewData;

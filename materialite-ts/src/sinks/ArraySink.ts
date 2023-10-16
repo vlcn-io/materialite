@@ -17,7 +17,7 @@ export class ArraySink<T> extends Sink<T, T[]> {
     this.reader.drain(version).forEach((collection) => {
       // now we incrementally update our sink.
       changed =
-        changed || sinkMutableArray(collection, this.data, this.comparator);
+        sinkMutableArray(collection, this.data, this.comparator) || changed;
     });
     // TODO: why is the sink called so damn often?
     if (changed) {
