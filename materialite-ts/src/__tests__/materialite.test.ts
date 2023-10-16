@@ -1,6 +1,7 @@
 import { test } from "vitest";
 import { Materialite } from "../materialite";
 import util from "util";
+import { ArraySink } from "../sinks/ArraySink";
 
 function inspect(e: any) {
   console.log(util.inspect(e, false, null, true));
@@ -96,7 +97,7 @@ test("db/overtone example - materialize track view", () => {
 
   // playlistTrackSource.stream.debug((v) => inspect(v));
 
-  playlistSource.stream
+  const stream = playlistSource.stream
     .filter((playlist) => playlist.id === 1)
     .join(
       playlistTrackSource.stream,
@@ -143,6 +144,9 @@ test("db/overtone example - materialize track view", () => {
       ([_, __, track]) => track.id
     )
     .debug(inspect);
+
+  const sink = new ArraySink(stream);
+  sink.onChange(() => {});
 
   playlistSource.addAll(playlists);
   trackSource.addAll(tracks);
