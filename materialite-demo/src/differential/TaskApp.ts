@@ -6,14 +6,18 @@
  */
 
 import { createTasks } from "../data/tasks/createTasks";
+import { TaskFilter } from "./TaskFilter";
 import { html } from "./support/vanillajs";
 
 const seedTasks = createTasks(1000);
 
 export function TaskApp() {
-  return html({
-    clicked(e) {
-      console.log(e);
-    },
-  })`<div events="click:clicked">Hello world!</div>`;
+  function onFilterChange() {}
+  return html()`<div class="flex h-screen">
+    <div className="w-3/4 bg-gray-100 overflow-y-auto">
+      ${TaskFilter({
+        onFilterChange,
+      })}
+    </div>
+  </div>`;
 }

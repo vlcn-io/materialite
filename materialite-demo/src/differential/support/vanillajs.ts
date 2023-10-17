@@ -1,6 +1,6 @@
 const tempEl = document.createElement("div");
 type Value = string | HTML | Value[];
-type Value2 = string | Node;
+type Value2 = string | Node | Node[] | string[];
 type HTML = {
   __html__: string;
 };
@@ -21,7 +21,17 @@ export function html(handlers?: { [key: string]: (e: Event) => void }) {
   return (parts: TemplateStringsArray, ...values: Value2[]): Node => {
     const slottedHtml = parts
       .map((part, i) => {
-        return part + (i < values.length ? `<span id="SLOT_${i}" />` : "");
+        if (i < values.length) {
+          const value = values[i];
+          if (typeof value === "string") {
+            return part + value;
+          } else if (Array.isArray(value)) {
+            return part + value.join("");
+          } else {
+            return part + `<slot id="SLOT_${i}" />`;
+          }
+        }
+        return part;
       })
       .join("");
     const parser = new DOMParser();
@@ -48,6 +58,9 @@ export function html(handlers?: { [key: string]: (e: Event) => void }) {
     // now replace each splot with value
     for (let i = 0; i < values.length; i++) {
       const value = values[i];
+      if (typeof value === "string" || Array.isArray(value)) {
+        continue;
+      }
       const node = doc.getElementById(`SLOT_${i}`);
       if (node == null) {
         console.warn(`No node with id SLOT_${i}`);
@@ -56,13 +69,17 @@ export function html(handlers?: { [key: string]: (e: Event) => void }) {
       if (typeof value === "string") {
         node.textContent = value;
       } else if (Array.isArray(value)) {
-        node.textContent = value.join("");
+        node.replaceWith(...value);
       } else if (typeof value === "object") {
         node.replaceWith(value);
       }
     }
 
-    return doc.firstChild!;
+    // if (doc.body.children.length > 1) {
+    //   return [...doc.body.children];
+    // }
+
+    return doc.body.firstChild!;
   };
 }
 
