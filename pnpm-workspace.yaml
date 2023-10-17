@@ -1,5 +1,6 @@
 packages:
   - "materialite-ts"
+  - "materialite-demo"
   - "ts-buildall"
   - "ts-datastructures"
   - "ts-db"
