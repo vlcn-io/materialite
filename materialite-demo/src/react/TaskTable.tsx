@@ -3,14 +3,19 @@ import { Task } from "../data/tasks/schema";
 
 type TaskTableProps = {
   tasks: Task[];
-  onTaskClick: (t: Task) => void;
+  onTaskClick: (task: Task, idx: number) => void;
+  selectedTask?: number;
 };
 
-export const TaskTable: React.FC<TaskTableProps> = ({ tasks, onTaskClick }) => {
+export const TaskTable: React.FC<TaskTableProps> = ({
+  tasks,
+  onTaskClick,
+  selectedTask,
+}) => {
   return (
     <div
       className="overflow-x-auto bg-gray-100 p-6"
-      style={{ position: "relative", top: 60 }}
+      style={{ position: "relative", top: 120 }}
     >
       <table className="min-w-full bg-white rounded-md overflow-hidden">
         <thead>
@@ -25,12 +30,13 @@ export const TaskTable: React.FC<TaskTableProps> = ({ tasks, onTaskClick }) => {
           </tr>
         </thead>
         <tbody>
-          {tasks.map((task) => (
+          {tasks.map((task, i) => (
             <tr
               key={task.id}
-              className="border-t"
-              onClick={() => onTaskClick(task)}
-              style={{ cursor: "pointer" }}
+              className={`border-t cursor-pointer ${
+                task.id === selectedTask ? "bg-blue-200" : "hover:bg-blue-100"
+              }`}
+              onClick={() => onTaskClick(task, i)}
             >
               <td className="py-2 px-3">{task.title}</td>
               <td className="py-2 px-3">{task.assignee}</td>

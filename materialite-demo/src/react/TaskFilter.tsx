@@ -41,24 +41,58 @@ export const TaskFilter: React.FC<TaskFilterProps> = ({ onFilterChange }) => {
     >
       <div className="grid grid-cols-2 gap-4">
         {/* Assignee Filter */}
-        <select
-          value={filter.assignee || ""}
-          onChange={(e) => {
-            controlChange("assignee", e.target.value || undefined);
-          }}
-        >
-          <option value="">Any Assignee</option>
-          {names.map(makeOption)}
-        </select>
-        <select
-          value={filter.priority || ""}
-          onChange={(e) => {
-            controlChange("priority", e.target.value || undefined);
-          }}
-        >
-          <option value="">Any Priority</option>
-          {priorities.map(makeOption)}
-        </select>
+        <div>
+          <label className="m-2 inline-block w-24">Assignee</label>
+          <select
+            className="bg-green-100 p-2 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none w-64"
+            value={filter.assignee || ""}
+            onChange={(e) => {
+              controlChange("assignee", e.target.value || undefined);
+            }}
+          >
+            <option value="">Any</option>
+            {names.map(makeOption)}
+          </select>
+        </div>
+        <div>
+          <label className="m-2 inline-block w-24">Priority</label>
+          <select
+            className="bg-green-100 p-2 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none w-64"
+            value={filter.priority || ""}
+            onChange={(e) => {
+              controlChange("priority", e.target.value || undefined);
+            }}
+          >
+            <option value="">Any</option>
+            {priorities.map(makeOption)}
+          </select>
+        </div>
+        <div>
+          <label className="m-2 inline-block w-24">Project</label>
+          <select
+            className="bg-green-100 p-2 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none w-64"
+            value={filter.project || ""}
+            onChange={(e) => {
+              controlChange("project", e.target.value || undefined);
+            }}
+          >
+            <option value="">Any</option>
+            {projects.map(makeOption)}
+          </select>
+        </div>
+        <div>
+          <label className="m-2 inline-block w-24">Status</label>
+          <select
+            className="bg-green-100 p-2 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none w-64"
+            value={filter.status || ""}
+            onChange={(e) => {
+              controlChange("status", e.target.value || undefined);
+            }}
+          >
+            <option value="">Any</option>
+            {statuses.map(makeOption)}
+          </select>
+        </div>
       </div>
     </div>
   );
