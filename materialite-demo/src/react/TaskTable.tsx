@@ -14,8 +14,8 @@ export const TaskTable: React.FC<TaskTableProps> = ({
 }) => {
   return (
     <div
-      className="overflow-x-auto bg-gray-100 p-6"
-      style={{ position: "relative", top: 120 }}
+      className="bg-gray-100 p-6 overflow-y-auto"
+      style={{ position: "relative", top: 130, height: "calc(100vh - 130px)" }}
     >
       <table className="min-w-full bg-white rounded-md overflow-hidden">
         <thead>

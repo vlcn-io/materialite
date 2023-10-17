@@ -31,7 +31,11 @@ export const TaskFilter: React.FC<TaskFilterProps> = ({ onFilterChange }) => {
   }
 
   function makeOption(v: string) {
-    return <option value={v}>{v}</option>;
+    return (
+      <option value={v} key={v}>
+        {v}
+      </option>
+    );
   }
 
   return (
