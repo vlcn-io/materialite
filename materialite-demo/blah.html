@@ -1,0 +1,20 @@
+<html>
+
+<body>
+  <a href="#" onClick="doEvent('clicked', event)">basfsdfa</a>
+  <script>
+    function clicked(e) {
+      console.log(e);
+    }
+
+    function doEvent(key, e) {
+      eventMap.get(key)(e);
+    }
+
+    window.eventMap = new Map();
+    eventMap.set('clicked', clicked);
+
+  </script>
+</body>
+
+</html>
