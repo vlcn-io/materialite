@@ -1,6 +1,6 @@
 import React from "react";
 import { Task } from "../data/tasks/schema";
-import { projects } from "../data/tasks/createTasks";
+import { names, projects } from "../data/tasks/createTasks";
 type TaskComponentProps = {
   task: Task;
   onTaskChanged: (task: Task) => void;
@@ -15,11 +15,20 @@ export const TaskComponent: React.FC<TaskComponentProps> = ({
       <h1 className="text-xl font-semibold mb-4">{task.title}</h1>
       <div className="mb-4">
         <label className="block mb-2 font-medium">Assignee:</label>
-        <input
+        <select
           className="border rounded w-full py-2 px-3"
           value={task.assignee}
-          onChange={(e) => onTaskChanged({ ...task, assignee: e.target.value })}
-        />
+          onChange={(e) =>
+            onTaskChanged({
+              ...task,
+              assignee: e.target.value,
+            })
+          }
+        >
+          {names.map((p) => (
+            <option value={p}>{p}</option>
+          ))}
+        </select>
       </div>
       <div className="mb-4">
         <label className="block mb-2 font-medium">Description:</label>
@@ -81,7 +90,7 @@ export const TaskComponent: React.FC<TaskComponentProps> = ({
         <label className="block mb-2 font-medium">Project:</label>
         <select
           className="border rounded w-full py-2 px-3"
-          value={task.status}
+          value={task.project}
           onChange={(e) =>
             onTaskChanged({
               ...task,
