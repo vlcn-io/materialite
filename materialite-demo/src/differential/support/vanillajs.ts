@@ -1,5 +1,6 @@
 const tempEl = document.createElement("div");
 type Value = string | HTML | Value[];
+type Value2 = string | Node;
 type HTML = {
   __html__: string;
 };
@@ -16,28 +17,53 @@ const sanitize = (value: Value): string => {
   return tempEl.innerHTML;
 };
 
-export const html = (parts: TemplateStringsArray, ...values: Value[]) => {
-  return {
-    __html__: parts
+export function html(handlers?: { [key: string]: (e: Event) => void }) {
+  return (parts: TemplateStringsArray, ...values: Value2[]): Node => {
+    const slottedHtml = parts
       .map((part, i) => {
-        return part + (i < values.length ? sanitize(values[i]) : "");
+        return part + (i < values.length ? `<span id="SLOT_${i}" />` : "");
       })
-      .join(""),
-  };
-};
+      .join("");
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(slottedHtml, "text/html");
 
-export function htmle(handlers: {
-  [key: string]: (e: Event) => void;
-}): (parts: TemplateStringsArray, ...values: Value[]) => HTML {
-  return (parts: TemplateStringsArray, ...values: Value[]) => {
-    const html = {
-      __html__: parts
-        .map((part, i) => {
-          return part + (i < values.length ? sanitize(values[i]) : "");
-        })
-        .join(""),
-    };
-    return bind(html, handlers);
+    // bind event handlers
+    if (handlers != null) {
+      const elements = doc.querySelectorAll("[event]");
+      for (const el of elements) {
+        const events = getEventAttributes(el);
+        for (const [event, handler] of events) {
+          const handlerFn = handlers[handler];
+          if (!handlerFn) {
+            console.warn(`No handler for event ${event}`);
+            break;
+          }
+          // eventMap.set(id, new WeakRef(handlerFn));
+          // eventHandlerRegistry.register(handlerFn, id);
+          el.removeAttribute(event);
+          el.addEventListener(lowerFirst(event.substring(2)), handlerFn);
+        }
+      }
+    }
+
+    // now replace each splot with value
+    for (let i = 0; i < values.length; i++) {
+      const value = values[i];
+      const node = doc.getElementById(`SLOT_${i}`);
+      if (node == null) {
+        console.warn(`No node with id SLOT_${i}`);
+        continue;
+      }
+      if (typeof value === "string") {
+        node.textContent = value;
+      } else if (Array.isArray(value)) {
+        node.textContent = value.join("");
+      } else if (typeof value === "object") {
+        node.replaceWith(value);
+      }
+    }
+
+    return doc.firstChild!;
   };
 }
 
@@ -63,45 +89,13 @@ const eventHandlerRegistry = new FinalizationRegistry((heldValue: string) => {
   eventMap.delete(heldValue);
 });
 
-export const bind = (
-  html: HTML,
-  handlers: { [key: string]: (e: Event) => void }
-) => {
-  // parse the html
-  // for each element with an event attribute
-  // create a unique id for that element and store the event handler in map.
-  // replace the `event` call with `onX="eventHandler(id)"` where X is the event type
-  // return the html
-
-  const { __html__ } = html;
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(__html__, "text/html");
-  const elements = doc.querySelectorAll("[event]");
-  elements.forEach((el) => {
-    const id = "EL_" + elemId++;
-
-    const events = getEventAttributes(el);
-    for (const [event, handler] of events) {
-      const handlerFn = handlers[handler];
-      if (!handlerFn) {
-        console.warn(`No handler for event ${event}`);
-        return;
-      }
-      eventMap.set(id, new WeakRef(handlerFn));
-      eventHandlerRegistry.register(handlerFn, id);
-      el.removeAttribute(event);
-      el.setAttribute(event, `doEvent(${id}, event)`);
-    }
-  });
-  return {
-    __html__: doc.body.innerHTML,
-    eventMap,
-  };
-};
-
 function getEventAttributes(node: Element) {
   const attrs = Array.from(node.attributes);
   return attrs
     .filter((attr) => attr.name.startsWith("on"))
     .map((attr) => [attr.name, attr.value]);
+}
+
+function lowerFirst(s: string) {
+  return s.charAt(0).toLowerCase() + s.slice(1);
 }
