@@ -29,7 +29,7 @@ export function html(handlers?: { [key: string]: (e: Event) => void }) {
 
     // bind event handlers
     if (handlers != null) {
-      const elements = doc.querySelectorAll("[event]");
+      const elements = doc.querySelectorAll("[events]");
       for (const el of elements) {
         const events = getEventAttributes(el);
         for (const [event, handler] of events) {
@@ -39,9 +39,8 @@ export function html(handlers?: { [key: string]: (e: Event) => void }) {
             break;
           }
           // eventMap.set(id, new WeakRef(handlerFn));
-          // eventHandlerRegistry.register(handlerFn, id);
-          el.removeAttribute(event);
-          el.addEventListener(lowerFirst(event.substring(2)), handlerFn);
+          // eventHandlerRegistry.register(handlerFn, id););
+          el.addEventListener(event, handlerFn);
         }
       }
     }
@@ -90,10 +89,8 @@ const eventHandlerRegistry = new FinalizationRegistry((heldValue: string) => {
 });
 
 function getEventAttributes(node: Element) {
-  const attrs = Array.from(node.attributes);
-  return attrs
-    .filter((attr) => attr.name.startsWith("on"))
-    .map((attr) => [attr.name, attr.value]);
+  const events = node.getAttribute("events");
+  return events?.split(",").map((event) => event.trim().split(":")) ?? [];
 }
 
 function lowerFirst(s: string) {
