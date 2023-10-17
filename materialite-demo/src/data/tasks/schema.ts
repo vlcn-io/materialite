@@ -1,11 +1,13 @@
+export type Status = "todo" | "in-progress" | "done";
+export type Priority = "low" | "medium" | "high";
 export type Task = {
   id: string;
   assignee: string;
   title: string;
   description: string;
   dueDate: Date;
-  status: "todo" | "in-progress" | "done";
-  priority: "low" | "medium" | "high";
+  status: Status;
+  priority: Priority;
   labels: string[];
   project: string;
 };

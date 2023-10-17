@@ -8,7 +8,10 @@ type TaskTableProps = {
 
 export const TaskTable: React.FC<TaskTableProps> = ({ tasks, onTaskClick }) => {
   return (
-    <div className="overflow-x-auto bg-gray-100 p-6">
+    <div
+      className="overflow-x-auto bg-gray-100 p-6"
+      style={{ position: "relative", top: 60 }}
+    >
       <table className="min-w-full bg-white rounded-md overflow-hidden">
         <thead>
           <tr>
@@ -27,6 +30,7 @@ export const TaskTable: React.FC<TaskTableProps> = ({ tasks, onTaskClick }) => {
               key={task.id}
               className="border-t"
               onClick={() => onTaskClick(task)}
+              style={{ cursor: "pointer" }}
             >
               <td className="py-2 px-3">{task.title}</td>
               <td className="py-2 px-3">{task.assignee}</td>
