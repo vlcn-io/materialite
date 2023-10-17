@@ -1,28 +1,24 @@
-import React, { useState } from "react";
+import React from "react";
 import { Task } from "../data/tasks/schema";
+import { projects } from "../data/tasks/createTasks";
 type TaskComponentProps = {
   task: Task;
+  onTaskChanged: (task: Task) => void;
 };
 
-export const TaskComponent: React.FC<TaskComponentProps> = ({ task }) => {
-  const [localTask, setLocalTask] = useState(task);
-  const [propTask, setPropTask] = useState(task);
-  if (task != propTask) {
-    setPropTask(task);
-    setLocalTask(task);
-  }
-
+export const TaskComponent: React.FC<TaskComponentProps> = ({
+  task,
+  onTaskChanged,
+}) => {
   return (
     <div>
-      <h1 className="text-xl font-semibold mb-4">{localTask.title}</h1>
+      <h1 className="text-xl font-semibold mb-4">{task.title}</h1>
       <div className="mb-4">
         <label className="block mb-2 font-medium">Assignee:</label>
         <input
           className="border rounded w-full py-2 px-3"
-          value={localTask.assignee}
-          onChange={(e) =>
-            setLocalTask({ ...localTask, assignee: e.target.value })
-          }
+          value={task.assignee}
+          onChange={(e) => onTaskChanged({ ...task, assignee: e.target.value })}
         />
       </div>
       <div className="mb-4">
@@ -30,9 +26,9 @@ export const TaskComponent: React.FC<TaskComponentProps> = ({ task }) => {
         <textarea
           className="border rounded w-full py-2 px-3"
           rows={5}
-          value={localTask.description}
+          value={task.description}
           onChange={(e) =>
-            setLocalTask({ ...localTask, description: e.target.value })
+            onTaskChanged({ ...task, description: e.target.value })
           }
         ></textarea>
       </div>
@@ -41,9 +37,9 @@ export const TaskComponent: React.FC<TaskComponentProps> = ({ task }) => {
         <input
           type="date"
           className="border rounded w-full py-2 px-3"
-          value={localTask.dueDate.toISOString().split("T")[0]}
+          value={task.dueDate.toISOString().split("T")[0]}
           onChange={(e) =>
-            setLocalTask({ ...localTask, dueDate: new Date(e.target.value) })
+            onTaskChanged({ ...task, dueDate: new Date(e.target.value) })
           }
         />
       </div>
@@ -51,10 +47,10 @@ export const TaskComponent: React.FC<TaskComponentProps> = ({ task }) => {
         <label className="block mb-2 font-medium">Status:</label>
         <select
           className="border rounded w-full py-2 px-3"
-          value={localTask.status}
+          value={task.status}
           onChange={(e) =>
-            setLocalTask({
-              ...localTask,
+            onTaskChanged({
+              ...task,
               status: e.target.value as Task["status"],
             })
           }
@@ -68,10 +64,10 @@ export const TaskComponent: React.FC<TaskComponentProps> = ({ task }) => {
         <label className="block mb-2 font-medium">Priority:</label>
         <select
           className="border rounded w-full py-2 px-3"
-          value={localTask.priority}
+          value={task.priority}
           onChange={(e) =>
-            setLocalTask({
-              ...localTask,
+            onTaskChanged({
+              ...task,
               priority: e.target.value as Task["priority"],
             })
           }
@@ -83,18 +79,21 @@ export const TaskComponent: React.FC<TaskComponentProps> = ({ task }) => {
       </div>
       <div className="mb-4">
         <label className="block mb-2 font-medium">Project:</label>
-        <input
+        <select
           className="border rounded w-full py-2 px-3"
-          value={localTask.project}
+          value={task.status}
           onChange={(e) =>
-            setLocalTask({ ...localTask, project: e.target.value })
+            onTaskChanged({
+              ...task,
+              project: e.target.value,
+            })
           }
-        />
+        >
+          {projects.map((p) => (
+            <option value={p}>{p}</option>
+          ))}
+        </select>
       </div>
-      {/* Additional fields like labels can be added similarly */}
-      <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-        Save Changes
-      </button>
     </div>
   );
 };

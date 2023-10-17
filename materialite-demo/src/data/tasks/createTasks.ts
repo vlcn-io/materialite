@@ -103,7 +103,7 @@ export const createTasks = (numTasks: number): Task[] => {
   for (let i = 0; i < numTasks; i++) {
     const [title, description] = generateText();
     const task: Task = {
-      id: `task-${taskId}`,
+      id: taskId,
       assignee: getRandomItem(names),
       title,
       description,

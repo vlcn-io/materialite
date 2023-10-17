@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { TaskTable } from "./TaskTable";
 import { TaskComponent } from "./Task";
 import { Task } from "../data/tasks/schema";
@@ -7,33 +7,50 @@ import { TaskFilter } from "./TaskFilter";
 
 const seedTasks = createTasks(1000);
 export const TaskApp: React.FC = () => {
-  const [selectedTask, setSelectedTask] = useState<[number, Task] | null>(null);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [allTasks, setAllTasks] = useState(seedTasks);
-  const [filteredTasks, setFilteredTasks] = useState(allTasks);
+  const [filter, setFilter] = useState<TaskFilter>({});
 
-  const onTaskSelected = (task: Task, idx: number) => {
-    setSelectedTask([idx, task]);
-  };
-
-  function refilterTasks(filter: TaskFilter) {
-    setFilteredTasks(filterTasks(filter, allTasks));
+  function onTaskSelected(task: Task) {
+    setSelectedTask(task);
   }
+
+  function onTaskUpdated(task: Task) {
+    if (selectedTask == null) {
+      return;
+    }
+    if (selectedTask.id !== task.id) {
+      return;
+    }
+    // oof
+    const allTasksCopy = [...allTasks];
+    const idx = allTasksCopy.findIndex((v) => {
+      return v.id === task.id;
+    });
+    allTasksCopy[idx] = task;
+    setAllTasks(allTasksCopy);
+    setSelectedTask(task);
+  }
+
+  const filteredTasks = useMemo(() => {
+    return filterTasks(filter, allTasks);
+  }, [allTasks, filter]);
 
   return (
     <div className="flex h-screen">
       {/* Left Pane - Task Table */}
       <div className="w-3/4 bg-gray-100 overflow-y-auto">
-        <TaskFilter onFilterChange={refilterTasks} />
+        <TaskFilter onFilterChange={setFilter} />
         <TaskTable
           tasks={filteredTasks}
           onTaskClick={onTaskSelected}
-          selectedTask={selectedTask != null ? selectedTask[1].id : undefined}
+          selectedTask={selectedTask != null ? selectedTask.id : undefined}
         />
       </div>
       {/* Right Pane - Task Details */}
       <div className="w-1/4 bg-white overflow-y-auto p-6">
         {selectedTask ? (
-          <TaskComponent task={selectedTask[1]} />
+          <TaskComponent task={selectedTask} onTaskChanged={onTaskUpdated} />
         ) : (
           <div>Select a task to view details</div>
         )}
