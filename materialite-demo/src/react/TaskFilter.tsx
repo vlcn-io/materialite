@@ -1,20 +1,38 @@
 import React, { useState } from "react";
 import { Priority, Status } from "../data/tasks/schema";
 
+import {
+  names,
+  priorities,
+  statuses,
+  projects,
+} from "../data/tasks/createTasks";
+
 type TaskFilterProps = {
   onFilterChange: (filter: TaskFilter) => void;
 };
 
 export type TaskFilter = {
   assignee?: string;
-  priority?: Status;
-  status?: Priority;
+  priority?: Priority;
+  status?: Status;
   project?: string;
-  dueDate?: Date;
 };
 
 export const TaskFilter: React.FC<TaskFilterProps> = ({ onFilterChange }) => {
   const [filter, setFilter] = useState<TaskFilter>({});
+
+  function controlChange(key: keyof TaskFilter, value?: string) {
+    setFilter((prev) => ({ ...prev, [key]: value }));
+    onFilterChange({
+      ...filter,
+      [key]: value || undefined,
+    });
+  }
+
+  function makeOption(v: string) {
+    return <option value={v}>{v}</option>;
+  }
 
   return (
     <div
@@ -23,20 +41,24 @@ export const TaskFilter: React.FC<TaskFilterProps> = ({ onFilterChange }) => {
     >
       <div className="grid grid-cols-2 gap-4">
         {/* Assignee Filter */}
-        <div>
-          <select
-            value={filter.assignee || ""}
-            onChange={(e) => {
-              setFilter((prev) => ({ ...prev, assignee: e.target.value }));
-              onFilterChange({ ...filter, assignee: e.target.value });
-            }}
-          >
-            <option value="">All Assignees</option>
-            {/* Add all the assignee options here */}
-          </select>
-        </div>
-
-        {/* ... Similar structure for Priority, Status, Project, and Due Date */}
+        <select
+          value={filter.assignee || ""}
+          onChange={(e) => {
+            controlChange("assignee", e.target.value || undefined);
+          }}
+        >
+          <option value="">Any Assignee</option>
+          {names.map(makeOption)}
+        </select>
+        <select
+          value={filter.priority || ""}
+          onChange={(e) => {
+            controlChange("priority", e.target.value || undefined);
+          }}
+        >
+          <option value="">Any Priority</option>
+          {priorities.map(makeOption)}
+        </select>
       </div>
     </div>
   );

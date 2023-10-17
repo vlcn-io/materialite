@@ -1,33 +1,35 @@
-import { Task } from "./schema";
+import { Priority, Status, Task } from "./schema";
 
 let taskId = 1;
-export const createTasks = (numTasks: number): Task[] => {
-  const names = [
-    "John",
-    "Jane",
-    "Sam",
-    "Anna",
-    "Michael",
-    "Sarah",
-    "Chris",
-    "Jessica",
-  ];
-  const projects = [
-    "Website Redesign",
-    "App Development",
-    "Marketing Strategy",
-    "Customer Outreach",
-  ];
-  const labels = [
-    "frontend",
-    "backend",
-    "ux",
-    "research",
-    "design",
-    "bug",
-    "feature",
-  ];
+export const names = [
+  "John",
+  "Jane",
+  "Sam",
+  "Anna",
+  "Michael",
+  "Sarah",
+  "Chris",
+  "Jessica",
+];
+export const projects = [
+  "Website Redesign",
+  "App Development",
+  "Marketing Strategy",
+  "Customer Outreach",
+];
+export const labels = [
+  "frontend",
+  "backend",
+  "ux",
+  "research",
+  "design",
+  "bug",
+  "feature",
+];
+export const priorities: Priority[] = ["low", "medium", "high"];
+export const statuses: Status[] = ["todo", "in-progress", "done"];
 
+export const createTasks = (numTasks: number): Task[] => {
   const actionPhrases = [
     "Implement",
     "Develop",
