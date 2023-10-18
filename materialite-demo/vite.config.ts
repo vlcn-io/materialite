@@ -12,6 +12,7 @@ export default defineConfig({
       input: {
         index: resolve(__dirname, "index.html"),
         react: resolve(__dirname, "react.html"),
+        "react-differential": resolve(__dirname, "react-differential.html"),
         differential: resolve(__dirname, "differential.html"),
       },
     },

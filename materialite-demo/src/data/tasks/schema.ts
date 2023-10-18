@@ -10,4 +10,5 @@ export type Task = {
   priority: Priority;
   labels: string[];
   project: string;
+  selected?: boolean;
 };
