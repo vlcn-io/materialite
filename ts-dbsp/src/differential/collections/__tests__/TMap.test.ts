@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { TMap } from "../TMap";
+import { TMap } from "../TMap.js";
 
 test("setting and getting", () => {
   const map = new TMap();

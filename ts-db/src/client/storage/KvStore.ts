@@ -1,6 +1,6 @@
-import { MemTree } from "../../common/MemTree";
-import { Key, IndexKey, Schema, Value } from "../schema/Schema";
-import { RangeOptions, Transaction, Tx } from "./Transaction";
+import { MemTree } from "../../common/MemTree.js";
+import { Key, IndexKey, Schema, Value } from "../schema/Schema.js";
+import { RangeOptions, Transaction, Tx } from "./Transaction.js";
 
 /**
  * KV Store in the client should likey pull pages in...

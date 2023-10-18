@@ -18,6 +18,9 @@ importers:
 
   materialite-demo:
     dependencies:
+      '@vlcn.io/materialite':
+        specifier: workspace:*
+        version: link:../materialite-ts
       react:
         specifier: ^18.2.0
         version: 18.2.0

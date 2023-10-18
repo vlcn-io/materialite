@@ -1,7 +1,7 @@
 import { test } from "vitest";
-import { GraphBuilder } from "../differential/dataflow/differential-dataflow";
-import { Entry, Multiset } from "../differential/multiset";
-import { inspect } from "../inspect";
+import { GraphBuilder } from "../differential/dataflow/differential-dataflow.js";
+import { Entry, Multiset } from "../differential/multiset.js";
+import { inspect } from "../inspect.js";
 
 /**
  * Craft an example where we have a bunch of relations and compute over those relations.

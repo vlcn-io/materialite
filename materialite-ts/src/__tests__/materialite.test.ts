@@ -1,7 +1,7 @@
 import { test } from "vitest";
-import { Materialite } from "../materialite";
+import { Materialite } from "../materialite.js";
 import util from "util";
-import { ArraySink } from "../sinks/ArraySink";
+import { ArraySink } from "../sinks/ArraySink.js";
 
 function inspect(e: any) {
   console.log(util.inspect(e, false, null, true));

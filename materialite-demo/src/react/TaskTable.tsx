@@ -1,5 +1,5 @@
 import React from "react";
-import { Task } from "../data/tasks/schema";
+import { Task } from "../data/tasks/schema.js";
 
 type TaskTableProps = {
   tasks: Task[];

@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "module": "true",
+  "type": "module",
   "scripts": {
     "test": "vitest"
   },

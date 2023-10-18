@@ -3,7 +3,7 @@ import {
   isJoinResult,
   joinResult,
 } from "@vlcn.io/datastructures-and-algos/tuple";
-import { Entry, Multiset } from "./multiset";
+import { Entry, Multiset } from "./multiset.js";
 import { TuplableMap } from "@vlcn.io/datastructures-and-algos/TuplableMap";
 
 export class Index<K, V> {

@@ -1,6 +1,6 @@
-import { Version } from "../core/types";
-import { sinkMutableArray } from "./updateMutableArray";
-import { Sink } from "./Sink";
+import { Version } from "../core/types.js";
+import { sinkMutableArray } from "./updateMutableArray.js";
+import { Sink } from "./Sink.js";
 
 /**
  * A sink that materializes a stream of differences into a new copy of an array.

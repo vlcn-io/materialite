@@ -1,4 +1,4 @@
-import { Priority, Status, Task } from "./schema";
+import { Priority, Status, Task } from "./schema.js";
 
 let taskId = 1;
 export const names = [

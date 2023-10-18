@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
-import { mergeSort } from "../sorting";
-import { AttrNum, TypeNum } from "../../client/schema/Schema";
+import { mergeSort } from "../sorting.js";
+import { AttrNum, TypeNum } from "../../client/schema/Schema.js";
 
 test("mergeSort", () => {
   const left = [1, 3, 5, 7, 9].map(

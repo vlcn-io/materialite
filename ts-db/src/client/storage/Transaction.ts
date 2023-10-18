@@ -17,9 +17,9 @@
  *
  */
 
-import { MemTree } from "../../common/MemTree";
-import { mergeSort } from "../../common/sorting";
-import { IndexKey, Value } from "../schema/Schema";
+import { MemTree } from "../../common/MemTree.js";
+import { mergeSort } from "../../common/sorting.js";
+import { IndexKey, Value } from "../schema/Schema.js";
 
 export type RangeOptions = {
   bound?: IndexKey;

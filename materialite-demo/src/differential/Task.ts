@@ -1,13 +1,13 @@
-import { names, projects } from "../data/tasks/createTasks";
-import { Task } from "../data/tasks/schema";
-import { html } from "./support/vanillajs";
+import { names, projects } from "../data/tasks/createTasks.js";
+import { Task } from "../data/tasks/schema.js";
+import { html } from "./support/vanillajs.js";
 
 export function TaskComponent({
   task,
   onTaskChanged,
 }: {
   task: Task;
-  onTaskChanged: (task: Task) => void;
+  onTaskChanged: (oldTask: Task, newTask: Task) => void;
 }) {
   // TODO: undirectional rather than squirreling away a copy
   let taskCopy = { ...task };
@@ -18,11 +18,12 @@ export function TaskComponent({
     controlChange("assignee", e);
   }
   function dueDateChanged(e: Event) {
+    const oldTask = taskCopy;
     taskCopy = {
       ...taskCopy,
       dueDate: new Date((e.target as HTMLInputElement).value),
     };
-    onTaskChanged(taskCopy);
+    onTaskChanged(oldTask, taskCopy);
   }
   function statusChanged(e: Event) {
     controlChange("assignee", e);
@@ -35,11 +36,12 @@ export function TaskComponent({
   }
 
   function controlChange(key: keyof Task, e: Event) {
+    const oldTask = taskCopy;
     taskCopy = {
       ...taskCopy,
       [key]: (e.target as HTMLInputElement).value || undefined,
     };
-    onTaskChanged(taskCopy);
+    onTaskChanged(oldTask, taskCopy);
   }
 
   return html({

@@ -1,4 +1,4 @@
-import { Multiset } from "../core/multiset";
+import { Multiset } from "../core/multiset.js";
 import {
   binarySearch,
   Comparator,

@@ -1,8 +1,10 @@
-import { Task } from "../data/tasks/schema";
-import { html } from "./support/vanillajs";
+import { DifferenceStream } from "@vlcn.io/materialite";
+import { DOMSink } from "@vlcn.io/materialite/sinks/DOMSink";
+import { Task } from "../data/tasks/schema.js";
+import { html } from "./support/vanillajs.js";
 
 type TaskTableProps = {
-  tasks: Task[];
+  tasks: DifferenceStream<Task>;
   onTaskClick: (task: Task) => void;
   selectedTask?: number;
 };
@@ -11,8 +13,15 @@ export function TaskTable({
   tasks,
   onTaskClick,
   selectedTask,
-}: TaskTableProps) {
-  const rows = tasks.map((task) => Task({ onTaskClick, task, selectedTask }));
+}: /// map over tasks, sink into dom list
+TaskTableProps) {
+  const rows = tasks.map(
+    (task) => [task.id, Task({ onTaskClick, task, selectedTask })] as const
+  );
+  const tbody = html()`<tbody></tbody>`;
+  new DOMSink(tbody, rows, (l, r) => {
+    return l[0] - r[0];
+  });
   return html()`
     <div
     class="bg-gray-100 p-6 overflow-y-auto"
@@ -29,13 +38,12 @@ export function TaskTable({
             <th class="text-left py-2 px-3 font-semibold">Labels</th>
           </tr>
         </thead>
-        <tbody>
-          ${rows}
-        </tbody>
+        ${tbody}
       </table>
     </div>`;
 }
 
+// join with selection state
 function Task({
   onTaskClick,
   task,

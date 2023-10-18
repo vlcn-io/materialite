@@ -1,5 +1,5 @@
-import { Multiset } from "../multiset";
-import { Version } from "../types";
+import { Multiset } from "../multiset.js";
+import { Version } from "../types.js";
 /**
  * A read handle for a dataflow edge that receives data from a writer.
  */

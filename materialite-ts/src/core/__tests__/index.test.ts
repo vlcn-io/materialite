@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { Index } from "../index";
+import { Index } from "../index.js";
 
 test("add and get", () => {
   const index = new Index<number, string>();

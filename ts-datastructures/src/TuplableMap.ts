@@ -1,5 +1,5 @@
-import { objectId } from "./objectTracking";
-import { isTuple } from "./tuple";
+import { objectId } from "./objectTracking.js";
+import { isTuple } from "./tuple.js";
 
 /**
  * A regular JavaScript map but it can have tuples of arbitrary things for keys.

@@ -1,16 +1,14 @@
 import { TuplableMap } from "@vlcn.io/datastructures-and-algos/TuplableMap";
-import { Index } from "..";
-import { Entry, Multiset } from "../multiset";
-import { Version } from "../types";
+import { Index } from "../index.js";
+import { Entry, Multiset } from "../multiset.js";
+import { Version } from "../types.js";
 import {
   BinaryOperator,
   DifferenceStreamReader,
   DifferenceStreamWriter,
   UnaryOperator,
-} from "./graph";
-import {
-  JoinResultVariadic,
-} from "@vlcn.io/datastructures-and-algos/tuple";
+} from "./graph.js";
+import { JoinResultVariadic } from "@vlcn.io/datastructures-and-algos/tuple";
 
 export class LinearUnaryOperator<I, O> extends UnaryOperator<I, O> {
   constructor(

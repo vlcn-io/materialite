@@ -1,6 +1,6 @@
 import React from "react";
-import { Task } from "../data/tasks/schema";
-import { names, projects } from "../data/tasks/createTasks";
+import { Task } from "../data/tasks/schema.js";
+import { names, projects } from "../data/tasks/createTasks.js";
 type TaskComponentProps = {
   task: Task;
   onTaskChanged: (task: Task) => void;

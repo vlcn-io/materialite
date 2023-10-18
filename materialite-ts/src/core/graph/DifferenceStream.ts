@@ -1,7 +1,7 @@
 import { JoinResultVariadic } from "@vlcn.io/datastructures-and-algos/tuple";
-import { Entry, Multiset } from "../multiset";
-import { Version } from "../types";
-import { DifferenceStreamReader, RootDifferenceStreamWriter } from "./graph";
+import { Entry, Multiset } from "../multiset.js";
+import { Version } from "../types.js";
+import { DifferenceStreamReader, RootDifferenceStreamWriter } from "./graph.js";
 import {
   ConcatOperator,
   CountOperator,
@@ -11,7 +11,7 @@ import {
   MapOperator,
   NegateOperator,
   ReduceOperator,
-} from "./operators";
+} from "./operators.js";
 
 export class DifferenceStream<T> {
   readonly #writer;

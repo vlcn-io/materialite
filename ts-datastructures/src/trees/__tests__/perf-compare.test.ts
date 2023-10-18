@@ -1,5 +1,5 @@
 import { test } from "vitest";
-import { RBTree } from "../RedBlackTree";
+import { RBTree } from "../RedBlackTree.js";
 
 test("time a regular map vs an rbtree", () => {
   const N = 1_000_000;

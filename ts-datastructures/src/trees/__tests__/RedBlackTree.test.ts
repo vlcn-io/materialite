@@ -1,7 +1,7 @@
 import { test, expect } from "vitest";
-import { RBTree } from "../RedBlackTree";
-import { shuffle } from "../../shuffle";
-import { INode } from "../TreeBase";
+import { RBTree } from "../RedBlackTree.js";
+import { shuffle } from "../../shuffle.js";
+import { INode } from "../TreeBase.js";
 
 type Position = "L" | "R" | "ROOT";
 test("inserting items in order still results in a balanced tree", () => {

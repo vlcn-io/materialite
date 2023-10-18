@@ -1,4 +1,4 @@
-import { INode, TreeBase } from "./TreeBase";
+import { INode, TreeBase } from "./TreeBase.js";
 
 export class RBNode<V> implements INode<V> {
   data: V | null;

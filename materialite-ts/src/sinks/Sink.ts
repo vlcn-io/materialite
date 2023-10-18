@@ -1,6 +1,6 @@
-import { Version } from "../core/types";
-import { comparator as consolidationComparator } from "../core/consolidation";
-import { DifferenceStream } from "../core/graph/DifferenceStream";
+import { Version } from "../core/types.js";
+import { comparator as consolidationComparator } from "../core/consolidation.js";
+import { DifferenceStream } from "../core/graph/DifferenceStream.js";
 
 export abstract class Sink<T, CT> {
   readonly #stream;

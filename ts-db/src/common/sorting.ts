@@ -1,4 +1,4 @@
-import { IndexKey, Value } from "../client/schema/Schema";
+import { IndexKey, Value } from "../client/schema/Schema.js";
 
 export function mergeSort(
   left: readonly (readonly [IndexKey, Value])[],

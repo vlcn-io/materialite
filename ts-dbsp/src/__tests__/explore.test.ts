@@ -1,6 +1,6 @@
 import { test } from "vitest";
-import { GraphBuilder } from "../differential/dataflow/differential-dataflow";
-import { Multiset } from "../differential/multiset";
+import { GraphBuilder } from "../differential/dataflow/differential-dataflow.js";
+import { Multiset } from "../differential/multiset.js";
 import util from "util";
 
 test("dataflow graph from example", () => {

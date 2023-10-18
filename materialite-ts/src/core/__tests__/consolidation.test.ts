@@ -1,5 +1,5 @@
 import { test, expect } from "vitest";
-import { comparator } from "../consolidation";
+import { comparator } from "../consolidation.js";
 import { makeTuple } from "@vlcn.io/datastructures-and-algos/tuple";
 
 test("tuple compare", () => {

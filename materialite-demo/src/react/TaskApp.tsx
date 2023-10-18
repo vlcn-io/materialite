@@ -1,9 +1,9 @@
 import React, { useMemo, useState } from "react";
-import { TaskTable } from "./TaskTable";
-import { TaskComponent } from "./Task";
-import { Task } from "../data/tasks/schema";
-import { createTasks } from "../data/tasks/createTasks";
-import { TaskFilter } from "./TaskFilter";
+import { TaskTable } from "./TaskTable.js";
+import { TaskComponent } from "./Task.js";
+import { Task } from "../data/tasks/schema.js";
+import { createTasks } from "../data/tasks/createTasks.js";
+import { TaskFilter } from "./TaskFilter.js";
 
 const seedTasks = createTasks(1000);
 export const TaskApp: React.FC = () => {

@@ -5,23 +5,46 @@
  * - Controls for editing them?
  */
 
-import { createTasks } from "../data/tasks/createTasks";
-import { Task } from "../data/tasks/schema";
-import { TaskComponent } from "./Task";
-import { TaskFilter } from "./TaskFilter";
-import { TaskTable } from "./TaskTable";
-import { html } from "./support/vanillajs";
+import { createTasks } from "../data/tasks/createTasks.js";
+import { Task } from "../data/tasks/schema.js";
+import { TaskComponent } from "./Task.js";
+import { TaskFilter } from "./TaskFilter.js";
+import { TaskTable } from "./TaskTable.js";
+import { html } from "./support/vanillajs.js";
+import { Materialite } from "@vlcn.io/materialite";
 
 const seedTasks = createTasks(1000);
 
 export function TaskApp() {
+  const materialite = new Materialite();
+  const tasks = materialite.newSet<Task>();
+  let filter: TaskFilter = {};
+
+  let filteredTasks = tasks.stream.filter((task) => {
+    let keep = true;
+    for (const k in filter) {
+      const casted = k as keyof TaskFilter;
+      if (filter[casted] == null) {
+        continue;
+      }
+      keep = task[casted] === filter[casted];
+      if (!keep) {
+        return false;
+      }
+    }
+
+    return keep;
+  });
+
   function onFilterChange() {}
+
   function onTaskClick(task: Task) {
     const component = TaskComponent({
-      onTaskChanged: (task) => {
-        // TODO: update the task in the list
-        // guess we need to sink to a map of tasks
-        // so we can look it up?
+      onTaskChanged: (oldTask, newTask) => {
+        materialite.tx(() => {
+          tasks.delete(oldTask);
+          tasks.add(newTask);
+        });
       },
       task,
     });
@@ -31,13 +54,13 @@ export function TaskApp() {
 
   const selectedSection = html()`<div><span>Select a task to view details</span></div>`;
 
-  return html()`<div class="flex h-screen">
+  const ret = html()`<div class="flex h-screen">
     <div class="w-3/4 bg-gray-100 overflow-y-auto">
       ${TaskFilter({
         onFilterChange,
       })}
       ${TaskTable({
-        tasks: seedTasks,
+        tasks: filteredTasks,
         onTaskClick,
       })}
     </div>
@@ -45,4 +68,7 @@ export function TaskApp() {
       ${selectedSection}
     </div>
   </div>`;
+
+  tasks.addAll(seedTasks);
+  return ret;
 }

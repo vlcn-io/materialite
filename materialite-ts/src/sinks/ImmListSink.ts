@@ -1,8 +1,8 @@
 import { List } from "immutable";
-import { Version } from "../core/types";
-import { Multiset } from "../core/multiset";
+import { Version } from "../core/types.js";
+import { Multiset } from "../core/multiset.js";
 import { Comparator } from "@vlcn.io/datastructures-and-algos/binary-search";
-import { Sink } from "./Sink";
+import { Sink } from "./Sink.js";
 
 export class ImmListSink<T> extends Sink<T, List<T>> {
   #data: List<T> = List();

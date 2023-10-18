@@ -1,7 +1,7 @@
-import { albums } from "./albums";
-import { artists } from "./artists";
-import { songs } from "./songs";
-import { playlists } from "./playlists";
+import { albums } from "./albums.js";
+import { artists } from "./artists.js";
+import { songs } from "./songs.js";
+import { playlists } from "./playlists.js";
 
 export function createMusic(
   totalTracks: number,

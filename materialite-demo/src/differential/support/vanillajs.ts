@@ -17,6 +17,7 @@ const sanitize = (value: Value): string => {
   return tempEl.innerHTML;
 };
 
+// Mount and unmount lifecycle events?
 export function html(handlers?: { [key: string]: (e: Event) => void }) {
   return (parts: TemplateStringsArray, ...values: Value2[]): Node => {
     let slottedHtml = parts

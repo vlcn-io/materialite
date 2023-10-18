@@ -2,8 +2,8 @@ import {
   ISourceInternal,
   MaterialiteForSourceInternal,
   Version,
-} from "./core/types";
-import { SetSource } from "./sources/SetSource";
+} from "./core/types.js";
+import { SetSource } from "./sources/SetSource.js";
 
 export class Materialite {
   #version: Version;
@@ -52,7 +52,14 @@ export class Materialite {
   tx(fn: () => void) {
     if (this.#currentTx === null) {
       this.#currentTx = ++this.#version;
+    } else {
+      // nested transaction
+      // just run the function as we're already inside the
+      // scope of a transaction that will handle rollback and commit.
+      fn();
+      return;
     }
+
     try {
       fn();
       this.#commit();

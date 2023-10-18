@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { Multiset } from "../multiset";
+import { Multiset } from "../multiset.js";
 
 /**
  * We need a more efficient difference.

@@ -1,4 +1,4 @@
-import { ConcurrentModificationException } from "../Error";
+import { ConcurrentModificationException } from "../Error.js";
 
 export interface INode<V> {
   data: V | null;

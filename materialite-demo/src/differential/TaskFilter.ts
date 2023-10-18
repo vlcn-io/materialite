@@ -1,4 +1,4 @@
-import { Priority, Status } from "../data/tasks/schema";
+import { Priority, Status } from "../data/tasks/schema.js";
 
 import {
   names,

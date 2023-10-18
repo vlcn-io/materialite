@@ -1,12 +1,12 @@
-import { Index } from "..";
-import { TMap } from "../collections/TMap";
+import { Index } from "../index.js";
+import { TMap } from "../collections/TMap.js";
 import {
   Entry,
   JoinableValue,
   Multiset,
   PrimitiveValue,
   Value,
-} from "../multiset";
+} from "../multiset.js";
 import {
   BinaryOperator,
   DifferenceStreamReader,
@@ -14,7 +14,7 @@ import {
   Graph,
   Operator,
   UnaryOperator,
-} from "./graph";
+} from "./graph.js";
 type TODO = any;
 
 export class DifferenceStreamBuilder<I extends Value> {

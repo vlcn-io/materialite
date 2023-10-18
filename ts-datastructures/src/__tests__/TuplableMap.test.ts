@@ -1,6 +1,6 @@
 import { test, expect } from "vitest";
-import { TuplableMap } from "../TuplableMap";
-import { makeTuple } from "../tuple";
+import { TuplableMap } from "../TuplableMap.js";
+import { makeTuple } from "../tuple.js";
 
 // test that it behaves like a normal map
 

@@ -1,11 +1,11 @@
-import { TMap } from "./collections/TMap";
+import { TMap } from "./collections/TMap.js";
 import {
   Entry,
   JoinableValue,
   Multiset,
   PrimitiveValue,
   Value,
-} from "./multiset";
+} from "./multiset.js";
 
 export class Index<K extends PrimitiveValue, V extends Value> {
   private readonly index = new Map<K, Entry<V>[]>();

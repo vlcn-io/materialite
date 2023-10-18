@@ -3,13 +3,13 @@
 // Clean up taps when they get GC'ed?
 // When the sink is removed?
 
-import { DifferenceStream } from "../core/graph/DifferenceStream";
-import { Entry, Multiset } from "../core/multiset";
+import { DifferenceStream } from "../core/graph/DifferenceStream.js";
+import { Entry, Multiset } from "../core/multiset.js";
 import {
   ISourceInternal,
   MaterialiteForSourceInternal,
   Version,
-} from "../core/types";
+} from "../core/types.js";
 
 // When the user explicitly finalizes them?
 // TODO: all mutation methods should take in a `tx` so they can add themselves

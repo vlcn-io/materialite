@@ -21,8 +21,8 @@
  *
  */
 
-import { IndexKey } from "../client/schema/Schema";
-import { RangeOptions } from "../client/storage/Transaction";
+import { IndexKey } from "../client/schema/Schema.js";
+import { RangeOptions } from "../client/storage/Transaction.js";
 
 /**
  * Can we do a simple QL for setting values too?

@@ -26,9 +26,9 @@
  * Maybe everything is fine. Just return a node that itself has a differential
  * dataflow stream going on but is sunk to a DOMSink.
  */
-import { Version } from "../core/types";
-import { DifferenceStream } from "../core/graph/DifferenceStream";
-import { Multiset } from "../core/multiset";
+import { Version } from "../core/types.js";
+import { DifferenceStream } from "../core/graph/DifferenceStream.js";
+import { Multiset } from "../core/multiset.js";
 import { binarySearch } from "@vlcn.io/datastructures-and-algos/binary-search";
 
 export class DOMSink<T extends Node, K extends string | number> {
@@ -36,12 +36,12 @@ export class DOMSink<T extends Node, K extends string | number> {
   readonly #stream;
   readonly #comparator;
   readonly #reader;
-  readonly #nodeMapping: [K, T][] = [];
+  readonly #nodeMapping: (readonly [K, T])[] = [];
 
   constructor(
     root: Node,
-    stream: DifferenceStream<[K, T]>,
-    comparator: (l: [K, T], r: [K, T]) => number
+    stream: DifferenceStream<readonly [K, T]>,
+    comparator: (l: readonly [K, T], r: readonly [K, T]) => number
   ) {
     this.#root = root;
     this.#stream = stream;
@@ -61,7 +61,7 @@ export class DOMSink<T extends Node, K extends string | number> {
     });
   }
 
-  #sink(collection: Multiset<[K, T]>) {
+  #sink(collection: Multiset<readonly [K, T]>) {
     // do the sinking
     // -- update our mutable array
     // -- update the DOM based on the mutable array change
@@ -76,7 +76,7 @@ export class DOMSink<T extends Node, K extends string | number> {
     }
   }
 
-  #addAll(val: [K, T], mult: number, idx: number) {
+  #addAll(val: readonly [K, T], mult: number, idx: number) {
     while (mult > 0) {
       if (idx === -1) {
         // add to the end
@@ -90,7 +90,7 @@ export class DOMSink<T extends Node, K extends string | number> {
     }
   }
 
-  #removeAll(val: [K, T], mult: number, idx: number) {
+  #removeAll(val: readonly [K, T], mult: number, idx: number) {
     // TODO: wind back to least idx
     while (mult > 0) {
       const elem = this.#nodeMapping[idx];

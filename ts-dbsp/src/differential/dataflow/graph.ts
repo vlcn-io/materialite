@@ -1,4 +1,4 @@
-import { Multiset, Value } from "../multiset";
+import { Multiset, Value } from "../multiset.js";
 
 /**
  * A read handle for a dataflow edge that receives data from a writer.

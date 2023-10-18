@@ -1,6 +1,6 @@
 import { test, expect } from "vitest";
-import { RBMap } from "../RedBlackMap";
-import { ConcurrentModificationException } from "../../Error";
+import { RBMap } from "../RedBlackMap.js";
+import { ConcurrentModificationException } from "../../Error.js";
 
 // Test the RBMap that it behaves like a regular Map
 

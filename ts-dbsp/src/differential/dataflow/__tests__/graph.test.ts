@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
-import { DifferenceStreamWriter } from "../graph";
-import { Multiset } from "../../multiset";
+import { DifferenceStreamWriter } from "../graph.js";
+import { Multiset } from "../../multiset.js";
 
 test("drain drains in the right order", () => {
   const writer = new DifferenceStreamWriter();
