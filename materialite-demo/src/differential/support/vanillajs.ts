@@ -19,7 +19,7 @@ const sanitize = (value: Value): string => {
 
 export function html(handlers?: { [key: string]: (e: Event) => void }) {
   return (parts: TemplateStringsArray, ...values: Value2[]): Node => {
-    const slottedHtml = parts
+    let slottedHtml = parts
       .map((part, i) => {
         if (i < values.length) {
           const value = values[i];
@@ -39,6 +39,18 @@ export function html(handlers?: { [key: string]: (e: Event) => void }) {
       })
       .join("");
     const parser = new DOMParser();
+
+    let nodeGetter = () => doc.body.firstChild;
+    // Handle parenting requirements of table elements
+    if (slottedHtml.trim().startsWith("<tr")) {
+      slottedHtml = `<table><tbody>${slottedHtml}</tbody></table>`;
+      nodeGetter = () => doc.body.firstChild!.firstChild!.firstChild!;
+    } else if (slottedHtml.trim().startsWith("<td")) {
+      slottedHtml = `<table><tbody><tr>${slottedHtml}</tr></tbody></table>`;
+      nodeGetter = () =>
+        doc.body.firstChild!.firstChild!.firstChild!.firstChild!;
+    }
+
     const doc = parser.parseFromString(slottedHtml, "text/html");
 
     // bind event handlers
@@ -87,7 +99,7 @@ export function html(handlers?: { [key: string]: (e: Event) => void }) {
     //   return [...doc.body.children];
     // }
 
-    return doc.body.firstChild!;
+    return nodeGetter()!;
   };
 }
 
