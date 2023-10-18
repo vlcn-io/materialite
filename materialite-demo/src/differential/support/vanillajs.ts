@@ -27,12 +27,12 @@ export function html(handlers?: { [key: string]: (e: Event) => void }) {
             return part + value;
           } else if (Array.isArray(value)) {
             if (value[0] instanceof Node) {
-              return part + `<slot id="SLOT_${i}"></slot>`;
+              return part + `<script id="SLOT_${i}"></script>`;
             } else {
               return part + value.join("");
             }
           } else {
-            return part + `<slot id="SLOT_${i}"></slot>`;
+            return part + `<script id="SLOT_${i}"></script>`;
           }
         }
         return part;
@@ -40,7 +40,6 @@ export function html(handlers?: { [key: string]: (e: Event) => void }) {
       .join("");
     const parser = new DOMParser();
     const doc = parser.parseFromString(slottedHtml, "text/html");
-    console.log(doc.body.innerHTML);
 
     // bind event handlers
     if (handlers != null) {

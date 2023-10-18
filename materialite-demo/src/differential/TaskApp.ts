@@ -15,7 +15,7 @@ const seedTasks = createTasks(1);
 export function TaskApp() {
   function onFilterChange() {}
   return html()`<div class="flex h-screen">
-    <div className="w-3/4 bg-gray-100 overflow-y-auto">
+    <div class="w-3/4 bg-gray-100 overflow-y-auto">
       ${TaskFilter({
         onFilterChange,
       })}

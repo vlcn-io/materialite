@@ -12,6 +12,8 @@ export function TaskTable({
   onTaskClick,
   selectedTask,
 }: TaskTableProps) {
+  const rows = tasks.map((task) => Task({ onTaskClick, task, selectedTask }));
+  console.log(rows);
   return html()`
     <div
     class="bg-gray-100 p-6 overflow-y-auto"
@@ -29,7 +31,7 @@ export function TaskTable({
           </tr>
         </thead>
         <tbody>
-          ${tasks.map((task) => Task({ onTaskClick, task, selectedTask }))}
+          ${rows}
         </tbody>
       </table>
     </div>`;
@@ -53,9 +55,7 @@ function Task({
   >
     <td class="py-2 px-3">${task.title}</td>
     <td class="py-2 px-3">${task.assignee}</td>
-    <td class="py-2 px-3">
-      ${task.dueDate.toISOString().split("T")[0]}
-    </td>
+    <td class="py-2 px-3">${task.dueDate.toISOString().split("T")[0]}</td>
     <td class="py-2 px-3">${task.status}</td>
     <td class="py-2 px-3">${task.priority}</td>
     <td class="py-2 px-3">${task.project}</td>
