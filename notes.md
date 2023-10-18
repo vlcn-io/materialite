@@ -16,3 +16,5 @@ How might we encode the events so it is a compact representation?
   - Can we re-wind the differential dataflow? Yea... just remove events then re-add events.
     - Or logarithmic snapshots?
     - Determine if full replay vs re-wind then replay based on how far back in time the event is.
+
+# sinks should only notify at end of tx processing

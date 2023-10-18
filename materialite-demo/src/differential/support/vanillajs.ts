@@ -26,9 +26,13 @@ export function html(handlers?: { [key: string]: (e: Event) => void }) {
           if (typeof value === "string") {
             return part + value;
           } else if (Array.isArray(value)) {
-            return part + value.join("");
+            if (value[0] instanceof Node) {
+              return part + `<slot id="SLOT_${i}"></slot>`;
+            } else {
+              return part + value.join("");
+            }
           } else {
-            return part + `<slot id="SLOT_${i}" />`;
+            return part + `<slot id="SLOT_${i}"></slot>`;
           }
         }
         return part;
@@ -36,6 +40,7 @@ export function html(handlers?: { [key: string]: (e: Event) => void }) {
       .join("");
     const parser = new DOMParser();
     const doc = parser.parseFromString(slottedHtml, "text/html");
+    console.log(doc.body.innerHTML);
 
     // bind event handlers
     if (handlers != null) {
@@ -58,7 +63,10 @@ export function html(handlers?: { [key: string]: (e: Event) => void }) {
     // now replace each splot with value
     for (let i = 0; i < values.length; i++) {
       const value = values[i];
-      if (typeof value === "string" || Array.isArray(value)) {
+      if (
+        typeof value === "string" ||
+        (Array.isArray(value) && !(value[0] instanceof Node))
+      ) {
         continue;
       }
       const node = doc.getElementById(`SLOT_${i}`);
@@ -69,6 +77,7 @@ export function html(handlers?: { [key: string]: (e: Event) => void }) {
       if (typeof value === "string") {
         node.textContent = value;
       } else if (Array.isArray(value)) {
+        console.log("replacing with array", value);
         node.replaceWith(...value);
       } else if (typeof value === "object") {
         node.replaceWith(value);
