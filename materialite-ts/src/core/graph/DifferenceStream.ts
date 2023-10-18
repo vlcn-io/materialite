@@ -50,7 +50,7 @@ export class DifferenceStream<T> {
   }
 
   concat<T2>(other: DifferenceStream<T2>) {
-    const output = new DifferenceStream<T>(false);
+    const output = new DifferenceStream<T | T2>(false);
     const reader1 = this.#writer.newReader();
     const reader2 = other.#writer.newReader();
     const op = new ConcatOperator<T, T2>(reader1, reader2, output.#writer);
