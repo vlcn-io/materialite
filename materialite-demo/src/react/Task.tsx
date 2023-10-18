@@ -12,7 +12,19 @@ export const TaskComponent: React.FC<TaskComponentProps> = ({
 }) => {
   return (
     <div>
-      <h1 className="text-xl font-semibold mb-4">{task.title}</h1>
+      <h1 className="text-xl font-semibold mb-4">
+        <input
+          type="text"
+          className="w-full"
+          onChange={(e) => {
+            onTaskChanged({
+              ...task,
+              title: e.target.value,
+            });
+          }}
+          value={task.title}
+        />
+      </h1>
       <div className="mb-4">
         <label className="block mb-2 font-medium">Assignee:</label>
         <select
@@ -26,7 +38,9 @@ export const TaskComponent: React.FC<TaskComponentProps> = ({
           }
         >
           {names.map((p) => (
-            <option value={p}>{p}</option>
+            <option value={p} key={p}>
+              {p}
+            </option>
           ))}
         </select>
       </div>
@@ -99,7 +113,9 @@ export const TaskComponent: React.FC<TaskComponentProps> = ({
           }
         >
           {projects.map((p) => (
-            <option value={p}>{p}</option>
+            <option value={p} key={p}>
+              {p}
+            </option>
           ))}
         </select>
       </div>

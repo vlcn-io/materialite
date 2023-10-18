@@ -79,9 +79,17 @@ export class DOMSink<T extends Node, K extends string | number> {
   #addAll(val: readonly [K, T], mult: number, idx: number) {
     while (mult > 0) {
       if (idx < 0) {
-        // add to the end
-        this.#root.appendChild(val[1]);
-        this.#nodeMapping.push(val);
+        const pos = Math.abs(idx) - 1;
+        if (pos === 0) {
+          this.#root.insertBefore(val[1], this.#root.firstChild!);
+          this.#nodeMapping.unshift(val);
+        } else if (pos === this.#nodeMapping.length) {
+          this.#root.appendChild(val[1]);
+          this.#nodeMapping.push(val);
+        } else {
+          this.#root.insertBefore(val[1], this.#nodeMapping[pos]![1]);
+          this.#nodeMapping.splice(pos, 0, val);
+        }
       } else {
         this.#root.insertBefore(val[1], this.#nodeMapping[idx]![1]);
         this.#nodeMapping.splice(idx, 0, val);

@@ -104,7 +104,7 @@ export const createTasks = (numTasks: number): Task[] => {
     const [title, description] = generateText();
     const task: Task = {
       id: taskId,
-      assignee: getRandomItem(names),
+      assignee: "John",
       title,
       description,
       dueDate: new Date(Date.now() + i * 24 * 60 * 60 * 1000), // Spreading due dates over next 100 days

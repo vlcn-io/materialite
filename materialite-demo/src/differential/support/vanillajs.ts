@@ -24,7 +24,10 @@ export function html(handlers?: { [key: string]: (e: Event) => void }) {
       .map((part, i) => {
         if (i < values.length) {
           const value = values[i];
-          if (typeof value === "string") {
+          if (typeof value === "string" || value == null) {
+            if (value == null) {
+              return part + "";
+            }
             return part + value;
           } else if (Array.isArray(value)) {
             if (value[0] instanceof Node) {

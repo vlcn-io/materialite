@@ -10,6 +10,7 @@ import { html } from "./support/vanillajs";
 
 type TaskFilterProps = {
   onFilterChange: (filter: TaskFilter) => void;
+  filter: TaskFilter;
 };
 
 export type TaskFilter = {
@@ -19,15 +20,14 @@ export type TaskFilter = {
   project?: string;
 };
 
-function makeOption(v: string) {
-  return `<option value="${v}">
+function makeOption(v: string, s?: string) {
+  return `<option value="${v}" ${s === v ? "selected" : ""}>
       ${v}
     </option>
   `;
 }
 
-export function TaskFilter({ onFilterChange }: TaskFilterProps) {
-  let filter = {};
+export function TaskFilter({ onFilterChange, filter }: TaskFilterProps) {
   function assigneeChange(e: Event) {
     controlChange("assignee", e);
   }
@@ -58,37 +58,37 @@ export function TaskFilter({ onFilterChange }: TaskFilterProps) {
       <div>
         <label class="m-2 inline-block w-24">Assignee</label>
         <select
-          events="change:assigneeChange"
+          events="select:assigneeChange"
           class="bg-green-100 p-2 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none w-64">
           <option value="">Any</option>
-          ${names.map(makeOption)}
+          ${names.map((n) => makeOption(n, filter.assignee))}
         </select>
       </div>
       <div>
         <label class="m-2 inline-block w-24">Priority</label>
         <select
-          events="change:priorityChange"
+          events="select:priorityChange"
           class="bg-green-100 p-2 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none w-64">
           <option value="">Any</option>
-          ${priorities.map(makeOption)}
+          ${priorities.map((p) => makeOption(p, filter.priority))}
         </select>
       </div>
       <div>
         <label class="m-2 inline-block w-24">Status</label>
         <select
-          events="change:statusChange"
+          events="select:statusChange"
           class="bg-green-100 p-2 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none w-64">
           <option value="">Any</option>
-          ${statuses.map(makeOption)}
+          ${statuses.map((s) => makeOption(s, filter.status))}
         </select>
       </div>
       <div>
         <label class="m-2 inline-block w-24">Project</label>
         <select
-          events="change:projectChange"
+          events="select:projectChange"
           class="bg-green-100 p-2 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none w-64">
           <option value="">Any</option>
-          ${projects.map(makeOption)}
+          ${projects.map((p) => makeOption(p, filter.project))}
         </select>
       </div>
     </div>

@@ -12,7 +12,8 @@
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "@vlcn.io/materialite": "workspace:*"
+    "@vlcn.io/materialite": "workspace:*",
+    "@vlcn.io/datastructures-and-algos": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "^18.2.15",

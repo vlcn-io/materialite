@@ -13,12 +13,15 @@ import { TaskTable } from "./TaskTable.js";
 import { html } from "./support/vanillajs.js";
 import { Materialite } from "@vlcn.io/materialite";
 
-const seedTasks = createTasks(1000);
+const seedTasks = createTasks(10000);
 
 export function TaskApp() {
   const materialite = new Materialite();
   const tasks = materialite.newSet<Task>();
-  let filter: TaskFilter = {};
+  // const selection = materialite.newSet<number>();
+  let filter: TaskFilter = {
+    assignee: "John",
+  };
 
   let filteredTasks = tasks.stream.filter((task) => {
     let keep = true;
@@ -38,6 +41,7 @@ export function TaskApp() {
 
   function onFilterChange() {}
 
+  // let lastSelectedTaskId = 0;
   function onTaskClick(task: Task) {
     const component = TaskComponent({
       onTaskChanged: (oldTask, newTask) => {
@@ -50,6 +54,11 @@ export function TaskApp() {
     });
     selectedSection.removeChild(selectedSection.firstChild!);
     selectedSection.appendChild(component);
+    // materialite.tx(() => {
+    //   selection.delete(lastSelectedTaskId);
+    //   selection.add(task.id);
+    // });
+    // lastSelectedTaskId = task.id;
   }
 
   const selectedSection = html()`<div><span>Select a task to view details</span></div>`;
@@ -58,6 +67,7 @@ export function TaskApp() {
     <div class="w-3/4 bg-gray-100 overflow-y-auto">
       ${TaskFilter({
         onFilterChange,
+        filter,
       })}
       ${TaskTable({
         tasks: filteredTasks,
@@ -70,5 +80,6 @@ export function TaskApp() {
   </div>`;
 
   tasks.addAll(seedTasks);
+  // selection.add(0);
   return ret;
 }

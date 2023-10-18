@@ -18,6 +18,9 @@ importers:
 
   materialite-demo:
     dependencies:
+      '@vlcn.io/datastructures-and-algos':
+        specifier: workspace:*
+        version: link:../ts-datastructures
       '@vlcn.io/materialite':
         specifier: workspace:*
         version: link:../materialite-ts

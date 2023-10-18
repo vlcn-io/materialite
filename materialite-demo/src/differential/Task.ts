@@ -34,6 +34,9 @@ export function TaskComponent({
   function projectChanged(e: Event) {
     controlChange("assignee", e);
   }
+  function titleChanged(e: Event) {
+    controlChange("title", e);
+  }
 
   function controlChange(key: keyof Task, e: Event) {
     const oldTask = taskCopy;
@@ -51,14 +54,17 @@ export function TaskComponent({
     statusChanged,
     priorityChanged,
     projectChanged,
+    titleChanged,
   })`
     <div>
-      <h1 class="text-xl font-semibold mb-4">${task.title}</h1>
+      <h1 class="text-xl font-semibold mb-4"><input type="text" class="w-full" value="${
+        task.title
+      }" events="keyup:titleChanged"></input></h1>
       <div class="mb-4">
         <label class="block mb-2 font-medium">Assignee:</label>
         <select
           class="border rounded w-full py-2 px-3"
-          events="onChange:assigneeChanged"
+          events="change:assigneeChanged"
         >
           ${names.map((n) => makeOption(n, task.assignee))}
         </select>
@@ -68,7 +74,7 @@ export function TaskComponent({
         <textarea
           class="border rounded w-full py-2 px-3"
           rows="5"
-          events="onChange:descriptionChanged"
+          events="change:descriptionChanged"
         >${task.description}</textarea>
       </div>
       <div class="mb-4">
@@ -77,14 +83,14 @@ export function TaskComponent({
           type="date"
           class="border rounded w-full py-2 px-3"
           value="${task.dueDate.toISOString().split("T")[0]}"
-          events="onChange:dueDateChanged"
+          events="change:dueDateChanged"
         />
       </div>
       <div class="mb-4">
         <label class="block mb-2 font-medium">Status:</label>
         <select
           class="border rounded w-full py-2 px-3"
-          events="onChange:statusChanged"
+          events="change:statusChanged"
         >
           <option value="todo" ${
             task.status === "todo" ? "selected" : ""
@@ -101,7 +107,7 @@ export function TaskComponent({
         <label class="block mb-2 font-medium">Priority:</label>
         <select
           class="border rounded w-full py-2 px-3"
-          events="onChange:priorityChanged"
+          events="change:priorityChanged"
         >
           <option value="low" ${
             task.priority === "low" ? "selected" : ""
@@ -118,7 +124,7 @@ export function TaskComponent({
         <label class="block mb-2 font-medium">Project:</label>
         <select
           class="border rounded w-full py-2 px-3"
-          events="onChange:projectChanged"
+          events="change:projectChanged"
         >
           ${projects.map((p) => makeOption(p, task.project))}
         </select>

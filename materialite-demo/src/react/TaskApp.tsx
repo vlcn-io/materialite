@@ -5,7 +5,7 @@ import { Task } from "../data/tasks/schema.js";
 import { createTasks } from "../data/tasks/createTasks.js";
 import { TaskFilter } from "./TaskFilter.js";
 
-const seedTasks = createTasks(1000);
+const seedTasks = createTasks(10000);
 export const TaskApp: React.FC = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [allTasks, setAllTasks] = useState(seedTasks);
@@ -23,11 +23,14 @@ export const TaskApp: React.FC = () => {
       return;
     }
     // oof
-    const allTasksCopy = [...allTasks];
-    const idx = allTasksCopy.findIndex((v) => {
-      return v.id === task.id;
-    });
-    allTasksCopy[idx] = task;
+    const allTasksCopy: Task[] = [];
+    for (const t of allTasks) {
+      if (t.id === task.id) {
+        allTasksCopy.push(task);
+      } else {
+        allTasksCopy.push(t);
+      }
+    }
     setAllTasks(allTasksCopy);
     setSelectedTask(task);
   }

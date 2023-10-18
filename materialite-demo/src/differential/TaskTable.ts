@@ -6,22 +6,17 @@ import { html } from "./support/vanillajs.js";
 type TaskTableProps = {
   tasks: DifferenceStream<Task>;
   onTaskClick: (task: Task) => void;
-  selectedTask?: number;
 };
 
-export function TaskTable({
-  tasks,
-  onTaskClick,
-  selectedTask,
-}: /// map over tasks, sink into dom list
-TaskTableProps) {
+export function TaskTable({ tasks, onTaskClick }: TaskTableProps) {
   const rows = tasks.map(
-    (task) => [task.id, Task({ onTaskClick, task, selectedTask })] as const
+    (task) => [task.id, Task({ onTaskClick, task, selectedTask: 0 })] as const
   );
   const tbody = html()`<tbody></tbody>`;
   new DOMSink(tbody, rows, (l, r) => {
     return l[0] - r[0];
   });
+  // TODO: lifecycle method to dispose of sink on unmount
   return html()`
     <div
     class="bg-gray-100 p-6 overflow-y-auto"
