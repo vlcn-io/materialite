@@ -78,7 +78,7 @@ export class DOMSink<T extends Node, K extends string | number> {
 
   #addAll(val: readonly [K, T], mult: number, idx: number) {
     while (mult > 0) {
-      if (idx === -1) {
+      if (idx < 0) {
         // add to the end
         this.#root.appendChild(val[1]);
         this.#nodeMapping.push(val);

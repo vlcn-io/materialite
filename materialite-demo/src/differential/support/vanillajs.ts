@@ -38,18 +38,29 @@ export function html(handlers?: { [key: string]: (e: Event) => void }) {
         }
         return part;
       })
-      .join("");
+      .join("")
+      .trim();
     const parser = new DOMParser();
 
     let nodeGetter = () => doc.body.firstChild;
     // Handle parenting requirements of table elements
-    if (slottedHtml.trim().startsWith("<tr")) {
+    if (slottedHtml.startsWith("<tr")) {
       slottedHtml = `<table><tbody>${slottedHtml}</tbody></table>`;
       nodeGetter = () => doc.body.firstChild!.firstChild!.firstChild!;
-    } else if (slottedHtml.trim().startsWith("<td")) {
+    } else if (slottedHtml.startsWith("<td")) {
       slottedHtml = `<table><tbody><tr>${slottedHtml}</tr></tbody></table>`;
       nodeGetter = () =>
         doc.body.firstChild!.firstChild!.firstChild!.firstChild!;
+    } else if (slottedHtml.startsWith("<th")) {
+      slottedHtml = `<table><thead><tr>${slottedHtml}</tr></thead></table>`;
+      nodeGetter = () =>
+        doc.body.firstChild!.firstChild!.firstChild!.firstChild!;
+    } else if (slottedHtml.startsWith("<thead")) {
+      slottedHtml = `<table>${slottedHtml}</table>`;
+      nodeGetter = () => doc.body.firstChild!.firstChild!;
+    } else if (slottedHtml.startsWith("<tbody")) {
+      slottedHtml = `<table>${slottedHtml}</table>`;
+      nodeGetter = () => doc.body.firstChild!.firstChild!;
     }
 
     const doc = parser.parseFromString(slottedHtml, "text/html");
