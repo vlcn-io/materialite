@@ -56,10 +56,9 @@ export function TaskComponent({
         <label class="block mb-2 font-medium">Assignee:</label>
         <select
           class="border rounded w-full py-2 px-3"
-          value="${task.assignee}"
           events="onChange:assigneeChanged"
         >
-          ${names.map(makeOption)}
+          ${names.map((n) => makeOption(n, task.assignee))}
         </select>
       </div>
       <div class="mb-4">
@@ -67,9 +66,8 @@ export function TaskComponent({
         <textarea
           class="border rounded w-full py-2 px-3"
           rows="5"
-          value="${task.description}"
           events="onChange:descriptionChanged"
-        ></textarea>
+        >${task.description}</textarea>
       </div>
       <div class="mb-4">
         <label class="block mb-2 font-medium">Due Date:</label>
@@ -84,41 +82,50 @@ export function TaskComponent({
         <label class="block mb-2 font-medium">Status:</label>
         <select
           class="border rounded w-full py-2 px-3"
-          value="${task.status}"
           events="onChange:statusChanged"
         >
-          <option value="todo">To Do</option>
-          <option value="in-progress">In Progress</option>
-          <option value="done">Done</option>
+          <option value="todo" ${
+            task.status === "todo" ? "selected" : ""
+          }>To Do</option>
+          <option value="in-progress" ${
+            task.status === "in-progress" ? "selected" : ""
+          }>In Progress</option>
+          <option value="done" ${
+            task.status === "done" ? "selected" : ""
+          }>Done</option>
         </select>
       </div>
       <div class="mb-4">
         <label class="block mb-2 font-medium">Priority:</label>
         <select
           class="border rounded w-full py-2 px-3"
-          value="${task.priority}"
           events="onChange:priorityChanged"
         >
-          <option value="low">Low</option>
-          <option value="medium">Medium</option>
-          <option value="high">High</option>
+          <option value="low" ${
+            task.priority === "low" ? "selected" : ""
+          }>Low</option>
+          <option value="medium" ${
+            task.priority === "medium" ? "selected" : ""
+          }>Medium</option>
+          <option value="high" ${
+            task.priority === "high" ? "selected" : ""
+          }>High</option>
         </select>
       </div>
       <div class="mb-4">
         <label class="block mb-2 font-medium">Project:</label>
         <select
           class="border rounded w-full py-2 px-3"
-          value="${task.project}"
           events="onChange:projectChanged"
         >
-          ${projects.map(makeOption)}
+          ${projects.map((p) => makeOption(p, task.project))}
         </select>
       </div>
     </div>`;
 }
 
-function makeOption(v: string) {
-  return `<option value="${v}">
+function makeOption(v: string, selected: string) {
+  return `<option value="${v}" ${v === selected ? "selected" : ""}>
       ${v}
     </option>
   `;
