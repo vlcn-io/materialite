@@ -13,7 +13,6 @@ export function TaskTable({
   selectedTask,
 }: TaskTableProps) {
   const rows = tasks.map((task) => Task({ onTaskClick, task, selectedTask }));
-  console.log(rows);
   return html()`
     <div
     class="bg-gray-100 p-6 overflow-y-auto"
