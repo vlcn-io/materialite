@@ -103,33 +103,7 @@ export function html(handlers?: { [key: string]: (e: Event) => void }) {
   };
 }
 
-let elemId = 0;
-const eventMap = new Map<string, WeakRef<(e: Event) => void>>();
-(window as any).eventMap = eventMap;
-(window as any).doEvent = (id: string, e: Event) => {
-  const ref = eventMap.get(id);
-  if (ref == null) {
-    console.warn(`No event handler for ${id}`);
-    return;
-  }
-  const fn = ref.deref;
-  if (fn == null) {
-    console.warn(`No event handler for ${id}`);
-    eventMap.delete(id);
-    return;
-  }
-
-  (fn as (e: Event) => void)(e);
-};
-const eventHandlerRegistry = new FinalizationRegistry((heldValue: string) => {
-  eventMap.delete(heldValue);
-});
-
 function getEventAttributes(node: Element) {
   const events = node.getAttribute("events");
   return events?.split(",").map((event) => event.trim().split(":")) ?? [];
-}
-
-function lowerFirst(s: string) {
-  return s.charAt(0).toLowerCase() + s.slice(1);
 }
