@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { Task } from "../data/tasks/schema.js";
-import { DifferenceStream } from "@vlcn.io/materialite";
+import { DOMSink, DifferenceStream } from "@vlcn.io/materialite";
+import ReactDOM from "react-dom/client";
 
 type TaskTableProps = {
   tasks: DifferenceStream<Task>;
@@ -10,7 +11,36 @@ type TaskTableProps = {
 export const TaskTable: React.FC<TaskTableProps> = ({ tasks, onTaskClick }) => {
   const tbodyRef = useRef<HTMLTableSectionElement | null>(null);
   useEffect(() => {
-    console.log(tbodyRef.current);
+    if (tbodyRef.current == null) {
+      return;
+    }
+    const stream = tasks.map((task) => {
+      const tr = document.createElement("tr");
+      tr.setAttribute(
+        "class",
+        `border-t cursor-pointer ${
+          task.selected ? "bg-blue-200" : "hover:bg-blue-100"
+        }`
+      );
+      tr.onclick = () => {
+        onTaskClick(task);
+      };
+      const root = ReactDOM.createRoot(tr);
+      root.render(<TaskRow task={task} onTaskClick={onTaskClick} />);
+      return [[task.id, root] as const, tr] as const;
+    });
+    const sink = new DOMSink(
+      tbodyRef.current,
+      stream,
+      (l, r) => l[0][0] - r[0][0],
+      ([_id, root]) => {
+        root.unmount();
+      }
+    );
+    return () => {
+      console.log("destroy sink");
+      sink.destroy();
+    };
   }, [tbodyRef.current]);
   return (
     <div
@@ -43,13 +73,7 @@ function TaskRow({
   onTaskClick: (task: Task) => void;
 }) {
   return (
-    <tr
-      key={task.id}
-      className={`border-t cursor-pointer ${
-        task.selected ? "bg-blue-200" : "hover:bg-blue-100"
-      }`}
-      onClick={() => onTaskClick(task)}
-    >
+    <>
       <td className="py-2 px-3">{task.title}</td>
       <td className="py-2 px-3">{task.assignee}</td>
       <td className="py-2 px-3">{task.dueDate.toISOString().split("T")[0]}</td>
@@ -57,6 +81,6 @@ function TaskRow({
       <td className="py-2 px-3">{task.priority}</td>
       <td className="py-2 px-3">{task.project}</td>
       <td className="py-2 px-3">{task.labels.join(", ")}</td>
-    </tr>
+    </>
   );
 }

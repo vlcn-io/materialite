@@ -31,23 +31,26 @@ import { DifferenceStream } from "../core/graph/DifferenceStream.js";
 import { Multiset } from "../core/multiset.js";
 import { binarySearch } from "@vlcn.io/datastructures-and-algos/binary-search";
 
-export class DOMSink<T extends Node, K extends string | number> {
+export class DOMSink<T extends Node, K> {
   readonly #root;
   readonly #stream;
   readonly #comparator;
   readonly #reader;
   readonly #nodeMapping: (readonly [K, T])[] = [];
+  readonly #destructor?: (k: K) => void;
 
   constructor(
     root: Node,
     stream: DifferenceStream<readonly [K, T]>,
-    comparator: (l: readonly [K, T], r: readonly [K, T]) => number
+    comparator: (l: readonly [K, T], r: readonly [K, T]) => number,
+    destructor?: (k: K) => void
   ) {
     this.#root = root;
     this.#stream = stream;
     this.#comparator = comparator;
     this.#reader = this.#stream.newReader();
     const self = this;
+    this.#destructor = destructor;
     this.#reader.setOperator({
       run(version: Version) {
         self.#run(version);
@@ -67,7 +70,10 @@ export class DOMSink<T extends Node, K extends string | number> {
     // -- update the DOM based on the mutable array change
     for (const entry of collection.entries) {
       let [val, mult] = entry;
+      console.log(entry);
       const idx = binarySearch(this.#nodeMapping, val, this.#comparator);
+      console.log(this.#nodeMapping);
+      console.log(idx);
       if (mult > 0) {
         this.#addAll(val, mult, idx);
       } else if (mult < 0 && idx !== -1) {
@@ -106,6 +112,9 @@ export class DOMSink<T extends Node, K extends string | number> {
         break;
       }
       this.#root.removeChild(elem[1]);
+      if (this.#destructor) {
+        this.#destructor(elem[0]);
+      }
       this.#nodeMapping.splice(idx, 1);
       mult -= 1;
     }

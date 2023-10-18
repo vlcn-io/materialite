@@ -6,7 +6,7 @@ import { createTasks } from "../data/tasks/createTasks.js";
 import { TaskFilter } from "./TaskFilter.js";
 import { Materialite } from "@vlcn.io/materialite";
 
-const seedTasks = createTasks(10000);
+const seedTasks = createTasks(10);
 
 const materialite = new Materialite();
 const allTasks = materialite.newSet<Task>();
@@ -18,10 +18,10 @@ export const TaskApp: React.FC = () => {
   function onTaskSelected(task: Task) {
     // TODO: just update the task itself..
     // get join working later.
-    const oldTask = task;
-    task = { ...task, selected: true };
+    // const oldTask = task;
+    // task = { ...task, selected: true };
     setSelectedTask(task);
-    onTaskUpdated(oldTask, task);
+    // onTaskUpdated(oldTask, task);
   }
 
   function onTaskUpdated(oldTask: Task, newTask: Task) {
