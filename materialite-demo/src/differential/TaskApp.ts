@@ -10,7 +10,7 @@ import { TaskFilter } from "./TaskFilter";
 import { TaskTable } from "./TaskTable";
 import { html } from "./support/vanillajs";
 
-const seedTasks = createTasks(1);
+const seedTasks = createTasks(1000);
 
 export function TaskApp() {
   function onFilterChange() {}

@@ -88,7 +88,6 @@ export function html(handlers?: { [key: string]: (e: Event) => void }) {
       if (typeof value === "string") {
         node.textContent = value;
       } else if (Array.isArray(value)) {
-        console.log("replacing with array", value);
         node.replaceWith(...value);
       } else if (typeof value === "object") {
         node.replaceWith(value);
