@@ -15,6 +15,7 @@ type TaskTableProps = {
 export const TaskTable: React.FC<TaskTableProps> = (props) => {
   const [tasksList, setTasksList] = useState<List<Task> | null>(null);
   useEffect(() => {
+    console.log("CREATE SINK");
     const sink = new ImmListSink(props.tasks, (l, r) => l.id - r.id);
     setTasksList(sink.data);
     sink.onChange((list) => {

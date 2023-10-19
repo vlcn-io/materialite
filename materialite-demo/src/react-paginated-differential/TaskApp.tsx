@@ -6,12 +6,15 @@ import { createTasks } from "../data/tasks/createTasks.js";
 import { TaskFilter } from "./TaskFilter.js";
 import { Materialite } from "@vlcn.io/materialite";
 
-const seedTasks = createTasks(1000000);
+//1000000
+const seedTasks = createTasks(10);
 const materialite = new Materialite();
 const tasks = materialite.newSet<Task>();
 export const TaskApp: React.FC = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [filter, setFilter] = useState<TaskFilter>({});
+  const [filter, setFilter] = useState<TaskFilter>({
+    assignee: "John",
+  });
 
   function onTaskSelected(task: Task) {
     setSelectedTask(task);
@@ -47,7 +50,7 @@ export const TaskApp: React.FC = () => {
     <div className="flex h-screen">
       {/* Left Pane - Task Table */}
       <div className="w-3/4 bg-gray-100 overflow-y-auto">
-        <TaskFilter onFilterChange={setFilter} />
+        <TaskFilter onFilterChange={setFilter} f={filter} />
         <TaskTable
           tasks={filteredTasks}
           onTaskClick={onTaskSelected}

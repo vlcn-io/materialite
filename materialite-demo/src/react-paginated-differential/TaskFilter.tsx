@@ -10,6 +10,7 @@ import {
 
 type TaskFilterProps = {
   onFilterChange: (filter: TaskFilter) => void;
+  f: TaskFilter;
 };
 
 export type TaskFilter = {
@@ -19,8 +20,11 @@ export type TaskFilter = {
   project?: string;
 };
 
-export const TaskFilter: React.FC<TaskFilterProps> = ({ onFilterChange }) => {
-  const [filter, setFilter] = useState<TaskFilter>({});
+export const TaskFilter: React.FC<TaskFilterProps> = ({
+  onFilterChange,
+  f,
+}) => {
+  const [filter, setFilter] = useState<TaskFilter>(f);
 
   function controlChange(key: keyof TaskFilter, value?: string) {
     setFilter((prev) => ({ ...prev, [key]: value }));

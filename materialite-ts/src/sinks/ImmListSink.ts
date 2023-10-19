@@ -18,19 +18,18 @@ export class ImmListSink<T> extends Sink<T, List<T>> {
     }
 
     let changed = false;
-    const newData = this.#data.asMutable();
+    let newData = this.#data;
     collections.forEach((collection) => {
       // now we incrementally update our sink.
-      changed = this.#sink(collection, newData) || changed;
+      [changed, newData] = this.#sink(collection, newData) || changed;
     });
-    const immNewData = newData.asImmutable();
-    this.#data = immNewData;
+    this.#data = newData;
     if (changed) {
-      this.notify(immNewData);
+      this.notify(newData);
     }
   }
 
-  #sink(collection: Multiset<T>, data: List<T>) {
+  #sink(collection: Multiset<T>, data: List<T>): [boolean, List<T>] {
     let changed = false;
     for (let i = 0; i < collection.entries.length; ++i) {
       let [value, mult] = collection.entries[i]!;
@@ -44,7 +43,8 @@ export class ImmListSink<T> extends Sink<T, List<T>> {
         ) {
           if (idx >= 0) {
             changed = true;
-            data.set(idx, nextValue);
+            console.log("set...");
+            data = data.set(idx, nextValue);
             i += 1;
           }
           continue;
@@ -52,14 +52,14 @@ export class ImmListSink<T> extends Sink<T, List<T>> {
       }
       if (mult > 0) {
         changed = true;
-        addAll(data, value, mult, idx);
+        data = addAll(data, value, mult, idx);
       } else if (mult < 0 && idx >= 0) {
         changed = true;
-        removeAll(data, value, Math.abs(mult), idx, this.comparator);
+        data = removeAll(data, value, Math.abs(mult), idx, this.comparator);
       }
     }
 
-    return changed;
+    return [changed, data];
   }
 }
 
@@ -85,12 +85,15 @@ function addAll<T>(data: List<T>, value: T, mult: number, idx: number) {
   while (mult > 0) {
     if (idx < 0) {
       // add to the end
-      data.push(value);
+      const pos = Math.abs(idx) - 1;
+      data = data.insert(pos, value);
     } else {
-      data.insert(idx, value);
+      data = data.insert(idx, value);
     }
     mult -= 1;
   }
+
+  return data;
 }
 
 // TODO: wind back to least idx
@@ -106,7 +109,8 @@ function removeAll<T>(
     if (elem === undefined || comparator(elem, value) !== 0) {
       break;
     }
-    data.delete(idx);
+    data = data.delete(idx);
     mult -= 1;
   }
+  return data;
 }
