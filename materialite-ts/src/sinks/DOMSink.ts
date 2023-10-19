@@ -68,7 +68,29 @@ export class DOMSink<T extends Node, K> {
     // do the sinking
     // -- update our mutable array
     // -- update the DOM based on the mutable array change
-    for (const entry of collection.entries) {
+    for (let i = 0; i < collection.entries.length; i++) {
+      const entry = collection.entries[i]!;
+      if (i + 1 < collection.entries.length) {
+        const next = collection.entries[i + 1]!;
+        if (
+          this.#comparator(entry[0], next[0]) === 0 &&
+          entry[1] == -1 &&
+          next[1] == 1
+        ) {
+          i += 1;
+          const idx = binarySearch(
+            this.#nodeMapping,
+            entry[0],
+            this.#comparator
+          );
+          if (idx !== -1) {
+            const elem = this.#nodeMapping[idx]!;
+            this.#nodeMapping[idx] = next[0];
+            this.#root.replaceChild(next[0][1], elem[1]);
+          }
+          continue;
+        }
+      }
       let [val, mult] = entry;
       const idx = binarySearch(this.#nodeMapping, val, this.#comparator);
       if (mult > 0) {
