@@ -10,14 +10,18 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@vlcn.io/datastructures-and-algos": "workspace:*",
+    "@vlcn.io/materialite": "workspace:*",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "@vlcn.io/materialite": "workspace:*",
-    "@vlcn.io/datastructures-and-algos": "workspace:*"
+    "react-virtualized-auto-sizer": "^1.0.20",
+    "react-window": "^1.8.9"
   },
   "devDependencies": {
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",
+    "@types/react-virtualized-auto-sizer": "^1.0.2",
+    "@types/react-window": "^1.8.7",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "@vitejs/plugin-react": "^4.0.3",

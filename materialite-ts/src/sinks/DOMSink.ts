@@ -70,10 +70,7 @@ export class DOMSink<T extends Node, K> {
     // -- update the DOM based on the mutable array change
     for (const entry of collection.entries) {
       let [val, mult] = entry;
-      console.log(entry);
       const idx = binarySearch(this.#nodeMapping, val, this.#comparator);
-      console.log(this.#nodeMapping);
-      console.log(idx);
       if (mult > 0) {
         this.#addAll(val, mult, idx);
       } else if (mult < 0 && idx !== -1) {

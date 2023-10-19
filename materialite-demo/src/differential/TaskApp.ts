@@ -13,12 +13,11 @@ import { TaskTable } from "./TaskTable.js";
 import { html } from "./support/vanillajs.js";
 import { Materialite } from "@vlcn.io/materialite";
 
-const seedTasks = createTasks(10000);
+const seedTasks = createTasks(20000);
 
 export function TaskApp() {
   const materialite = new Materialite();
   const tasks = materialite.newSet<Task>();
-  // const selection = materialite.newSet<number>();
   let filter: TaskFilter = {
     assignee: "John",
   };
@@ -41,8 +40,12 @@ export function TaskApp() {
 
   function onFilterChange() {}
 
-  // let lastSelectedTaskId = 0;
+  let lastSelectedTask: Task | null = null;
   function onTaskClick(task: Task) {
+    const selectedTask = {
+      ...task,
+      selected: true,
+    };
     const component = TaskComponent({
       onTaskChanged: (oldTask, newTask) => {
         materialite.tx(() => {
@@ -50,15 +53,23 @@ export function TaskApp() {
           tasks.add(newTask);
         });
       },
-      task,
+      task: selectedTask,
     });
     selectedSection.removeChild(selectedSection.firstChild!);
     selectedSection.appendChild(component);
-    // materialite.tx(() => {
-    //   selection.delete(lastSelectedTaskId);
-    //   selection.add(task.id);
-    // });
-    // lastSelectedTaskId = task.id;
+    materialite.tx(() => {
+      if (lastSelectedTask) {
+        tasks.delete(lastSelectedTask);
+        tasks.add({
+          ...lastSelectedTask,
+          selected: false,
+        });
+      }
+
+      tasks.delete(task);
+      tasks.add(selectedTask);
+    });
+    lastSelectedTask = task;
   }
 
   const selectedSection = html()`<div><span>Select a task to view details</span></div>`;

@@ -20,6 +20,7 @@ export const TaskTable: React.FC<TaskTableProps> = ({
       <table className="min-w-full bg-white rounded-md overflow-hidden">
         <thead>
           <tr>
+            <th className="text-left py-2 px-3 font-semibold">ID</th>
             <th className="text-left py-2 px-3 font-semibold">Title</th>
             <th className="text-left py-2 px-3 font-semibold">Assignee</th>
             <th className="text-left py-2 px-3 font-semibold">Due Date</th>
@@ -38,6 +39,7 @@ export const TaskTable: React.FC<TaskTableProps> = ({
               }`}
               onClick={() => onTaskClick(task, i)}
             >
+              <td className="py-2 px-3">{task.id}</td>
               <td className="py-2 px-3">{task.title}</td>
               <td className="py-2 px-3">{task.assignee}</td>
               <td className="py-2 px-3">
