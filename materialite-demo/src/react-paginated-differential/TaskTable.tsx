@@ -41,7 +41,7 @@ export const TaskTable: React.FC<TaskTableProps> = (props) => {
             onTaskClick: props.onTaskClick,
             selectedTask: props.selectedTask,
           }}
-          itemSize={50}
+          itemSize={5}
           header={
             <thead>
               <tr>

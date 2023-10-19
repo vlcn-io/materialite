@@ -21,7 +21,7 @@ export const TaskTable: React.FC<TaskTableProps> = (props) => {
         className="min-w-full bg-white rounded-md overflow-hidden"
         itemCount={props.tasks.length}
         itemData={props}
-        itemSize={50}
+        itemSize={5}
         header={
           <thead>
             <tr>
