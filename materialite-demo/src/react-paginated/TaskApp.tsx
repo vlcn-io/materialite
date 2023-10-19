@@ -5,7 +5,7 @@ import { Task } from "../data/tasks/schema.js";
 import { createTasks } from "../data/tasks/createTasks.js";
 import { TaskFilter } from "./TaskFilter.js";
 
-const seedTasks = createTasks(20000);
+const seedTasks = createTasks(1000000);
 export const TaskApp: React.FC = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [allTasks, setAllTasks] = useState(seedTasks);

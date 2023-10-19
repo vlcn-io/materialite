@@ -24,6 +24,9 @@ importers:
       '@vlcn.io/materialite':
         specifier: workspace:*
         version: link:../materialite-ts
+      immutable:
+        specifier: 5.0.0-beta.4
+        version: 5.0.0-beta.4
       react:
         specifier: ^18.2.0
         version: 18.2.0

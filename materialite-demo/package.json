@@ -12,6 +12,7 @@
   "dependencies": {
     "@vlcn.io/datastructures-and-algos": "workspace:*",
     "@vlcn.io/materialite": "workspace:*",
+    "immutable": "5.0.0-beta.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-virtualized-auto-sizer": "^1.0.20",

@@ -52,19 +52,6 @@ export function VirtualTable({
   );
 }
 
-/** The Row component. This should be a table row, and noted that we don't use the style that regular `react-window` examples pass in.*/
-function Row({ index }: { index: number }) {
-  return (
-    <tr>
-      {/** Make sure your table rows are the same height as what you passed into the list... */}
-      <td style={{ height: "36px" }}>Row {index}</td>
-      <td>Col 2</td>
-      <td>Col 3</td>
-      <td>Col 4</td>
-    </tr>
-  );
-}
-
 /**
  * The Inner component of the virtual list. This is the "Magic".
  * Capture what would have been the top elements position and apply it to the table.

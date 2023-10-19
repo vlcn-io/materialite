@@ -1,8 +1,7 @@
 import React from "react";
 import { Task } from "../data/tasks/schema.js";
-import { FixedSizeList as List, ListChildComponentProps } from "react-window";
-import AutoSizer from "react-virtualized-auto-sizer";
-import { VirtualTable } from "./support/VirtualTable.js";
+import { ListChildComponentProps } from "react-window";
+import { VirtualTable } from "../virtualized/VirtualTable.js";
 
 type TaskTableProps = {
   tasks: Task[];
@@ -17,7 +16,7 @@ export const TaskTable: React.FC<TaskTableProps> = (props) => {
       style={{ position: "relative", top: 130, height: "calc(100vh - 130px)" }}
     >
       <VirtualTable
-        height={500}
+        height={window.innerHeight - 200}
         width="100%"
         className="min-w-full bg-white rounded-md overflow-hidden"
         itemCount={props.tasks.length}
