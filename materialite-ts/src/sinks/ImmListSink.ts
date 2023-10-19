@@ -32,6 +32,7 @@ export class ImmListSink<T> extends Sink<T, List<T>> {
 
   #sink(collection: Multiset<T>, data: List<T>) {
     let changed = false;
+    // TODO: optimize for swap!
     for (const entry of collection.entries) {
       let [value, mult] = entry;
       const idx = binarySearch(data, value, this.comparator);

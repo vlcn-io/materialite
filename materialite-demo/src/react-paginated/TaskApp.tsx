@@ -4,8 +4,9 @@ import { TaskComponent } from "./Task.js";
 import { Task } from "../data/tasks/schema.js";
 import { createTasks } from "../data/tasks/createTasks.js";
 import { TaskFilter } from "./TaskFilter.js";
+import { OrderedMap } from "immutable";
 
-const seedTasks = createTasks(1000000);
+const seedTasks = OrderedMap(createTasks(1000000).map((t) => [t.id, t]));
 export const TaskApp: React.FC = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [allTasks, setAllTasks] = useState(seedTasks);
@@ -22,16 +23,7 @@ export const TaskApp: React.FC = () => {
     if (selectedTask.id !== task.id) {
       return;
     }
-    // oof
-    const allTasksCopy: Task[] = [];
-    for (const t of allTasks) {
-      if (t.id === task.id) {
-        allTasksCopy.push(task);
-      } else {
-        allTasksCopy.push(t);
-      }
-    }
-    setAllTasks(allTasksCopy);
+    setAllTasks(allTasks.set(task.id, task));
     setSelectedTask(task);
   }
 
@@ -62,8 +54,12 @@ export const TaskApp: React.FC = () => {
   );
 };
 
-function filterTasks(filter: TaskFilter, tasks: Task[]): Task[] {
-  return tasks.filter((task) => {
+function filterTasks(
+  filter: TaskFilter,
+  tasks: OrderedMap<number, Task>
+): Task[] {
+  const ret = [];
+  function keep(task: Task) {
     let keep = true;
     for (const k in filter) {
       const casted = k as keyof TaskFilter;
@@ -77,5 +73,12 @@ function filterTasks(filter: TaskFilter, tasks: Task[]): Task[] {
     }
 
     return keep;
-  });
+  }
+  for (const t of tasks.values()) {
+    if (keep(t)) {
+      ret.push(t);
+    }
+  }
+
+  return ret;
 }
