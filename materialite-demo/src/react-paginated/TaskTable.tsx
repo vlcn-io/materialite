@@ -2,6 +2,7 @@ import React from "react";
 import { Task } from "../data/tasks/schema.js";
 import { FixedSizeList as List, ListChildComponentProps } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
+import { VirtualTable } from "./support/VirtualTable.js";
 
 type TaskTableProps = {
   tasks: Task[];
@@ -15,70 +16,52 @@ export const TaskTable: React.FC<TaskTableProps> = (props) => {
       className="bg-gray-100 p-6 overflow-y-auto"
       style={{ position: "relative", top: 130, height: "calc(100vh - 130px)" }}
     >
-      <div className="table min-w-full bg-white rounded-md overflow-hidden">
-        <div className="table-header">
-          <div className="table-cell text-left py-2 px-3 font-semibold">ID</div>
-          <div className="table-cell text-left py-2 px-3 font-semibold">
-            Title
-          </div>
-          <div className="table-cell -left py-2 px-3 font-semibold">
-            Assignee
-          </div>
-          <div className="table-cell text-left py-2 px-3 font-semibold">
-            Due Date
-          </div>
-          <div className="table-cell -left py-2 px-3 font-semibold">Status</div>
-          <div className="table-cell text-left py-2 px-3 font-semibold">
-            Priority
-          </div>
-          <div className="table-cell text-left py-2 px-3 font-semibold">
-            Project
-          </div>
-          <div className="table-cell text-left py-2 px-3 font-semibold">
-            Labels
-          </div>
-        </div>
-        <AutoSizer>
-          {({ width, height }) => {
-            return (
-              <List
-                itemCount={props.tasks.length}
-                height={height}
-                width={width}
-                itemData={props}
-                itemSize={50}
-              >
-                {Row}
-              </List>
-            );
-          }}
-        </AutoSizer>
-      </div>
+      <VirtualTable
+        height={500}
+        width="100%"
+        className="min-w-full bg-white rounded-md overflow-hidden"
+        itemCount={props.tasks.length}
+        itemData={props}
+        itemSize={50}
+        header={
+          <thead>
+            <tr>
+              <th className="text-left py-2 px-3 font-semibold">ID</th>
+              <th className="text-left py-2 px-3 font-semibold">Title</th>
+              <th className="text-left py-2 px-3 font-semibold">Assignee</th>
+              <th className="text-left py-2 px-3 font-semibold">Due Date</th>
+              <th className="text-left py-2 px-3 font-semibold">Status</th>
+              <th className="text-left py-2 px-3 font-semibold">Priority</th>
+              <th className="text-left py-2 px-3 font-semibold">Project</th>
+              <th className="text-left py-2 px-3 font-semibold">Labels</th>
+            </tr>
+          </thead>
+        }
+        row={Row}
+      />
     </div>
   );
 };
 
-function Row({ data, index, style }: ListChildComponentProps<TaskTableProps>) {
+function Row({ data, index }: ListChildComponentProps<TaskTableProps>) {
   const task = data.tasks[index];
   return (
-    <div
+    <tr
       key={task.id}
-      style={style}
-      className={`table-row border-t cursor-pointer ${
+      style={{ height: 50 }}
+      className={`border-t cursor-pointer ${
         task.id === data.selectedTask ? "bg-blue-200" : "hover:bg-blue-100"
       }`}
       onClick={() => data.onTaskClick(task)}
     >
-      <div className="table-cell py-2 px-3">{task.id}</div>
-      <div className="table-cell py-2 px-3">{task.title}</div>
-      <div className="table-cell py-2 px-3">{task.assignee}</div>
-      <div className="table-cell py-2 px-3">
-        {task.dueDate.toISOString().split("T")[0]}
-      </div>
-      <div className="table-cell py-2 px-3">{task.status}</div>
-      <div className="table-cell py-2 px-3">{task.priority}</div>
-      <div className="table-cell py-2 px-3">{task.project}</div>
-      <div className="table-cell py-2 px-3">{task.labels.join(", ")}</div>
-    </div>
+      <td className="py-2 px-3">{task.id}</td>
+      <td className="py-2 px-3">{task.title}</td>
+      <td className="py-2 px-3">{task.assignee}</td>
+      <td className="py-2 px-3">{task.dueDate.toISOString().split("T")[0]}</td>
+      <td className="py-2 px-3">{task.status}</td>
+      <td className="py-2 px-3">{task.priority}</td>
+      <td className="py-2 px-3">{task.project}</td>
+      <td className="py-2 px-3">{task.labels.join(", ")}</td>
+    </tr>
   );
 }
