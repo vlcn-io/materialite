@@ -1,45 +1,49 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { TaskTable } from "./TaskTable.js";
 import { TaskComponent } from "./Task.js";
 import { Task } from "../data/tasks/schema.js";
 import { createTasks } from "../data/tasks/createTasks.js";
 import { TaskFilter } from "./TaskFilter.js";
+import { Materialite } from "@vlcn.io/materialite";
 
 const seedTasks = createTasks(1000000);
+const materialite = new Materialite();
+const tasks = materialite.newSet<Task>();
 export const TaskApp: React.FC = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [allTasks, setAllTasks] = useState(seedTasks);
   const [filter, setFilter] = useState<TaskFilter>({});
 
   function onTaskSelected(task: Task) {
     setSelectedTask(task);
   }
 
-  function onTaskUpdated(task: Task) {
-    if (selectedTask == null) {
-      return;
-    }
-    if (selectedTask.id !== task.id) {
-      return;
-    }
-    // oof
-    const allTasksCopy: Task[] = [];
-    for (const t of allTasks) {
-      if (t.id === task.id) {
-        allTasksCopy.push(task);
-      } else {
-        allTasksCopy.push(t);
-      }
-    }
-    setAllTasks(allTasksCopy);
-    setSelectedTask(task);
+  function onTaskUpdated(oldTask: Task, newTask: Task) {
+    setSelectedTask(newTask);
+    materialite.tx(() => {
+      tasks.delete(oldTask);
+      tasks.add(newTask);
+    });
   }
 
   const filteredTasks = useMemo(() => {
-    return filterTasks(filter, allTasks);
-  }, [allTasks, filter]);
+    return tasks.stream.filter((task) => {
+      let keep = true;
+      for (const k in filter) {
+        const casted = k as keyof TaskFilter;
+        if (filter[casted] == null) {
+          continue;
+        }
+        keep = task[casted] === filter[casted];
+        if (!keep) {
+          return false;
+        }
+      }
 
-  return (
+      return keep;
+    });
+  }, [filter]);
+
+  const ret = (
     <div className="flex h-screen">
       {/* Left Pane - Task Table */}
       <div className="w-3/4 bg-gray-100 overflow-y-auto">
@@ -60,22 +64,10 @@ export const TaskApp: React.FC = () => {
       </div>
     </div>
   );
+
+  useEffect(() => {
+    tasks.addAll(seedTasks);
+  }, []);
+
+  return ret;
 };
-
-function filterTasks(filter: TaskFilter, tasks: Task[]): Task[] {
-  return tasks.filter((task) => {
-    let keep = true;
-    for (const k in filter) {
-      const casted = k as keyof TaskFilter;
-      if (filter[casted] == null) {
-        continue;
-      }
-      keep = task[casted] === filter[casted];
-      if (!keep) {
-        return false;
-      }
-    }
-
-    return keep;
-  });
-}

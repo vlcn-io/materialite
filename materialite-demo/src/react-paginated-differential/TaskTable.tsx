@@ -1,49 +1,77 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Task } from "../data/tasks/schema.js";
 import { ListChildComponentProps } from "react-window";
 import { VirtualTable } from "../virtualized/VirtualTable.js";
+import { DifferenceStream } from "@vlcn.io/materialite";
+import { ImmListSink } from "@vlcn.io/materialite/sinks/ImmListSink";
+import { List } from "immutable";
 
 type TaskTableProps = {
-  tasks: Task[];
+  tasks: DifferenceStream<Task>;
   onTaskClick: (task: Task) => void;
   selectedTask?: number;
 };
 
 export const TaskTable: React.FC<TaskTableProps> = (props) => {
+  const [tasksList, setTasksList] = useState<List<Task> | null>(null);
+  useEffect(() => {
+    const sink = new ImmListSink(props.tasks, (l, r) => l.id - r.id);
+    setTasksList(sink.data);
+    sink.onChange((list) => {
+      setTasksList(list);
+    });
+    return () => {
+      sink.destroy();
+    };
+  }, [props.tasks]);
+
   return (
     <div
       className="bg-gray-100 p-6 overflow-y-auto"
       style={{ position: "relative", top: 130, height: "calc(100vh - 130px)" }}
     >
-      <VirtualTable
-        height={window.innerHeight - 200}
-        width="100%"
-        className="min-w-full bg-white rounded-md overflow-hidden"
-        itemCount={props.tasks.length}
-        itemData={props}
-        itemSize={50}
-        header={
-          <thead>
-            <tr>
-              <th className="text-left py-2 px-3 font-semibold">ID</th>
-              <th className="text-left py-2 px-3 font-semibold">Title</th>
-              <th className="text-left py-2 px-3 font-semibold">Assignee</th>
-              <th className="text-left py-2 px-3 font-semibold">Due Date</th>
-              <th className="text-left py-2 px-3 font-semibold">Status</th>
-              <th className="text-left py-2 px-3 font-semibold">Priority</th>
-              <th className="text-left py-2 px-3 font-semibold">Project</th>
-              <th className="text-left py-2 px-3 font-semibold">Labels</th>
-            </tr>
-          </thead>
-        }
-        row={Row}
-      />
+      {tasksList == null ? null : (
+        <VirtualTable
+          height={window.innerHeight - 200}
+          width="100%"
+          className="min-w-full bg-white rounded-md overflow-hidden"
+          itemCount={tasksList.size}
+          itemData={{
+            tasks: tasksList,
+            onTaskClick: props.onTaskClick,
+            selectedTask: props.selectedTask,
+          }}
+          itemSize={50}
+          header={
+            <thead>
+              <tr>
+                <th className="text-left py-2 px-3 font-semibold">ID</th>
+                <th className="text-left py-2 px-3 font-semibold">Title</th>
+                <th className="text-left py-2 px-3 font-semibold">Assignee</th>
+                <th className="text-left py-2 px-3 font-semibold">Due Date</th>
+                <th className="text-left py-2 px-3 font-semibold">Status</th>
+                <th className="text-left py-2 px-3 font-semibold">Priority</th>
+                <th className="text-left py-2 px-3 font-semibold">Project</th>
+                <th className="text-left py-2 px-3 font-semibold">Labels</th>
+              </tr>
+            </thead>
+          }
+          row={Row}
+        />
+      )}
     </div>
   );
 };
 
-function Row({ data, index }: ListChildComponentProps<TaskTableProps>) {
-  const task = data.tasks[index];
+function Row({
+  data,
+  index,
+}: ListChildComponentProps<{
+  tasks: List<Task>;
+  onTaskClick: (task: Task) => void;
+  selectedTask?: number;
+}>) {
+  const task = data.tasks.get(index)!;
   return (
     <tr
       key={task.id}

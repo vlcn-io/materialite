@@ -32,18 +32,33 @@ export class ImmListSink<T> extends Sink<T, List<T>> {
 
   #sink(collection: Multiset<T>, data: List<T>) {
     let changed = false;
-    // TODO: optimize for swap!
-    for (const entry of collection.entries) {
-      let [value, mult] = entry;
+    for (let i = 0; i < collection.entries.length; ++i) {
+      let [value, mult] = collection.entries[i]!;
       const idx = binarySearch(data, value, this.comparator);
+      if (i + 1 < collection.entries.length) {
+        const [nextValue, nextMult] = collection.entries[i + 1]!;
+        if (
+          Math.abs(mult) === 1 &&
+          mult === -nextMult &&
+          this.comparator(value, nextValue) === 0
+        ) {
+          if (idx >= 0) {
+            changed = true;
+            data.set(idx, nextValue);
+            i += 1;
+          }
+          continue;
+        }
+      }
       if (mult > 0) {
         changed = true;
         addAll(data, value, mult, idx);
-      } else if (mult < 0 && idx !== -1) {
+      } else if (mult < 0 && idx >= 0) {
         changed = true;
         removeAll(data, value, Math.abs(mult), idx, this.comparator);
       }
     }
+
     return changed;
   }
 }
@@ -68,7 +83,7 @@ function binarySearch<T>(arr: List<T>, el: T, comparator: Comparator<T>) {
 function addAll<T>(data: List<T>, value: T, mult: number, idx: number) {
   // add
   while (mult > 0) {
-    if (idx === -1) {
+    if (idx < 0) {
       // add to the end
       data.push(value);
     } else {

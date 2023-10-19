@@ -3,7 +3,7 @@ import { Task } from "../data/tasks/schema.js";
 import { names, projects } from "../data/tasks/createTasks.js";
 type TaskComponentProps = {
   task: Task;
-  onTaskChanged: (task: Task) => void;
+  onTaskChanged: (oldTask: Task, task: Task) => void;
 };
 
 export const TaskComponent: React.FC<TaskComponentProps> = ({
@@ -17,7 +17,7 @@ export const TaskComponent: React.FC<TaskComponentProps> = ({
           type="text"
           className="w-full"
           onChange={(e) => {
-            onTaskChanged({
+            onTaskChanged(task, {
               ...task,
               title: e.target.value,
             });
@@ -31,7 +31,7 @@ export const TaskComponent: React.FC<TaskComponentProps> = ({
           className="border rounded w-full py-2 px-3"
           value={task.assignee}
           onChange={(e) =>
-            onTaskChanged({
+            onTaskChanged(task, {
               ...task,
               assignee: e.target.value,
             })
@@ -51,7 +51,7 @@ export const TaskComponent: React.FC<TaskComponentProps> = ({
           rows={5}
           value={task.description}
           onChange={(e) =>
-            onTaskChanged({ ...task, description: e.target.value })
+            onTaskChanged(task, { ...task, description: e.target.value })
           }
         ></textarea>
       </div>
@@ -62,7 +62,7 @@ export const TaskComponent: React.FC<TaskComponentProps> = ({
           className="border rounded w-full py-2 px-3"
           value={task.dueDate.toISOString().split("T")[0]}
           onChange={(e) =>
-            onTaskChanged({ ...task, dueDate: new Date(e.target.value) })
+            onTaskChanged(task, { ...task, dueDate: new Date(e.target.value) })
           }
         />
       </div>
@@ -72,7 +72,7 @@ export const TaskComponent: React.FC<TaskComponentProps> = ({
           className="border rounded w-full py-2 px-3"
           value={task.status}
           onChange={(e) =>
-            onTaskChanged({
+            onTaskChanged(task, {
               ...task,
               status: e.target.value as Task["status"],
             })
@@ -89,7 +89,7 @@ export const TaskComponent: React.FC<TaskComponentProps> = ({
           className="border rounded w-full py-2 px-3"
           value={task.priority}
           onChange={(e) =>
-            onTaskChanged({
+            onTaskChanged(task, {
               ...task,
               priority: e.target.value as Task["priority"],
             })
@@ -106,7 +106,7 @@ export const TaskComponent: React.FC<TaskComponentProps> = ({
           className="border rounded w-full py-2 px-3"
           value={task.project}
           onChange={(e) =>
-            onTaskChanged({
+            onTaskChanged(task, {
               ...task,
               project: e.target.value,
             })

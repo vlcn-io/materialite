@@ -14,6 +14,10 @@ export default defineConfig({
         react: resolve(__dirname, "react.html"),
         "react-differential": resolve(__dirname, "react-differential.html"),
         "react-paginated": resolve(__dirname, "react-paginated.html"),
+        "react-paginated-differential": resolve(
+          __dirname,
+          "react-paginated-differential.html"
+        ),
         differential: resolve(__dirname, "differential.html"),
       },
     },
