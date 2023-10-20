@@ -8,7 +8,8 @@
     ".": "./dist/index.js",
     "./sinks/DOMSink": "./dist/sinks/DOMSink.js",
     "./sinks/ArraySink": "./dist/sinks/ArraySink.js",
-    "./sinks/ImmListSink": "./dist/sinks/ImmListSink.js"
+    "./sinks/ImmListSink": "./dist/sinks/ImmListSink.js",
+    "./sinks/ImmSortedTreeSink": "./dist/sinks/ImmSortedTreeSink.js"
   },
   "module": "true",
   "scripts": {

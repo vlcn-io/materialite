@@ -18,6 +18,10 @@ export class PersistentTreap<T> {
     this.comparator = comparator;
   }
 
+  get length() {
+    return this.size;
+  }
+
   add(value: T): PersistentTreap<T> {
     const priority = Math.random(); // Random priority
     const root = this._insert(this.root, value, priority);

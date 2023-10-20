@@ -3,8 +3,9 @@ import { Task } from "../data/tasks/schema.js";
 import { ListChildComponentProps } from "react-window";
 import { VirtualTable } from "../virtualized/VirtualTable.js";
 import { DifferenceStream } from "@vlcn.io/materialite";
-import { ImmListSink } from "@vlcn.io/materialite/sinks/ImmListSink";
+import { ImmSortedTreeSink } from "@vlcn.io/materialite/sinks/ImmSortedTreeSink";
 import { List } from "immutable";
+import { PersistentTreap } from "@vlcn.io/datastructures-and-algos/PersistentTreap";
 
 type TaskTableProps = {
   tasks: DifferenceStream<Task>;
@@ -13,10 +14,12 @@ type TaskTableProps = {
 };
 
 export const TaskTable: React.FC<TaskTableProps> = (props) => {
-  const [tasksList, setTasksList] = useState<List<Task> | null>(null);
+  const [tasksList, setTasksList] = useState<PersistentTreap<Task> | null>(
+    null
+  );
   useEffect(() => {
     console.log("CREATE SINK");
-    const sink = new ImmListSink(props.tasks, (l, r) => l.id - r.id);
+    const sink = new ImmSortedTreeSink(props.tasks, (l, r) => l.id - r.id);
     setTasksList(sink.data);
     sink.onChange((list) => {
       setTasksList(list);
@@ -33,7 +36,7 @@ export const TaskTable: React.FC<TaskTableProps> = (props) => {
           height={window.innerHeight - 200}
           width="100%"
           className="min-w-full bg-white rounded-md overflow-hidden"
-          itemCount={tasksList.size}
+          itemCount={tasksList.length}
           itemData={{
             tasks: tasksList,
             onTaskClick: props.onTaskClick,
