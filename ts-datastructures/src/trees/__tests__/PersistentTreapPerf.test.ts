@@ -2,7 +2,7 @@ import { describe, it } from "vitest";
 import { PersistentTreap } from "../PersistentTreap.js";
 
 describe("Insertion Performance Benchmark", () => {
-  const NUM_INSERTS = 100000;
+  const NUM_INSERTS = 1_000_000;
 
   it("should measure insertion time for PersistentTreap", () => {
     let treap = new PersistentTreap<number>((a, b) => a - b);
@@ -14,17 +14,15 @@ describe("Insertion Performance Benchmark", () => {
 
     const end = performance.now();
     console.log(`Time taken for PersistentTreap: ${end - start}ms`);
-  });
 
-  it("should measure insertion time for JavaScript Map", () => {
     const map = new Map<number, null>();
-    const start = performance.now();
+    const start2 = performance.now();
 
     for (let i = 0; i < NUM_INSERTS; i++) {
       map.set(i, null);
     }
 
-    const end = performance.now();
-    console.log(`Time taken for JavaScript Map: ${end - start}ms`);
+    const end2 = performance.now();
+    console.log(`PersistentTreap: ${end - start}ms, Map: ${end2 - start2}ms`);
   });
 });
