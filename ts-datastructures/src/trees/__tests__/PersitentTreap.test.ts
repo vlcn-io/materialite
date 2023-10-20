@@ -21,13 +21,26 @@ describe("PersistentTreap", () => {
     expect(treap.contains(15)).toBe(false);
   });
 
-  // it("should addOrReplace existing values", () => {
-  //   treap = treap.add(10);
-  //   treap = treap.addOrReplace(10);
-  //   expect(treap.contains(10)).toBe(true);
-  //   treap = treap.addOrReplace(15);
-  //   expect(treap.contains(15)).toBe(true);
-  // });
+  it("should replace value if it exists", () => {
+    treap = treap.add(10);
+    treap = treap.add(5);
+
+    // Replacing existing value
+    const newTreap = treap.replace(10);
+
+    expect(newTreap.contains(10)).toBe(true);
+    expect(treap !== newTreap).toBe(true); // Ensure it's a new instance
+  });
+
+  it("should leave treap unchanged if value does not exist", () => {
+    treap = treap.add(10);
+
+    // Attempting to replace non-existent value
+    const newTreap = treap.replace(15);
+
+    expect(newTreap.contains(15)).toBe(false);
+    expect(treap === newTreap).toBe(true); // Ensure it's the same instance
+  });
 
   it("should remove values correctly", () => {
     treap = treap.add(10);

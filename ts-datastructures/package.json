@@ -11,7 +11,8 @@
     "./objectTracking": "./dist/objectTracking.js",
     "./TuplableMap": "./dist/TuplableMap.js",
     "./shuffle": "./dist/shuffle.js",
-    "./binary-search": "./dist/binary-search.js"
+    "./binary-search": "./dist/binary-search.js",
+    "./PersistentTreap": "./dist/trees/PersistentTreap.js"
   },
   "scripts": {
     "test": "vitest"

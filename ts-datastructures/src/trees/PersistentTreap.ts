@@ -35,21 +35,23 @@ export class PersistentTreap<T> {
     return ret;
   }
 
+  // replaces the value if it exists, otherwise leaves the treap unchanged.
+  replace(value: T): PersistentTreap<T> {
+    const newRoot = this._replace(this.root, value);
+    if (newRoot !== this.root) {
+      const newTreap = new PersistentTreap<T>(this.comparator);
+      newTreap.root = newRoot;
+      return newTreap;
+    }
+    return this;
+  }
+
   clear(): PersistentTreap<T> {
     const ret = new PersistentTreap(this.comparator);
     ret.size = 0;
     ret.root = null;
     return ret;
   }
-
-  // addOrReplace(value: T): PersistentTreap<T> {
-  // TODO: return if replaced or not
-  //   const root = this._replace(this.root, value);
-  //   const ret = new PersistentTreap(this.comparator);
-  //   ret.size = this.size + 1;
-  //   ret.root = root;
-  //   return ret;
-  // }
 
   map<U>(callback: (value: T) => U): U[] {
     const result: U[] = [];
@@ -107,24 +109,28 @@ export class PersistentTreap<T> {
     return this._contains(node.right, value);
   }
 
-  // private _replace(node: Node<T> | null, value: T): Node<T> | null {
-  //   if (!node) {
-  //     return new Node(value, Math.random()); // New node
-  //   }
+  private _replace(node: Node<T> | null, value: T): Node<T> | null {
+    if (!node) return null;
 
-  //   const cmp = this.comparator(value, node.value);
+    const cmp = this.comparator(value, node.value);
 
-  //   if (cmp < 0) {
-  //     const newLeft = this._replace(node.left, value);
-  //     return new Node(node.value, node.priority, newLeft, node.right);
-  //   } else if (cmp > 0) {
-  //     const newRight = this._replace(node.right, value);
-  //     return new Node(node.value, node.priority, node.left, newRight);
-  //   } else {
-  //     // Node is found, replace its value
-  //     return new Node(value, node.priority, node.left, node.right);
-  //   }
-  // }
+    if (cmp < 0) {
+      const newLeft = this._replace(node.left, value);
+      if (newLeft !== node.left) {
+        return new Node(node.value, node.priority, newLeft, node.right);
+      }
+    } else if (cmp > 0) {
+      const newRight = this._replace(node.right, value);
+      if (newRight !== node.right) {
+        return new Node(node.value, node.priority, node.left, newRight);
+      }
+    } else {
+      // Node is found, replace its value
+      return new Node(value, node.priority, node.left, node.right);
+    }
+
+    return node;
+  }
 
   *[Symbol.iterator](): Generator<T> {
     yield* inOrderTraversal(this.root);
