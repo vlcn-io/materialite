@@ -13,7 +13,7 @@ export const TaskTable: React.FC<TaskTableProps> = (props) => {
   return (
     <div
       className="bg-gray-100 p-6 overflow-y-auto"
-      style={{ position: "relative", top: 130, height: "calc(100vh - 130px)" }}
+      style={{ position: "relative" }}
     >
       <VirtualTable
         height={window.innerHeight - 200}

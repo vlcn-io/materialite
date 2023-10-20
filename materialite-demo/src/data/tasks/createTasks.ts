@@ -29,7 +29,7 @@ export const labels = [
 export const priorities: Priority[] = ["low", "medium", "high"];
 export const statuses: Status[] = ["todo", "in-progress", "done"];
 
-export const createTasks = (numTasks: number): Task[] => {
+export function* createTasks(numTasks: number): Generator<Task> {
   const actionPhrases = [
     "Implement",
     "Develop",
@@ -98,8 +98,6 @@ export const createTasks = (numTasks: number): Task[] => {
     ];
   };
 
-  const tasks: Task[] = [];
-
   for (let i = 0; i < numTasks; i++) {
     const [title, description] = generateText();
     const task: Task = {
@@ -114,8 +112,7 @@ export const createTasks = (numTasks: number): Task[] => {
       project: getRandomItem(projects),
     };
     taskId++;
-    tasks.push(task);
+    yield task;
+    // tasks.push(task);
   }
-
-  return tasks;
-};
+}

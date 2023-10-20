@@ -3,39 +3,31 @@ import { TaskTable } from "./TaskTable.js";
 import { TaskComponent } from "./Task.js";
 import { Task } from "../data/tasks/schema.js";
 import { createTasks } from "../data/tasks/createTasks.js";
-import { TaskFilter } from "./TaskFilter.js";
 import { OrderedMap } from "immutable";
 
-const seedTasks = OrderedMap(createTasks(1000000).map((t) => [t.id, t]));
+const seedTasks = OrderedMap(createTasks(2000000).map((t) => [t.id, t]));
 export const TaskApp: React.FC = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [allTasks, setAllTasks] = useState(seedTasks);
-  const [filter, setFilter] = useState<TaskFilter>({});
 
   function onTaskSelected(task: Task) {
     setSelectedTask(task);
   }
 
   function onTaskUpdated(task: Task) {
-    if (selectedTask == null) {
-      return;
-    }
-    if (selectedTask.id !== task.id) {
-      return;
-    }
     setAllTasks(allTasks.set(task.id, task));
     setSelectedTask(task);
   }
 
   const filteredTasks = useMemo(() => {
-    return filterTasks(filter, allTasks);
-  }, [allTasks, filter]);
+    return filter((t: Task) => !t.title.includes("foo"), allTasks);
+  }, [allTasks]);
 
   return (
     <div className="flex h-screen">
       {/* Left Pane - Task Table */}
       <div className="w-3/4 bg-gray-100 overflow-y-auto">
-        <TaskFilter onFilterChange={setFilter} />
+        {/* <TaskFilter onFilterChange={setFilter} /> */}
         <TaskTable
           tasks={filteredTasks}
           onTaskClick={onTaskSelected}
@@ -54,28 +46,10 @@ export const TaskApp: React.FC = () => {
   );
 };
 
-function filterTasks(
-  filter: TaskFilter,
-  tasks: OrderedMap<number, Task>
-): Task[] {
+function filter<T>(fn: (t: T) => boolean, items: OrderedMap<number, T>): T[] {
   const ret = [];
-  function keep(task: Task) {
-    let keep = true;
-    for (const k in filter) {
-      const casted = k as keyof TaskFilter;
-      if (filter[casted] == null) {
-        continue;
-      }
-      keep = task[casted] === filter[casted];
-      if (!keep) {
-        return false;
-      }
-    }
-
-    return keep;
-  }
-  for (const t of tasks.values()) {
-    if (keep(t)) {
+  for (const t of items.values()) {
+    if (fn(t)) {
       ret.push(t);
     }
   }

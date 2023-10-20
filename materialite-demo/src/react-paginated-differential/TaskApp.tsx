@@ -3,18 +3,14 @@ import { TaskTable } from "./TaskTable.js";
 import { TaskComponent } from "./Task.js";
 import { Task } from "../data/tasks/schema.js";
 import { createTasks } from "../data/tasks/createTasks.js";
-import { TaskFilter } from "./TaskFilter.js";
 import { Materialite } from "@vlcn.io/materialite";
 
-//1000000
-const seedTasks = createTasks(10);
+// const seedTasks = createTasks(2_000_000);
 const materialite = new Materialite();
 const tasks = materialite.newSet<Task>();
+
 export const TaskApp: React.FC = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [filter, setFilter] = useState<TaskFilter>({
-    assignee: "John",
-  });
 
   function onTaskSelected(task: Task) {
     setSelectedTask(task);
@@ -28,36 +24,20 @@ export const TaskApp: React.FC = () => {
     });
   }
 
-  const filteredTasks = useMemo(() => {
-    return tasks.stream.filter((task) => {
-      let keep = true;
-      for (const k in filter) {
-        const casted = k as keyof TaskFilter;
-        if (filter[casted] == null) {
-          continue;
-        }
-        keep = task[casted] === filter[casted];
-        if (!keep) {
-          return false;
-        }
-      }
-
-      return keep;
-    });
-  }, [filter]);
+  const filteredTasks = useMemo(
+    () => tasks.stream.filter((t) => !t.title.includes("foo")),
+    [tasks]
+  );
 
   const ret = (
     <div className="flex h-screen">
-      {/* Left Pane - Task Table */}
       <div className="w-3/4 bg-gray-100 overflow-y-auto">
-        <TaskFilter onFilterChange={setFilter} f={filter} />
         <TaskTable
           tasks={filteredTasks}
           onTaskClick={onTaskSelected}
           selectedTask={selectedTask != null ? selectedTask.id : undefined}
         />
       </div>
-      {/* Right Pane - Task Details */}
       <div className="w-1/4 bg-white overflow-y-auto p-6">
         {selectedTask ? (
           <TaskComponent task={selectedTask} onTaskChanged={onTaskUpdated} />
@@ -69,7 +49,7 @@ export const TaskApp: React.FC = () => {
   );
 
   useEffect(() => {
-    tasks.addAll(seedTasks);
+    tasks.addAll(createTasks(2_000_000));
   }, []);
 
   return ret;
