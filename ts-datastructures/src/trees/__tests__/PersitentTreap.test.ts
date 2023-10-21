@@ -1,6 +1,6 @@
-import { describe, beforeEach, it, expect } from "vitest";
+import { describe, beforeEach, it, expect, test } from "vitest";
 import { PersistentTreap } from "../PersistentTreap.js";
-import { inspect } from "util";
+// import { inspect } from "util";
 
 describe("PersistentTreap", () => {
   let treap: PersistentTreap<number>;
@@ -81,10 +81,6 @@ describe("Get operations", () => {
       expect(treap.at(-1)).toBeNull();
       expect(treap.at(7)).toBeNull();
     });
-
-    // test that at works as expected after constructing a treap and
-    // performing adds and removes
-    it("should retrieve elements in in-order after adds and removes", () => {});
   });
 
   describe("get", () => {
@@ -100,13 +96,29 @@ describe("Get operations", () => {
   });
 });
 
+describe("balance", () => {
+  // test that we're reaonsably balanced after a bunch of adds and removes
+  it("should be balanced after a bunch of adds and removes", () => {});
+});
+
 describe("size", () => {
   it("returns correct size after only inserts", () => {
     let treap = new PersistentTreap<number>((a, b) => a - b);
     treap = treap.add(1);
     treap = treap.add(2);
     treap = treap.add(3);
-    console.log(inspect(treap, true, null));
+    // console.log(inspect(treap, true, null));
     expect(treap.length).toBe(3);
   });
 });
+
+// using fast-check, check our treap after many inserts and adds.
+// Check:
+// - at
+// - size
+// - balance
+// - contains
+// - iteration
+// The fast check test will:
+// Create a script of random insertions and deletions.
+// We'll retain a normal `Set` to compare against.

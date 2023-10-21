@@ -49,7 +49,8 @@ export const TaskApp: React.FC = () => {
   );
 
   useEffect(() => {
-    tasks.addAll(createTasks(2_000_000));
+    //4_000_000
+    tasks.addAll(createTasks(10));
   }, []);
 
   return ret;

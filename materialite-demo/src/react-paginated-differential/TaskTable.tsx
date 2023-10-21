@@ -4,7 +4,6 @@ import { ListChildComponentProps } from "react-window";
 import { VirtualTable } from "../virtualized/VirtualTable.js";
 import { DifferenceStream } from "@vlcn.io/materialite";
 import { ImmSortedTreeSink } from "@vlcn.io/materialite/sinks/ImmSortedTreeSink";
-import { List } from "immutable";
 import { PersistentTreap } from "@vlcn.io/datastructures-and-algos/PersistentTreap";
 
 type TaskTableProps = {
@@ -68,11 +67,15 @@ function Row({
   data,
   index,
 }: ListChildComponentProps<{
-  tasks: List<Task>;
+  tasks: PersistentTreap<Task>;
   onTaskClick: (task: Task) => void;
   selectedTask?: number;
 }>) {
-  const task = data.tasks.get(index)!;
+  const task = data.tasks.at(index)!;
+  if (!task) {
+    console.log(`MISSING TASK! idx: ${index}`);
+    return null;
+  }
   return (
     <tr
       key={task.id}
