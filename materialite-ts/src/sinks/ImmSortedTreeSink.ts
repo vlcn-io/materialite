@@ -42,7 +42,8 @@ export class ImmSortedTreeSink<T> extends Sink<T, PersistentTreap<T>> {
           this.comparator(value, nextValue) === 0
         ) {
           changed = true;
-          data = data.replace(nextValue);
+          // The tree doesn't allow dupes -- so this is a replace.
+          data = data.add(nextValue);
           i += 1;
           continue;
         }

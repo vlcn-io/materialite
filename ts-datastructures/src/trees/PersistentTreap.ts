@@ -1,4 +1,5 @@
 class Node<T> {
+  size: number = 0;
   constructor(
     public value: T,
     public priority: number,
@@ -37,17 +38,6 @@ export class PersistentTreap<T> {
     ret.size = this.size - 1;
     ret.root = root;
     return ret;
-  }
-
-  // replaces the value if it exists, otherwise leaves the treap unchanged.
-  replace(value: T): PersistentTreap<T> {
-    const newRoot = this._replace(this.root, value);
-    if (newRoot !== this.root) {
-      const newTreap = new PersistentTreap<T>(this.comparator);
-      newTreap.root = newRoot;
-      return newTreap;
-    }
-    return this;
   }
 
   clear(): PersistentTreap<T> {
@@ -113,31 +103,73 @@ export class PersistentTreap<T> {
     return this._contains(node.right, value);
   }
 
-  private _replace(node: Node<T> | null, value: T): Node<T> | null {
-    if (!node) return null;
+  *[Symbol.iterator](): Generator<T> {
+    yield* inOrderTraversal(this.root);
+  }
+
+  private _insert(node: Node<T> | null, value: T, priority: number): Node<T> {
+    if (!node) return new Node(value, priority);
 
     const cmp = this.comparator(value, node.value);
 
     if (cmp < 0) {
-      const newLeft = this._replace(node.left, value);
-      if (newLeft !== node.left) {
-        return new Node(node.value, node.priority, newLeft, node.right);
-      }
-    } else if (cmp > 0) {
-      const newRight = this._replace(node.right, value);
-      if (newRight !== node.right) {
-        return new Node(node.value, node.priority, node.left, newRight);
-      }
-    } else {
-      // Node is found, replace its value
-      return new Node(value, node.priority, node.left, node.right);
-    }
+      const newLeft = this._insert(node.left, value, priority);
+      const newNode = new Node(node.value, node.priority, newLeft, node.right);
+      newNode.size =
+        node.size + (newLeft.size - (node.left ? node.left.size : 0));
 
-    return node;
+      // Check for rotation
+      if (newLeft.priority < newNode.priority) {
+        return this._rotateRightInsert(newNode);
+      }
+
+      return newNode;
+    } else if (cmp > 0) {
+      const newRight = this._insert(node.right, value, priority);
+      const newNode = new Node(node.value, node.priority, node.left, newRight);
+      newNode.size =
+        node.size + (newRight.size - (node.right ? node.right.size : 0));
+
+      // Check for rotation
+      if (newRight.priority < newNode.priority) {
+        return this._rotateLeftInsert(newNode);
+      }
+
+      return newNode;
+    } else {
+      // Duplicate found, replace the current node with the new value
+      const newNode = new Node(value, node.priority, node.left, node.right);
+      newNode.size = node.size;
+      return newNode;
+    }
   }
 
-  *[Symbol.iterator](): Generator<T> {
-    yield* inOrderTraversal(this.root);
+  private _rotateRightInsert(node: Node<T>): Node<T> {
+    const newRoot = node.left!;
+    node.left = newRoot.right;
+    newRoot.right = node;
+
+    // Update sizes
+    node.size =
+      1 + (node.left ? node.left.size : 0) + (node.right ? node.right.size : 0);
+    newRoot.size =
+      1 + (newRoot.left ? newRoot.left.size : 0) + newRoot.right.size;
+
+    return newRoot;
+  }
+
+  private _rotateLeftInsert(node: Node<T>): Node<T> {
+    const newRoot = node.right!;
+    node.right = newRoot.left;
+    newRoot.left = node;
+
+    // Update sizes
+    node.size =
+      1 + (node.left ? node.left.size : 0) + (node.right ? node.right.size : 0);
+    newRoot.size =
+      1 + newRoot.left.size + (newRoot.right ? newRoot.right.size : 0);
+
+    return newRoot;
   }
 
   private _remove(node: Node<T> | null, value: T): Node<T> | null {
@@ -147,73 +179,61 @@ export class PersistentTreap<T> {
 
     if (cmp < 0) {
       const newLeft = this._remove(node.left, value);
-      return new Node(node.value, node.priority, newLeft, node.right);
+      const newNode = new Node(node.value, node.priority, newLeft, node.right);
+      newNode.size = node.size - 1;
+      return newNode;
     } else if (cmp > 0) {
       const newRight = this._remove(node.right, value);
-      return new Node(node.value, node.priority, node.left, newRight);
+      const newNode = new Node(node.value, node.priority, node.left, newRight);
+      newNode.size = node.size - 1;
+      return newNode;
     } else {
-      // The node to be removed is found
       if (node.left && node.right) {
         if (node.left.priority > node.right.priority) {
-          const rotated = this._rotateRight(node, node.left);
-          rotated.right = this._remove(rotated.right, value);
-          return rotated;
+          const newNode = this._rotateRightRemove(node);
+          newNode.right = this._remove(newNode.right, value);
+          newNode.size = node.size - 1;
+          return newNode;
         } else {
-          const rotated = this._rotateLeft(node, node.right);
-          rotated.left = this._remove(rotated.left, value);
-          return rotated;
+          const newNode = this._rotateLeftRemove(node);
+          newNode.left = this._remove(newNode.left, value);
+          newNode.size = node.size - 1;
+          return newNode;
         }
       } else if (node.left) {
         return node.left;
       } else if (node.right) {
         return node.right;
       } else {
-        return null; // Node is a leaf
+        return null;
       }
     }
   }
 
-  private _insert(node: Node<T> | null, value: T, priority: number): Node<T> {
-    if (!node) {
-      return new Node(value, priority);
-    }
-
-    const cmp = this.comparator(value, node.value);
-
-    if (cmp < 0) {
-      const newLeft = this._insert(node.left, value, priority);
-      if (newLeft.priority > node.priority) {
-        return this._rotateRight(node, newLeft);
-      }
-      return new Node(node.value, node.priority, newLeft, node.right);
-    } else if (cmp > 0) {
-      const newRight = this._insert(node.right, value, priority);
-      if (newRight.priority > node.priority) {
-        return this._rotateLeft(node, newRight);
-      }
-      return new Node(node.value, node.priority, node.left, newRight);
-    }
-
-    // No duplicates allowed in this example
-    return node;
-  }
-
-  private _rotateRight(y: Node<T>, x: Node<T>): Node<T> {
-    return new Node(
-      x.value,
-      x.priority,
-      x.left,
-      new Node(y.value, y.priority, x.right, y.right)
+  private _rotateRightRemove(node: Node<T>): Node<T> {
+    const newNode = new Node(
+      node.left!.value,
+      node.left!.priority,
+      node.left!.left,
+      node
     );
+    newNode.size = node.size;
+    node.left = node.left!.right;
+    node.size -= 1 + (newNode.left ? newNode.left.size : 0);
+    return newNode;
   }
 
-  private _rotateLeft(x: Node<T>, y: Node<T>): Node<T> {
-    return new Node(
-      y.value,
-      y.priority,
-      new Node(x.value, x.priority, x.left, y.left),
-      y.right
+  private _rotateLeftRemove(node: Node<T>): Node<T> {
+    const newNode = new Node(
+      node.right!.value,
+      node.right!.priority,
+      node,
+      node.right!.right
     );
+    newNode.size = node.size;
+    node.right = node.right!.left;
+    node.size -= 1 + (newNode.right ? newNode.right.size : 0);
+    return newNode;
   }
 }
 

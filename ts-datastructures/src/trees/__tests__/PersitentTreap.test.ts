@@ -21,25 +21,16 @@ describe("PersistentTreap", () => {
     expect(treap.contains(15)).toBe(false);
   });
 
+  // TODO: via comparator so we can actually test
   it("should replace value if it exists", () => {
     treap = treap.add(10);
     treap = treap.add(5);
 
     // Replacing existing value
-    const newTreap = treap.replace(10);
+    const newTreap = treap.add(10);
 
     expect(newTreap.contains(10)).toBe(true);
     expect(treap !== newTreap).toBe(true); // Ensure it's a new instance
-  });
-
-  it("should leave treap unchanged if value does not exist", () => {
-    treap = treap.add(10);
-
-    // Attempting to replace non-existent value
-    const newTreap = treap.replace(15);
-
-    expect(newTreap.contains(15)).toBe(false);
-    expect(treap === newTreap).toBe(true); // Ensure it's the same instance
   });
 
   it("should remove values correctly", () => {
