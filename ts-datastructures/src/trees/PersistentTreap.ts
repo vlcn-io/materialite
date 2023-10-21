@@ -1,5 +1,5 @@
 class Node<T> {
-  size: number = 0;
+  size: number = 1;
   constructor(
     public value: T,
     public priority: number,
@@ -13,21 +13,19 @@ type Comparator<T> = (a: T, b: T) => number;
 export class PersistentTreap<T> {
   private comparator: Comparator<T>;
   private root: Node<T> | null = null;
-  private size: number = 0;
 
   constructor(comparator: Comparator<T>) {
     this.comparator = comparator;
   }
 
   get length() {
-    return this.size;
+    return this.root?.size ?? 0;
   }
 
   add(value: T): PersistentTreap<T> {
     const priority = Math.random(); // Random priority
     const root = this._insert(this.root, value, priority);
     const ret = new PersistentTreap(this.comparator);
-    ret.size = this.size + 1;
     ret.root = root;
     return ret;
   }
@@ -35,14 +33,12 @@ export class PersistentTreap<T> {
   delete(value: T): PersistentTreap<T> {
     const root = this._remove(this.root, value);
     const ret = new PersistentTreap(this.comparator);
-    ret.size = this.size - 1;
     ret.root = root;
     return ret;
   }
 
   clear(): PersistentTreap<T> {
     const ret = new PersistentTreap(this.comparator);
-    ret.size = 0;
     ret.root = null;
     return ret;
   }
@@ -93,6 +89,42 @@ export class PersistentTreap<T> {
     return result;
   }
 
+  at(index: number): T | null {
+    return this._getByIndex(this.root, index);
+  }
+
+  get(value: T): T | null {
+    let currentNode = this.root;
+
+    while (currentNode) {
+      const cmp = this.comparator(value, currentNode.value);
+
+      if (cmp === 0) {
+        return currentNode.value;
+      } else if (cmp < 0) {
+        currentNode = currentNode.left;
+      } else {
+        currentNode = currentNode.right;
+      }
+    }
+
+    return null;
+  }
+
+  private _getByIndex(node: Node<T> | null, index: number): T | null {
+    if (!node) return null;
+
+    const leftSize = node.left ? node.left.size : 0;
+
+    if (index === leftSize) {
+      return node.value;
+    } else if (index < leftSize) {
+      return this._getByIndex(node.left, index);
+    } else {
+      return this._getByIndex(node.right, index - leftSize - 1);
+    }
+  }
+
   private _contains(node: Node<T> | null, value: T): boolean {
     if (!node) return false;
 
@@ -111,37 +143,31 @@ export class PersistentTreap<T> {
     if (!node) return new Node(value, priority);
 
     const cmp = this.comparator(value, node.value);
+    let newNode: Node<T>;
 
     if (cmp < 0) {
       const newLeft = this._insert(node.left, value, priority);
-      const newNode = new Node(node.value, node.priority, newLeft, node.right);
+      newNode = new Node(node.value, node.priority, newLeft, node.right);
       newNode.size =
         node.size + (newLeft.size - (node.left ? node.left.size : 0));
 
-      // Check for rotation
       if (newLeft.priority < newNode.priority) {
         return this._rotateRightInsert(newNode);
       }
-
-      return newNode;
     } else if (cmp > 0) {
       const newRight = this._insert(node.right, value, priority);
-      const newNode = new Node(node.value, node.priority, node.left, newRight);
+      newNode = new Node(node.value, node.priority, node.left, newRight);
       newNode.size =
         node.size + (newRight.size - (node.right ? node.right.size : 0));
 
-      // Check for rotation
       if (newRight.priority < newNode.priority) {
         return this._rotateLeftInsert(newNode);
       }
-
-      return newNode;
     } else {
-      // Duplicate found, replace the current node with the new value
-      const newNode = new Node(value, node.priority, node.left, node.right);
+      newNode = new Node(value, node.priority, node.left, node.right); // Replacement, size remains same
       newNode.size = node.size;
-      return newNode;
     }
+    return newNode;
   }
 
   private _rotateRightInsert(node: Node<T>): Node<T> {
@@ -238,10 +264,23 @@ export class PersistentTreap<T> {
 }
 
 function* inOrderTraversal<T>(node: Node<T> | null): Generator<T> {
-  if (node) {
-    yield* inOrderTraversal(node.left);
-    yield node.value;
-    yield* inOrderTraversal(node.right);
+  const stack: Node<T>[] = [];
+  let currentNode = node;
+
+  while (stack.length > 0 || currentNode) {
+    // Reach the left most Node of the current Node
+    while (currentNode) {
+      stack.push(currentNode);
+      currentNode = currentNode.left;
+    }
+
+    // currentNode is null at this point
+    currentNode = stack.pop()!; // Pop the top node, which is the next node in in-order
+
+    yield currentNode.value;
+
+    // Move to the right node
+    currentNode = currentNode.right;
   }
 }
 
