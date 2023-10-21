@@ -1,4 +1,4 @@
-class Node<T> {
+export class Node<T> {
   size: number = 1;
   constructor(
     public value: T,
@@ -20,6 +20,10 @@ export class PersistentTreap<T> {
 
   get length() {
     return this.root?.size ?? 0;
+  }
+
+  get _root() {
+    return this.root;
   }
 
   add(value: T): PersistentTreap<T> {
@@ -198,67 +202,87 @@ export class PersistentTreap<T> {
     return newRoot;
   }
 
-  private _remove(node: Node<T> | null, value: T): Node<T> | null {
+  _remove(node: Node<T> | null, value: T): Node<T> | null {
     if (!node) return null;
 
-    const cmp = this.comparator(value, node.value);
+    let newNode = new Node(node.value, node.priority);
+    newNode.size = node.size - 1; // Decrement the size right away.
+    newNode.left = node.left;
+    newNode.right = node.right;
 
+    const cmp = this.comparator(value, newNode.value);
     if (cmp < 0) {
-      const newLeft = this._remove(node.left, value);
-      const newNode = new Node(node.value, node.priority, newLeft, node.right);
-      newNode.size = node.size - 1;
-      return newNode;
+      newNode.left = this._remove(newNode.left, value);
     } else if (cmp > 0) {
-      const newRight = this._remove(node.right, value);
-      const newNode = new Node(node.value, node.priority, node.left, newRight);
-      newNode.size = node.size - 1;
-      return newNode;
+      newNode.right = this._remove(newNode.right, value);
     } else {
-      if (node.left && node.right) {
-        if (node.left.priority > node.right.priority) {
-          const newNode = this._rotateRightRemove(node);
-          newNode.right = this._remove(newNode.right, value);
-          newNode.size = node.size - 1;
-          return newNode;
-        } else {
-          const newNode = this._rotateLeftRemove(node);
-          newNode.left = this._remove(newNode.left, value);
-          newNode.size = node.size - 1;
-          return newNode;
-        }
-      } else if (node.left) {
-        return node.left;
-      } else if (node.right) {
-        return node.right;
-      } else {
-        return null;
-      }
+      if (!newNode.left) return newNode.right;
+      if (!newNode.right) return newNode.left;
+
+      const temp = newNode;
+      newNode = this._findMin(temp.right!);
+      newNode.right = this._removeMin(temp.right!);
+      newNode.left = temp.left;
     }
+
+    newNode.size =
+      1 +
+      (newNode.left ? newNode.left.size : 0) +
+      (newNode.right ? newNode.right.size : 0); // Recalculate the size.
+    return this._balance(newNode);
   }
 
-  private _rotateRightRemove(node: Node<T>): Node<T> {
-    const newNode = new Node(
-      node.left!.value,
-      node.left!.priority,
-      node.left!.left,
-      node
-    );
+  _removeMin(node: Node<T>): Node<T> | null {
+    if (!node.left) return node.right;
+    const newNode = new Node(node.value, node.priority);
+    newNode.size = node.size - 1;
+    newNode.left = this._removeMin(node.left);
+    newNode.right = node.right;
+    newNode.size =
+      1 +
+      (newNode.left ? newNode.left.size : 0) +
+      (newNode.right ? newNode.right.size : 0); // Recalculate the size.
+    return this._balance(newNode);
+  }
+
+  _findMin(node: Node<T>): Node<T> {
+    while (node.left) {
+      node = node.left;
+    }
+    return node;
+  }
+
+  private _balance(node: Node<T>): Node<T> {
+    if (node.right && node.right.priority < node.priority) {
+      node = this._rotateLeft(node);
+    }
+    if (node.left && node.left.priority < node.priority) {
+      node = this._rotateRight(node);
+    }
+    return node;
+  }
+
+  private _rotateLeft(node: Node<T>): Node<T> {
+    const newNode = node.right!;
+    node.right = newNode.left;
+    newNode.left = node;
+
     newNode.size = node.size;
-    node.left = node.left!.right;
-    node.size -= 1 + (newNode.left ? newNode.left.size : 0);
+    node.size =
+      1 + (node.left ? node.left.size : 0) + (node.right ? node.right.size : 0);
+
     return newNode;
   }
 
-  private _rotateLeftRemove(node: Node<T>): Node<T> {
-    const newNode = new Node(
-      node.right!.value,
-      node.right!.priority,
-      node,
-      node.right!.right
-    );
+  private _rotateRight(node: Node<T>): Node<T> {
+    const newNode = node.left!;
+    node.left = newNode.right;
+    newNode.right = node;
+
     newNode.size = node.size;
-    node.right = node.right!.left;
-    node.size -= 1 + (newNode.right ? newNode.right.size : 0);
+    node.size =
+      1 + (node.left ? node.left.size : 0) + (node.right ? node.right.size : 0);
+
     return newNode;
   }
 }

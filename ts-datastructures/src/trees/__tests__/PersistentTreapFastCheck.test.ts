@@ -1,6 +1,7 @@
-import { Arbitrary, assert, property, tuple, fc } from "fast-check";
-import { PersistentTreap } from "../PersistentTreap.js";
-import { describe } from "vitest";
+import { assert, property } from "fast-check";
+import fc from "fast-check";
+import { PersistentTreap, Node } from "../PersistentTreap.js";
+import { expect, test } from "vitest";
 
 // Assuming your treap class is imported as:
 // import { PersistentTreap } from './path_to_treap';
@@ -11,12 +12,12 @@ function depth<T>(node: Node<T> | null): number {
   return 1 + Math.max(depth(node.left), depth(node.right));
 }
 
-describe("PersistentTreap Property-based Tests", () => {
+test("PersistentTreap Property-based Tests", () => {
   assert(
     property(
       // Arbitrarily generate a list of operations
       fc.array(
-        tuple(
+        fc.tuple(
           fc.oneof(
             fc.constant("insert"),
             fc.constant("delete"),
@@ -36,10 +37,16 @@ describe("PersistentTreap Property-based Tests", () => {
               set.add(value);
               break;
             case "delete":
-              treap = treap.delete(value);
-              set.delete(value);
+              if (set.size == 0) {
+                continue;
+              }
+              const vs = [...set.values()];
+              const v = vs[Math.floor(Math.random() * vs.length)]!;
+              treap = treap.delete(v);
+              set.delete(v);
               break;
             case "reinsert":
+              treap = treap.add(value);
               treap = treap.add(value);
               set.add(value);
               break;
@@ -48,28 +55,29 @@ describe("PersistentTreap Property-based Tests", () => {
 
         // 1. The treap has all items that are in the set.
         for (const item of set) {
-          if (!treap.contains(item)) return false;
+          expect(treap.contains(item)).toBe(true);
         }
 
         // 2. The treap returns items in sorted order when iterating.
         let lastValue = Number.NEGATIVE_INFINITY;
         for (const value of treap) {
-          if (value <= lastValue) return false;
+          expect(value).toBeGreaterThan(lastValue);
           lastValue = value;
         }
 
         // 3. The treap's size matches the set.
-        if (treap.length !== set.size) return false;
+        expect(treap.length).toBe(set.size);
 
         // 4. When indexing the treap, items are returned in the correct order.
+        const sortedSet = [...set.values()].sort((a, b) => a - b);
         for (let i = 0; i < treap.length; i++) {
           const treapValue = treap.at(i);
-          if (treapValue !== [...set.values()].sort()[i]) return false;
+          expect(treapValue).toBe(sortedSet[i]);
         }
 
         // 5. Check tree depth to ensure balance.
-        const d = depth(treap.root);
-        if (d > 3 * Math.log2(treap.size + 1)) return false;
+        const d = depth(treap._root);
+        if (d > 3 * Math.log2(treap.length + 1)) return false;
 
         return true;
       }

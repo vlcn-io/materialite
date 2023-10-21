@@ -22,5 +22,8 @@
   "license": "ISC",
   "devDependencies": {
     "vitest": "^0.34.6"
+  },
+  "dependencies": {
+    "fast-check": "^3.13.1"
   }
 }
