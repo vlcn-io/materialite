@@ -45,8 +45,9 @@ describe("Performance comparison: Array vs. Treap", () => {
   it("iteration by index", () => {
     const start = performance.now();
 
+    let c = 0;
     for (let i = 0; i < SIZE; i++) {
-      const _ = array[i];
+      c += array[i]!;
     }
 
     const end = performance.now();
@@ -54,7 +55,7 @@ describe("Performance comparison: Array vs. Treap", () => {
     const start2 = performance.now();
 
     for (let i = 0; i < SIZE; i++) {
-      const _ = treap.at(i);
+      c += treap.at(i)!;
     }
 
     const end2 = performance.now();
