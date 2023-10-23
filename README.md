@@ -27,6 +27,27 @@ pnpm dev
 
 ## API
 
+Three concepts:
+
+1. Source collection
+2. Difference Stream
+3. Sink collection
+
+- The source collection is your collection of values that you modify by adding and removing items.
+- The difference stream is the set of operations you want to apply against the source collection. E.g., `map`, `filter`, `reduce`, `join`, etc.
+- The sink materializes the result of your operations into a new collection such that you can interact with it via normal collection methods.
+
+Sinks are always sorted such that we can find the row to be updated after some different has been written to the source.
+
+```ts
+const source = new SetSource();
+const derived = source.stream.map(() => ...).filter(() => ...).reduce(() => ...);
+const sink = new PersistentTreeSink(derived, (l, r) => l.id - r.id);
+sink.onChange((data) => {
+  ...
+});
+```
+
 # TODO:
 
 - [ ] React strict mode. Need to re-pull on re-connect of sink to source given strict mode runs effects twice.
