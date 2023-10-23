@@ -144,62 +144,26 @@ export class PersistentTreap<T> {
   }
 
   private _insert(node: Node<T> | null, value: T, priority: number): Node<T> {
-    if (!node) return new Node(value, priority);
+    if (!node) {
+      return new Node(value, priority);
+    }
 
     const cmp = this.comparator(value, node.value);
-    let newNode: Node<T>;
+    const newNode = new Node(node.value, node.priority);
+    newNode.left = node.left;
+    newNode.right = node.right;
+    newNode.size = node.size + 1; // Increment the size since we're inserting.
 
     if (cmp < 0) {
-      const newLeft = this._insert(node.left, value, priority);
-      newNode = new Node(node.value, node.priority, newLeft, node.right);
-      newNode.size =
-        node.size + (newLeft.size - (node.left ? node.left.size : 0));
-
-      if (newLeft.priority < newNode.priority) {
-        return this._rotateRightInsert(newNode);
-      }
+      newNode.left = this._insert(newNode.left, value, priority);
     } else if (cmp > 0) {
-      const newRight = this._insert(node.right, value, priority);
-      newNode = new Node(node.value, node.priority, node.left, newRight);
-      newNode.size =
-        node.size + (newRight.size - (node.right ? node.right.size : 0));
-
-      if (newRight.priority < newNode.priority) {
-        return this._rotateLeftInsert(newNode);
-      }
+      newNode.right = this._insert(newNode.right, value, priority);
     } else {
-      newNode = new Node(value, node.priority, node.left, node.right); // Replacement, size remains same
-      newNode.size = node.size;
+      newNode.value = value; // Duplicate insertion, just overwrite.
     }
-    return newNode;
-  }
 
-  private _rotateRightInsert(node: Node<T>): Node<T> {
-    const newRoot = node.left!;
-    node.left = newRoot.right;
-    newRoot.right = node;
-
-    // Update sizes
-    node.size =
-      1 + (node.left ? node.left.size : 0) + (node.right ? node.right.size : 0);
-    newRoot.size =
-      1 + (newRoot.left ? newRoot.left.size : 0) + newRoot.right.size;
-
-    return newRoot;
-  }
-
-  private _rotateLeftInsert(node: Node<T>): Node<T> {
-    const newRoot = node.right!;
-    node.right = newRoot.left;
-    newRoot.left = node;
-
-    // Update sizes
-    node.size =
-      1 + (node.left ? node.left.size : 0) + (node.right ? node.right.size : 0);
-    newRoot.size =
-      1 + newRoot.left.size + (newRoot.right ? newRoot.right.size : 0);
-
-    return newRoot;
+    newNode.size = (newNode.left?.size ?? 0) + (newNode.right?.size ?? 0) + 1;
+    return this._balance(newNode); // Balance the node after insertion.
   }
 
   _remove(node: Node<T> | null, value: T): Node<T> | null {

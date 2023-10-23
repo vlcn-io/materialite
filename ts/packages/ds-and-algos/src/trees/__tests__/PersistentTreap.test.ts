@@ -98,7 +98,10 @@ describe("Get operations", () => {
 
 describe("balance", () => {
   // test that we're reaonsably balanced after a bunch of adds and removes
-  it("should be balanced after a bunch of adds and removes", () => {});
+  it("should be balanced after ordered adds", () => {});
+  it("should be balanced after ordered removes", () => {});
+  it("should be balanced after random adds", () => {});
+  it("should be balanced after random removes", () => {});
 });
 
 describe("size", () => {
@@ -110,4 +113,33 @@ describe("size", () => {
     // console.log(inspect(treap, true, null));
     expect(treap.length).toBe(3);
   });
+});
+
+test("adding and removing does not break array indexing", () => {
+  const SIZE = 100; // example size
+  const values = [];
+  let treap = new PersistentTreap<number>((a, b) => a - b);
+
+  for (let i = 0; i < SIZE; ++i) {
+    treap = treap.add(i);
+    values.push(i);
+  }
+
+  const TRIALS = 4;
+  for (let i = 0; i < SIZE; ++i) {
+    for (let t = 0; t < TRIALS; ++t) {
+      treap = treap.delete(i);
+      for (let j = 0; j < treap.length; ++j) {
+        if (j >= i) {
+          expect(treap.at(j)).toBe(values[j + 1]);
+        } else {
+          expect(treap.at(j)).toBe(values[j]);
+        }
+      }
+      treap = treap.add(i);
+      for (let j = 0; j < treap.length; ++j) {
+        expect(treap.at(j)).toBe(values[j]);
+      }
+    }
+  }
 });
