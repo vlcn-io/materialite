@@ -26,11 +26,11 @@ test("join", () => {
 
   const joined = index1.join(index2);
   expect(joined.entries).toEqual([
-    [[1, ["foo", "foo"]], 1],
-    [[1, ["foo", "baz"]], 1],
-    [[1, ["baz", "foo"]], 1],
-    [[1, ["baz", "baz"]], 1],
-    [[2, ["bar", "bar"]], 1],
+    [["foo", "foo"], 1],
+    [["foo", "baz"], 1],
+    [["baz", "foo"], 1],
+    [["baz", "baz"], 1],
+    [["bar", "bar"], 1],
   ]);
 });
 

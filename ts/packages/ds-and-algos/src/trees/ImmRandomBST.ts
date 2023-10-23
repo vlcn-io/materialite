@@ -1,32 +1,5 @@
 export type Comparator<T> = (a: T, b: T) => number;
 
-type NodeLike<T> = {
-  left: Node<T> | null;
-  right: Node<T> | null;
-  size: number;
-};
-
-class Node<T> {
-  constructor(
-    public readonly value: T,
-    // Ideally these would all be read-only but the recursive nature of delete and add currently prevent this.
-    public left: Node<T> | null,
-    public right: Node<T> | null,
-    public size: number = 1
-  ) {}
-
-  static fromNode<T>(n: Node<T>) {
-    return new Node(n.value, n.left, n.right, n.size);
-  }
-
-  static maybeFromNode<T>(n: Node<T> | null): Node<T> | null {
-    if (n == null) {
-      return n;
-    }
-    return new Node(n.value, n.left, n.right, n.size);
-  }
-}
-
 // https://dl.acm.org/doi/pdf/10.1145/274787.274812
 /**
  * A randomized binary search tree.
@@ -39,7 +12,7 @@ class Node<T> {
  * The randomization algorithm is also based on node size -- information
  * we need to retain in order to index the tree as an array anyway.
  */
-export class RandomBST<T> {
+export class ImmRandomBST<T> {
   constructor(
     private comparator: Comparator<T>,
     private readonly root: Node<T> | null = null
@@ -49,14 +22,52 @@ export class RandomBST<T> {
     return this.root?.size ?? 0;
   }
 
-  add(value: T): RandomBST<T> {
-    return new RandomBST(
+  actualDepth_expensive() {
+    return depth(this.root);
+  }
+
+  likelyDepth() {
+    return Math.floor(Math.log2(this.size));
+  }
+
+  add(value: T): ImmRandomBST<T> {
+    return new ImmRandomBST(
       this.comparator,
       add(this.root, this.comparator, value)
     );
   }
 
-  delete(value: T): RandomBST<T> {
+  has(value: T): boolean {
+    let node = this.root;
+    while (node != null) {
+      const comparison = this.comparator(value, node.value);
+      if (comparison < 0) {
+        node = node.left;
+      } else if (comparison > 0) {
+        node = node.right;
+      } else {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  *[Symbol.iterator]() {
+    const stack: Node<T>[] = [];
+    let node = this.root;
+    while (node != null || stack.length > 0) {
+      while (node != null) {
+        stack.push(node);
+        node = node.left;
+      }
+
+      node = stack.pop()!;
+      yield node.value;
+      node = node.right;
+    }
+  }
+
+  delete(value: T): ImmRandomBST<T> {
     if (this.root == null) {
       return this;
     }
@@ -64,8 +75,17 @@ export class RandomBST<T> {
     let newRoot = Node.fromNode(this.root);
     newRoot = delete_(newRoot, this.comparator, value)!;
     newRoot.size = (newRoot.left?.size ?? 0) + (newRoot.right?.size ?? 0) + 1;
-    return new RandomBST(this.comparator, newRoot);
+    return new ImmRandomBST(this.comparator, newRoot);
   }
+
+  // at(index: number)
+  // [Symbol.iterator]
+  // has
+  // map
+  // forEach
+  // reduce
+  // filter
+  // find
 }
 
 // root is an original tree node, not a copy.
@@ -78,42 +98,34 @@ function add<T>(
     return new Node(value, null, null);
   }
 
-  const r = Math.floor(Math.random() * root.size);
-  if (r === root.size) {
+  const comparison = comparator(value, root.value);
+  if (comparison == 0) {
+    return new Node(value, root.left, root.right, root.size);
+  }
+  const r = (Math.random() * (root.size + 1)) | 0;
+  if (r == root.size) {
+    // TODO: if it is already in the tree we don't want to do anything.
+    // so we should search for an existing value before adding.
+    // or update `addAtRoot` to do a replace if the value already exists.
     return addAtRoot(root, comparator, value);
   }
 
-  const comparison = comparator(value, root.value);
   if (comparison < 0) {
     const ret = new Node(
       root.value,
       add(root.left, comparator, value),
       root.right
     );
-    const oldLeft = root.left;
-    const newLeft = ret.left;
-    ret.size =
-      (newLeft?.size ?? 0) -
-      (oldLeft?.size ?? 0) +
-      (root.right?.size ?? 0) +
-      (newLeft?.size ?? 0);
+    ret.size = (ret.left?.size ?? 0) + (ret.right?.size ?? 0) + 1;
     return ret;
-  } else if (comparison > 0) {
+  } else {
     const ret = new Node(
       root.value,
       root.left,
       add(root.right, comparator, value)
     );
-    const oldRight = root.right;
-    const newRight = ret.right;
-    ret.size =
-      (newRight?.size ?? 0) -
-      (oldRight?.size ?? 0) +
-      (root.left?.size ?? 0) +
-      (newRight?.size ?? 0);
+    ret.size = (ret.left?.size ?? 0) + (ret.right?.size ?? 0) + 1;
     return ret;
-  } else {
-    return new Node(value, root.left, root.right, root.size);
   }
 }
 
@@ -160,38 +172,47 @@ function delete_<T>(
   return root;
 }
 
+// root is the original tree
 function addAtRoot<T>(root: Node<T>, comp: Comparator<T>, value: T): Node<T> {
-  const leftTreeRef = new RightRef<T>();
-  const rightTreeRef = new LeftRef<T>();
-  split(root, comp, value, leftTreeRef, rightTreeRef);
-  const leftTree = leftTreeRef.get();
-  const rightTree = rightTreeRef.get();
-
-  const ret = new Node(value, leftTree, leftTree);
-  ret.size = (leftTree?.size ?? 0) + (rightTree?.size ?? 0) + 1;
-  return ret;
+  const newRoot = new Node(value, null, null);
+  split(root, comp, value, new LeftRef(newRoot), new RightRef(newRoot));
+  return newRoot;
 }
 
+// todo: handle equality
+// root is an original node
 function split<T>(
-  // Root is an original tree node, not a copy.
   root: Node<T> | null,
   comp: Comparator<T>,
   value: T,
-  leftTree: RightRef<T>,
-  rightTree: LeftRef<T>
+  leftTree: LeftRef<T> | RightRef<T>,
+  rightTree: LeftRef<T> | RightRef<T>
 ) {
   if (root == null) {
+    leftTree.update(null);
+    rightTree.update(null);
     return;
   }
 
   const comparison = comp(value, root.value);
-  const n = Node.fromNode(root);
   if (comparison < 0) {
-    rightTree.update(n);
-    split(root.left, comp, value, leftTree, new LeftRef(n));
+    const node = Node.fromNode(root);
+    rightTree.update(node);
+
+    split(root.left, comp, value, leftTree, new LeftRef(node));
+    // TODO set size on node
+  } else if (comparison > 0) {
+    const node = Node.fromNode(root);
+    leftTree.update(node);
+
+    split(root.right, comp, value, new RightRef(node), rightTree);
+    // TODO set size on node
   } else {
-    leftTree.update(n);
-    split(root.right, comp, value, new RightRef(n), rightTree);
+    // delete this entry from the split by skipping to children.
+    leftTree.update(root.left);
+    rightTree.update(root.right);
+    // we're done. All things left of value are in leftTree, all things right of value are in rightTree.
+    return;
   }
 }
 
@@ -220,8 +241,20 @@ function join<T>(left: Node<T> | null, right: Node<T> | null): Node<T> | null {
   }
 }
 
+function depth<T>(node: Node<T> | null): number {
+  if (!node) return 0;
+  return 1 + Math.max(depth(node.left), depth(node.right));
+}
+
 class LeftRef<T> {
-  constructor(private n: NodeLike<T> = { left: null, right: null, size: 0 }) {}
+  private n: NodeLike<T>;
+  constructor(n: NodeLike<T> | null) {
+    if (n == null) {
+      this.n = { left: null, right: null, size: 0 };
+    } else {
+      this.n = n;
+    }
+  }
 
   update(o: Node<T> | null) {
     if (o == null) {
@@ -238,7 +271,14 @@ class LeftRef<T> {
 }
 
 class RightRef<T> {
-  constructor(private n: NodeLike<T> = { left: null, right: null, size: 0 }) {}
+  private n: NodeLike<T>;
+  constructor(n: NodeLike<T> | null) {
+    if (n == null) {
+      this.n = { left: null, right: null, size: 0 };
+    } else {
+      this.n = n;
+    }
+  }
 
   update(o: Node<T> | null) {
     if (o == null) {
@@ -251,5 +291,32 @@ class RightRef<T> {
 
   get() {
     return this.n.right;
+  }
+}
+
+type NodeLike<T> = {
+  left: Node<T> | null;
+  right: Node<T> | null;
+  size: number;
+};
+
+class Node<T> {
+  constructor(
+    public readonly value: T,
+    // Ideally these would all be read-only but the recursive nature of delete and add currently prevent this.
+    public left: Node<T> | null,
+    public right: Node<T> | null,
+    public size: number = 1
+  ) {}
+
+  static fromNode<T>(n: Node<T>) {
+    return new Node(n.value, n.left, n.right, n.size);
+  }
+
+  static maybeFromNode<T>(n: Node<T> | null): Node<T> | null {
+    if (n == null) {
+      return n;
+    }
+    return new Node(n.value, n.left, n.right, n.size);
   }
 }
