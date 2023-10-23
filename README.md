@@ -45,8 +45,16 @@ const derived = source.stream.map(() => ...).filter(() => ...).reduce(() => ...)
 const sink = new PersistentTreeSink(derived, (l, r) => l.id - r.id);
 sink.onChange((data) => {
   ...
+  // do stuff with data
+  // iterate over it, render it, whatever.
 });
+
+set.add(...);
+set.delete(...);
+...
 ```
+
+Each operation applied to `stream` will only operate on the diff of the dataset rather than the entire dataset each time the dataset is changed.
 
 # TODO:
 

@@ -35,7 +35,7 @@ export const TaskTable: React.FC<TaskTableProps> = (props) => {
           height={window.innerHeight - 200}
           width="100%"
           className="min-w-full bg-white rounded-md overflow-hidden"
-          itemCount={tasksList.length}
+          itemCount={tasksList.size}
           itemData={{
             tasks: tasksList,
             onTaskClick: props.onTaskClick,
