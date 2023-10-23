@@ -1,11 +1,5 @@
-import { ImmRandomBST } from "./trees/ImmRandomBST.js";
+import { Node, addAtRoot } from "./trees/ImmRandomBST.js";
+import { inspect } from "util";
 
-let tree = new ImmRandomBST<number>((a, b) => a - b);
-for (let i = 0; i < 3; i++) {
-  console.log(`Iter: ${i}`);
-  tree = tree.add(i);
-  console.log([...tree]);
-}
-
-// console.log(tree.actualDepth_expensive());
-// console.log(tree.likelyDepth());
+// Repeatedly remove and add from our treap
+// and test `getByIndex` has no missing indices.

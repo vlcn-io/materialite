@@ -102,7 +102,7 @@ function add<T>(
   if (comparison == 0) {
     return new Node(value, root.left, root.right, root.size);
   }
-  const r = (Math.random() * (root.size + 1)) | 0;
+  const r = Math.round(Math.random() * root.size) | 0;
   if (r == root.size) {
     // TODO: if it is already in the tree we don't want to do anything.
     // so we should search for an existing value before adding.
@@ -173,9 +173,14 @@ function delete_<T>(
 }
 
 // root is the original tree
-function addAtRoot<T>(root: Node<T>, comp: Comparator<T>, value: T): Node<T> {
+export function addAtRoot<T>(
+  root: Node<T>,
+  comp: Comparator<T>,
+  value: T
+): Node<T> {
   const newRoot = new Node(value, null, null);
   split(root, comp, value, new LeftRef(newRoot), new RightRef(newRoot));
+  newRoot.size = (newRoot.left?.size ?? 0) + (newRoot.right?.size ?? 0) + 1;
   return newRoot;
 }
 
@@ -200,13 +205,13 @@ function split<T>(
     rightTree.update(node);
 
     split(root.left, comp, value, leftTree, new LeftRef(node));
-    // TODO set size on node
+    node.size = (node.left?.size ?? 0) + (node.right?.size ?? 0) + 1;
   } else if (comparison > 0) {
     const node = Node.fromNode(root);
     leftTree.update(node);
 
     split(root.right, comp, value, new RightRef(node), rightTree);
-    // TODO set size on node
+    node.size = (node.left?.size ?? 0) + (node.right?.size ?? 0) + 1;
   } else {
     // delete this entry from the split by skipping to children.
     leftTree.update(root.left);
@@ -247,22 +252,10 @@ function depth<T>(node: Node<T> | null): number {
 }
 
 class LeftRef<T> {
-  private n: NodeLike<T>;
-  constructor(n: NodeLike<T> | null) {
-    if (n == null) {
-      this.n = { left: null, right: null, size: 0 };
-    } else {
-      this.n = n;
-    }
-  }
+  constructor(private n: NodeLike<T>) {}
 
   update(o: Node<T> | null) {
-    if (o == null) {
-      return;
-    }
-
-    this.n.left = new Node(o.value, o.left, o.right);
-    this.n.size = (this.n.left?.size ?? 0) + (this.n.right?.size ?? 0) + 1;
+    this.n.left = o;
   }
 
   get() {
@@ -271,22 +264,10 @@ class LeftRef<T> {
 }
 
 class RightRef<T> {
-  private n: NodeLike<T>;
-  constructor(n: NodeLike<T> | null) {
-    if (n == null) {
-      this.n = { left: null, right: null, size: 0 };
-    } else {
-      this.n = n;
-    }
-  }
+  constructor(private n: NodeLike<T>) {}
 
   update(o: Node<T> | null) {
-    if (o == null) {
-      return;
-    }
-
-    this.n.right = new Node(o.value, o.left, o.right);
-    this.n.size = (this.n.left?.size ?? 0) + (this.n.right?.size ?? 0) + 1;
+    this.n.right = o;
   }
 
   get() {
@@ -300,7 +281,7 @@ type NodeLike<T> = {
   size: number;
 };
 
-class Node<T> {
+export class Node<T> {
   constructor(
     public readonly value: T,
     // Ideally these would all be read-only but the recursive nature of delete and add currently prevent this.
