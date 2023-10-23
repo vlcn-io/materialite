@@ -9,7 +9,7 @@
     "./sinks/DOMSink": "./dist/sinks/DOMSink.js",
     "./sinks/ArraySink": "./dist/sinks/ArraySink.js",
     "./sinks/ImmListSink": "./dist/sinks/ImmListSink.js",
-    "./sinks/ImmSortedTreeSink": "./dist/sinks/ImmSortedTreeSink.js"
+    "./sinks/PersistentTreeSink": "./dist/sinks/PersistentTreeSink.js"
   },
   "module": "true",
   "scripts": {

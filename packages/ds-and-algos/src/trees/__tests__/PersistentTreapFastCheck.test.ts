@@ -47,6 +47,8 @@ function checkTreap(operations: [string, number][]) {
   const set = new Set<number>();
 
   for (const [operation, value] of operations) {
+    let oldTreap = treap;
+    const oldTreapValues = [...oldTreap];
     switch (operation) {
       case "insert":
         treap = treap.add(value);
@@ -67,14 +69,10 @@ function checkTreap(operations: [string, number][]) {
         set.add(value);
         break;
     }
+    const oldTreapValuesPostModification = [...oldTreap];
 
-    // TODO: check that we really aren't mutating the tree /
-    // that old versions are not modified by an operation.
-    // We can do this by:
-    // 1. traverse the treap before modification and put all nodes into an array
-    // 2. traverse the treap from the original root after modification and put
-    // all nodes into an array
-    // 3. compare all nodes for reference equality in turn
+    // Treap should not be modified in place.
+    expect(oldTreapValues).toEqual(oldTreapValuesPostModification);
   }
 
   // 1. The treap has all items that are in the set.
