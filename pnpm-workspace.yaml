@@ -1,0 +1,4 @@
+packages:
+  - "packages/materialite"
+  - "packages/ds-and-algos"
+  - "buildall"
