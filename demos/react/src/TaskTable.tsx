@@ -3,7 +3,7 @@ import { Task } from "./data/tasks/schema.js";
 import { ListChildComponentProps } from "react-window";
 import { VirtualTable } from "./virtualized/VirtualTable.js";
 import { DifferenceStream } from "@vlcn.io/materialite";
-import { ImmSortedTreeSink } from "@vlcn.io/materialite/sinks/PersistentTreeSink";
+import { PersistentTreeSink } from "@vlcn.io/materialite/sinks/PersistentTreeSink";
 import { PersistentTreap } from "@vlcn.io/ds-and-algos/PersistentTreap";
 
 type TaskTableProps = {
@@ -18,7 +18,7 @@ export const TaskTable: React.FC<TaskTableProps> = (props) => {
   );
   useEffect(() => {
     console.log("CREATE SINK");
-    const sink = new ImmSortedTreeSink(props.tasks, (l, r) => l.id - r.id);
+    const sink = new PersistentTreeSink(props.tasks, (l, r) => l.id - r.id);
     setTasksList(sink.data);
     sink.onChange((list) => {
       setTasksList(list);

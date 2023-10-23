@@ -7,7 +7,7 @@ import { Sink } from "./Sink.js";
  *
  * This sink mutates the array in place. For immutable sinks, see:
  * - CopyOnWriteArraySink
- * - ImmListSink
+ * - PersistentTreeSink
  */
 export class ArraySink<T> extends Sink<T, T[]> {
   readonly data: T[] = [];

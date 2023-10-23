@@ -3,7 +3,16 @@ import { Multiset } from "../core/multiset.js";
 import { PersistentTreap } from "@vlcn.io/ds-and-algos/PersistentTreap";
 import { Sink } from "./Sink.js";
 
-export class ImmSortedTreeSink<T> extends Sink<T, PersistentTreap<T>> {
+/**
+ * A sink that maintains the list of values in-order.
+ * Like any tree, insertion time is O(logn) no matter where the insertion happens.
+ * Useful for maintaining large sorted lists.
+ *
+ * This sink is persistent in that each write creates a new version of the tree.
+ * Copying the tree is relatively cheap (O(logn)) as we share structure with old versions
+ * of the tree.
+ */
+export class PersistentTreeSink<T> extends Sink<T, PersistentTreap<T>> {
   #data: PersistentTreap<T> = new PersistentTreap<T>(this.comparator);
 
   get data() {
