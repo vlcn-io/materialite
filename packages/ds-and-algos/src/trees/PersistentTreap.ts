@@ -29,7 +29,7 @@ export class PersistentTreap<T> {
     this.comparator = comparator;
   }
 
-  get length() {
+  get size() {
     return this.root?.size ?? 0;
   }
 
@@ -180,10 +180,7 @@ export class PersistentTreap<T> {
   _remove(node: Node<T> | null, value: T): Node<T> | null {
     if (!node) return null;
 
-    let newNode = new Node(node.value, node.priority);
-    newNode.size = node.size - 1; // Decrement the size right away.
-    newNode.left = node.left;
-    newNode.right = node.right;
+    let newNode = new Node(node.value, node.priority, node.left, node.right);
 
     const cmp = this.comparator(value, newNode.value);
     if (cmp < 0) {
@@ -194,10 +191,9 @@ export class PersistentTreap<T> {
       if (!newNode.left) return newNode.right;
       if (!newNode.right) return newNode.left;
 
-      const temp = newNode;
-      newNode = this._findMin(temp.right!);
-      newNode.right = this._removeMin(temp.right!);
-      newNode.left = temp.left;
+      const minRightNode = this._findMin(newNode.right);
+      newNode.value = minRightNode.value; // Update the value with the min value from the right subtree.
+      newNode.right = this._removeMin(newNode.right);
     }
 
     newNode.size =

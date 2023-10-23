@@ -111,7 +111,7 @@ describe("size", () => {
     treap = treap.add(2);
     treap = treap.add(3);
     // console.log(inspect(treap, true, null));
-    expect(treap.length).toBe(3);
+    expect(treap.size).toBe(3);
   });
 });
 
@@ -129,7 +129,7 @@ test("adding and removing does not break array indexing", () => {
   for (let i = 0; i < SIZE; ++i) {
     for (let t = 0; t < TRIALS; ++t) {
       treap = treap.delete(i);
-      for (let j = 0; j < treap.length; ++j) {
+      for (let j = 0; j < treap.size; ++j) {
         if (j >= i) {
           expect(treap.at(j)).toBe(values[j + 1]);
         } else {
@@ -137,7 +137,7 @@ test("adding and removing does not break array indexing", () => {
         }
       }
       treap = treap.add(i);
-      for (let j = 0; j < treap.length; ++j) {
+      for (let j = 0; j < treap.size; ++j) {
         expect(treap.at(j)).toBe(values[j]);
       }
     }

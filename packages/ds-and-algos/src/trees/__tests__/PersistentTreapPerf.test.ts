@@ -6,26 +6,44 @@ describe("Insertion Performance Benchmark", () => {
 
   it("should measure insertion time for PersistentTreap", () => {
     let treap = new PersistentTreap<number>((a, b) => a - b);
-    const start = performance.now();
+    let start = performance.now();
 
     for (let i = 0; i < NUM_INSERTS; i++) {
       treap = treap.add(i);
     }
 
-    const end = performance.now();
-    console.log(`Time taken for PersistentTreap: ${end - start}ms`);
+    let end = performance.now();
 
     const map = new Map<number, null>();
-    const start2 = performance.now();
+    let start2 = performance.now();
 
     for (let i = 0; i < NUM_INSERTS; i++) {
       map.set(i, null);
     }
 
-    const end2 = performance.now();
-    console.log(`PersistentTreap: ${end - start}ms, Map: ${end2 - start2}ms`);
+    let end2 = performance.now();
+    console.log(
+      `PersistentTreap#add: ${end - start}ms, Map#set: ${end2 - start2}ms`
+    );
+
+    start = performance.now();
+    for (let i = 0; i < NUM_INSERTS; i++) {
+      treap.delete(i);
+    }
+    end = performance.now();
+
+    start2 = performance.now();
+    for (let i = 0; i < NUM_INSERTS; i++) {
+      map.delete(i);
+    }
+    end2 = performance.now();
+    console.log(
+      `PersistentTreap#delete: ${end - start}ms, Map#delete: ${end2 - start2}ms`
+    );
   });
 });
+
+// TODO: check deletion perf
 
 describe("Performance comparison: Array vs. Treap", () => {
   const SIZE = 100_000; // example size

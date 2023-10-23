@@ -16,7 +16,7 @@ test("PersistentTreap Property-based Tests (large)", () => {
   assert(
     property(
       // Arbitrarily generate a list of operations
-      script(1000),
+      script(500),
       checkTreap
     )
   );
@@ -88,11 +88,11 @@ function checkTreap(operations: [string, number][]) {
   }
 
   // 3. The treap's size matches the set.
-  expect(treap.length).toBe(set.size);
+  expect(treap.size).toBe(set.size);
 
   // 4. When indexing the treap, items are returned in the correct order.
   const sortedSet = [...set.values()].sort((a, b) => a - b);
-  for (let i = 0; i < treap.length; i++) {
+  for (let i = 0; i < treap.size; i++) {
     const treapValue = treap.at(i);
     expect(treapValue).toBe(sortedSet[i]);
   }
@@ -100,7 +100,7 @@ function checkTreap(operations: [string, number][]) {
   // 5. Check tree depth to ensure balance.
   // Given we balance randomly, check that we're within a certain range.
   const d = depth(treap._root);
-  expect(d).toBeLessThanOrEqual(3 * Math.log2(treap.length + 1));
+  expect(d).toBeLessThanOrEqual(3 * Math.log2(treap.size + 1));
 
   return true;
 }

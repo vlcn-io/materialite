@@ -1,12 +1,12 @@
-import { Priority, Status } from "../data/tasks/schema.js";
+import { Priority, Status } from "./data/tasks/schema.js";
 
 import {
   names,
   priorities,
   statuses,
   projects,
-} from "../data/tasks/createTasks";
-import { html } from "./support/vanillajs";
+} from "./data/tasks/createTasks";
+import { html } from "./support/vanillajs.js";
 
 type TaskFilterProps = {
   onFilterChange: (filter: TaskFilter) => void;
