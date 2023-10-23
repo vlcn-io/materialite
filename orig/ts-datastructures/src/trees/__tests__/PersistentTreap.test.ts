@@ -111,14 +111,3 @@ describe("size", () => {
     expect(treap.length).toBe(3);
   });
 });
-
-// using fast-check, check our treap after many inserts and adds.
-// Check:
-// - at
-// - size
-// - balance
-// - contains
-// - iteration
-// The fast check test will:
-// Create a script of random insertions and deletions.
-// We'll retain a normal `Set` to compare against.

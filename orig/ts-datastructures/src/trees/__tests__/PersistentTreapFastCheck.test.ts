@@ -67,6 +67,14 @@ function checkTreap(operations: [string, number][]) {
         set.add(value);
         break;
     }
+
+    // TODO: check that we really aren't mutating the tree /
+    // that old versions are not modified by an operation.
+    // We can do this by:
+    // 1. traverse the treap before modification and put all nodes into an array
+    // 2. traverse the treap from the original root after modification and put
+    // all nodes into an array
+    // 3. compare all nodes for reference equality in turn
   }
 
   // 1. The treap has all items that are in the set.
