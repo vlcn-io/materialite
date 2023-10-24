@@ -1,6 +1,7 @@
-import { Entry } from "../../multiset.js";
+import { Entry, Multiset } from "../../multiset.js";
 import { DifferenceStreamReader } from "../DifferenceReader.js";
 import { DifferenceStreamWriter } from "../DifferenceWriter.js";
+import { LinearUnaryOperator } from "./LinearUnaryOperator.js";
 import { ReduceOperator } from "./ReduceOperator.js";
 
 // TODO: count is technically linear. We can do this as a linear operator so as not to require
@@ -19,5 +20,21 @@ export class CountOperator<K, V> extends ReduceOperator<K, V, number> {
       return [[count, 1]];
     };
     super(input, output, getKey, inner);
+  }
+}
+
+export class LinearCountOperator<V> extends LinearUnaryOperator<V, number> {
+  #state: number = 0;
+  constructor(
+    input: DifferenceStreamReader<V>,
+    output: DifferenceStreamWriter<number>
+  ) {
+    const inner = (collection: Multiset<V>) => {
+      for (const e of collection.entries) {
+        this.#state += e[1];
+      }
+      return new Multiset([[this.#state, 1]]);
+    };
+    super(input, output, inner);
   }
 }

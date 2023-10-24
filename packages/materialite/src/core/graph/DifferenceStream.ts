@@ -7,9 +7,12 @@ import { NegateOperator } from "./ops/NegateOperator.js";
 import { ConcatOperator } from "./ops/ConcatOperator.js";
 import { JoinOperator } from "./ops/JoinOperator.js";
 import { ReduceOperator } from "./ops/ReduceOperator.js";
-import { CountOperator } from "./ops/CountOperator.js";
+import { CountOperator, LinearCountOperator } from "./ops/CountOperator.js";
 import { DebugOperator } from "./ops/DebugOperator.js";
-import { RootDifferenceStreamWriter } from "./DifferenceWriter.js";
+import {
+  DifferenceStreamWriter,
+  RootDifferenceStreamWriter,
+} from "./DifferenceWriter.js";
 import { DifferenceStreamReader } from "./DifferenceReader.js";
 
 export class DifferenceStream<T> {
@@ -20,7 +23,7 @@ export class DifferenceStream<T> {
     if (root) {
       this.#writer = new RootDifferenceStreamWriter<T>();
     } else {
-      this.#writer = new RootDifferenceStreamWriter<T>();
+      this.#writer = new DifferenceStreamWriter<T>();
     }
   }
 
@@ -96,6 +99,18 @@ export class DifferenceStream<T> {
     const operator = new CountOperator(reader, output.#writer, getKey);
     reader.setOperator(operator as any);
     return output;
+  }
+
+  linearCount() {
+    const output = new DifferenceStream<number>(false);
+    const reader = this.#writer.newReader();
+    const operator = new LinearCountOperator(reader, output.#writer);
+    reader.setOperator(operator as any);
+    return output;
+  }
+
+  sink<T>(ctor: (stream: this) => T): T {
+    return ctor(this);
   }
 
   debug(f: (i: Multiset<T>) => void) {

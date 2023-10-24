@@ -11,13 +11,9 @@ import {
   Version,
 } from "../core/types.js";
 
-// When the user explicitly finalizes them?
-// TODO: all mutation methods should take in a `tx` so they can add themselves
-// to the active tx?
-// and on-commit we can release the queues of all touched
-// sources.
-// Remember we can optimistically pull too... for the given tx id number anyway.
 export class SetSource<T> {
+  // TODO: should sources remember?
+  readonly #set = new Set<T>();
   readonly #stream;
   readonly #internal: ISourceInternal;
   readonly #materialite: MaterialiteForSourceInternal;
@@ -32,6 +28,13 @@ export class SetSource<T> {
       // add values to queues, add values to the set
       onCommitPhase1(version: Version) {
         self.#stream.queueData([version, new Multiset(self.#pending)]);
+        for (const [value, mult] of self.#pending) {
+          if (mult > 0) {
+            self.#set.add(value);
+          } else if (mult < 0) {
+            self.#set.delete(value);
+          }
+        }
         self.#pending = [];
       },
       // release queues by telling the stream to send data
@@ -82,11 +85,10 @@ export class SetSource<T> {
     this.#materialite.addDirtySource(this.#internal);
   }
 
+  clear() {
+    this.deleteAll(this.#set);
+  }
+
   // no read methods. To read is to materialize a view
   // from a stream computation against the set.
-
-  // impl as a linear reduction?
-  // get size(): number {
-  //   return this.#set.size;
-  // }
 }
