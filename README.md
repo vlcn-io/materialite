@@ -60,4 +60,5 @@ Each operation applied to `stream` will only operate on the diff of the dataset 
 
 - [ ] React strict mode. Need to re-pull on re-connect of sink to source given strict mode runs effects twice.
 - [ ] Allow source to be written before sink is connected. Maybe this already works? untested.
-- [ ] 
+- [ ] Comparator for difference stream so equality can be key based?
+- [ ] Better performing tree other than red-black tree?

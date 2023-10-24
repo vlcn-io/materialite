@@ -44,6 +44,7 @@ export class SetSource<T> {
   }
 
   addAll(values: Iterable<T>): this {
+    // TODO (mlaw): start a materialite transaction
     for (const v of values) {
       this.#pending.push([v, 1]);
     }
