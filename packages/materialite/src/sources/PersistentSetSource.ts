@@ -65,4 +65,12 @@ export class PersistentSetSource<T> {
     this.#materialite.addDirtySource(this.#internal);
     return this;
   }
+
+  recomputeAll(): this {
+    for (const v of this.#tree) {
+      this.#pending.push([v, 1]);
+    }
+    this.#materialite.addDirtySource(this.#internal);
+    return this;
+  }
 }
