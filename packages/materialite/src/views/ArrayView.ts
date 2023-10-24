@@ -1,6 +1,6 @@
 import { Version } from "../core/types.js";
-import { sinkMutableArray } from "./updateMutableArray.js";
-import { Sink } from "./Sink.js";
+import { materializeMutableArray } from "./updateMutableArray.js";
+import { View as View } from "./View.js";
 
 /**
  * A sink that materializes a stream of differences into an array.
@@ -9,7 +9,7 @@ import { Sink } from "./Sink.js";
  * - CopyOnWriteArraySink
  * - PersistentTreeSink
  */
-export class ArraySink<T> extends Sink<T, T[]> {
+export class ArrayView<T> extends View<T, T[]> {
   readonly data: T[] = [];
 
   protected run(version: Version) {
@@ -17,7 +17,8 @@ export class ArraySink<T> extends Sink<T, T[]> {
     this.reader.drain(version).forEach((collection) => {
       // now we incrementally update our sink.
       changed =
-        sinkMutableArray(collection, this.data, this.comparator) || changed;
+        materializeMutableArray(collection, this.data, this.comparator) ||
+        changed;
     });
     // TODO: why is the sink called so damn often?
     if (changed) {

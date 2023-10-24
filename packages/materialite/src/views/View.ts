@@ -2,7 +2,7 @@ import { Version } from "../core/types.js";
 import { comparator as consolidationComparator } from "../core/consolidation.js";
 import { DifferenceStream } from "../core/graph/DifferenceStream.js";
 
-export abstract class Sink<T, CT> {
+export abstract class View<T, CT> {
   readonly #stream;
   protected readonly comparator;
   protected readonly reader;

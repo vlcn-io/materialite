@@ -31,7 +31,7 @@ import { DifferenceStream } from "../core/graph/DifferenceStream.js";
 import { Multiset } from "../core/multiset.js";
 import { binarySearch } from "@vlcn.io/ds-and-algos/binary-search";
 
-export class DOMSink<T extends Node, K> {
+export class DOMView<T extends Node, K> {
   readonly #root;
   readonly #stream;
   readonly #comparator;

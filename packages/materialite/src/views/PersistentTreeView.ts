@@ -1,7 +1,7 @@
 import { Version } from "../core/types.js";
 import { Multiset } from "../core/multiset.js";
 import { PersistentTreap } from "@vlcn.io/ds-and-algos/PersistentTreap";
-import { Sink } from "./Sink.js";
+import { View } from "./View.js";
 
 /**
  * A sink that maintains the list of values in-order.
@@ -12,7 +12,7 @@ import { Sink } from "./Sink.js";
  * Copying the tree is relatively cheap (O(logn)) as we share structure with old versions
  * of the tree.
  */
-export class PersistentTreeSink<T> extends Sink<T, PersistentTreap<T>> {
+export class PersistentTreeView<T> extends View<T, PersistentTreap<T>> {
   #data: PersistentTreap<T> = new PersistentTreap<T>(this.comparator);
 
   get data() {

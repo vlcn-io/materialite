@@ -1,7 +1,7 @@
 import { Multiset } from "../core/multiset.js";
 import { binarySearch, Comparator } from "@vlcn.io/ds-and-algos/binary-search";
 
-export function sinkMutableArray<T>(
+export function materializeMutableArray<T>(
   collection: Multiset<T>,
   data: T[],
   comparator: Comparator<T>

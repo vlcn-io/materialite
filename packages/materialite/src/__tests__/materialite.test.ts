@@ -1,7 +1,7 @@
 import { test } from "vitest";
 import { Materialite } from "../materialite.js";
 import util from "util";
-import { ArraySink } from "../sinks/ArraySink.js";
+import { ArrayView } from "../views/ArrayView.js";
 
 function inspect(e: any) {
   console.log(util.inspect(e, false, null, true));
@@ -144,7 +144,7 @@ test("db/overtone example - materialize track view", () => {
       ([_, __, track]) => track.id
     );
 
-  const sink = new ArraySink(stream);
+  const sink = new ArrayView(stream);
   sink.onChange((d) => {
     console.log(d);
   });

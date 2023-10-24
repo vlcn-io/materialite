@@ -1,13 +1,13 @@
 import { Version } from "../core/types.js";
 import { DifferenceStream } from "../index.js";
-import { Sink } from "./Sink.js";
+import { View } from "./View.js";
 
 type PrimitiveValue = boolean | string | number | bigint;
 
 /**
  * Represents the most recent value from a stream of primitives.
  */
-export class PrimitiveSink<T extends PrimitiveValue> extends Sink<T, T> {
+export class PrimitiveView<T extends PrimitiveValue> extends View<T, T> {
   #data: T;
 
   constructor(stream: DifferenceStream<T>, initial: T) {

@@ -80,6 +80,19 @@ export class PersistentTreap<T> {
     return result;
   }
 
+  findIndex(pred: (x: T) => boolean): number {
+    let index = 0;
+
+    for (const value of inOrderTraversal(this.root)) {
+      if (pred(value)) {
+        return index;
+      }
+      index += 1;
+    }
+
+    return -1;
+  }
+
   reduce<U>(callback: (accumulator: U, value: T) => U, initialValue: U): U {
     let accumulator = initialValue;
 

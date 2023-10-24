@@ -109,7 +109,7 @@ export class DifferenceStream<T> {
     return output;
   }
 
-  sink<T>(ctor: (stream: this) => T): T {
+  materialize<T>(ctor: (stream: this) => T): T {
     return ctor(this);
   }
 

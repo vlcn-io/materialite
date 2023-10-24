@@ -1,11 +1,11 @@
 import { Version } from "../core/types.js";
-import { sinkMutableArray } from "./updateMutableArray.js";
-import { Sink } from "./Sink.js";
+import { materializeMutableArray } from "./updateMutableArray.js";
+import { View } from "./View.js";
 
 /**
  * A sink that materializes a stream of differences into a new copy of an array.
  */
-export class CopyOnWriteArraySink<T> extends Sink<T, readonly T[]> {
+export class CopyOnWriteArrayView<T> extends View<T, readonly T[]> {
   #data: readonly T[] = [];
 
   get data() {
@@ -23,7 +23,8 @@ export class CopyOnWriteArraySink<T> extends Sink<T, readonly T[]> {
     collections.forEach((collection) => {
       // now we incrementally update our sink.
       changed =
-        sinkMutableArray(collection, newData, this.comparator) || changed;
+        materializeMutableArray(collection, newData, this.comparator) ||
+        changed;
     });
     this.#data = newData;
     if (changed) {
