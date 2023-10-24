@@ -1,3 +1,5 @@
+// ported from: https://github.com/vadimg/js_bintrees
+// TODO: findIter incorrectly returns an iterator that is already past the value by JavaScript standards.
 import { ConcurrentModificationException } from "../Error.js";
 
 export interface INode<V> {

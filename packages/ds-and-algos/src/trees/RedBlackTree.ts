@@ -1,3 +1,5 @@
+// ported from: https://github.com/vadimg/js_bintrees
+
 import { INode, TreeBase } from "./TreeBase.js";
 
 export class RBNode<V> implements INode<V> {
