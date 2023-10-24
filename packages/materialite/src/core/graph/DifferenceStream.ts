@@ -1,5 +1,5 @@
 import { JoinResultVariadic } from "@vlcn.io/ds-and-algos/tuple";
-import { Entry, Multiset } from "../multiset.js";
+import { Entry, Multiset, PrimitiveValue } from "../multiset.js";
 import { Version } from "../types.js";
 import { MapOperator } from "./ops/MapOperator.js";
 import { FilterOperator } from "./ops/FilterOperator.js";
@@ -14,6 +14,8 @@ import {
   RootDifferenceStreamWriter,
 } from "./DifferenceWriter.js";
 import { DifferenceStreamReader } from "./DifferenceReader.js";
+import { Comparator } from "@vlcn.io/ds-and-algos/binary-search";
+import { PersistentTreeView, PrimitiveView } from "../../index.js";
 
 export class DifferenceStream<T> {
   readonly #writer;
@@ -101,7 +103,12 @@ export class DifferenceStream<T> {
     return output;
   }
 
-  linearCount() {
+  /**
+   * This differs from count in that `size` just counts the entire
+   * stream whereas `count` counts the number of times each key appears.
+   * @returns returns the size of the stream
+   */
+  size() {
     const output = new DifferenceStream<number>(false);
     const reader = this.#writer.newReader();
     const operator = new LinearCountOperator(reader, output.#writer);
@@ -109,8 +116,39 @@ export class DifferenceStream<T> {
     return output;
   }
 
-  materialize<T>(ctor: (stream: this) => T): T {
+  materializeInto<T>(ctor: (stream: this) => T): T {
     return ctor(this);
+  }
+
+  /**
+   * The default materialization strategy.
+   *
+   * Materializes the stream into a persistent tree.
+   *
+   * This tree will be incrementally maintained and immutable.
+   *
+   * Immutable in the sense that each modification of the tree will
+   * produce a new version of the tree and not modify prior versions of
+   * the tree.
+   *
+   * Each update to the tree thus produces a new reference.
+   * This means reference equality can be used to quickly determine if the tree has changed.
+   *
+   * A tree was chosen so inserts and deletes anywhere
+   * (even in the middle of the structure) are O(logn).
+   *
+   * The tree can also be indexed as if it were an array. Note that
+   * unlike an array, indexing is O(logn) as we have to traverse the tree.
+   */
+  materialize(c: Comparator<T>): PersistentTreeView<T> {
+    return this.materializeInto((stream) => new PersistentTreeView(stream, c));
+  }
+
+  materializePrimitive<T extends PrimitiveValue>(
+    this: DifferenceStream<T>,
+    initial: T
+  ): PrimitiveView<T> {
+    return this.materializeInto((s) => new PrimitiveView(s, initial));
   }
 
   debug(f: (i: Multiset<T>) => void) {
