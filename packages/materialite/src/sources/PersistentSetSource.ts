@@ -15,6 +15,7 @@ export class PersistentSetSource<T> {
   readonly #stream;
   readonly #internal: ISourceInternal;
   readonly #materialite: MaterialiteForSourceInternal;
+  readonly #listeners = new Set<(data: PersistentTreap<T>) => void>();
   #pending: Entry<T>[] = [];
   #tree: PersistentTreap<T>;
 
@@ -43,6 +44,10 @@ export class PersistentSetSource<T> {
       // release queues by telling the stream to send data
       onCommitPhase2(version: Version) {
         self.#stream.notify(version);
+        const tree = self.#tree;
+        for (const l of self.#listeners) {
+          l(tree);
+        }
       },
       onRollback() {
         self.#pending = [];
@@ -50,8 +55,17 @@ export class PersistentSetSource<T> {
     };
   }
 
+  get stream() {
+    return this.#stream;
+  }
+
   get data() {
     return this.#tree;
+  }
+
+  onChange(cb: (data: PersistentTreap<T>) => void) {
+    this.#listeners.add(cb);
+    return () => this.#listeners.delete(cb);
   }
 
   add(v: T): this {

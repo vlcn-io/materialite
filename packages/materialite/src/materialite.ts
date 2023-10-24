@@ -1,8 +1,10 @@
+import { Comparator } from "immutable";
 import {
   ISourceInternal,
   MaterialiteForSourceInternal,
   Version,
 } from "./core/types.js";
+import { PersistentSetSource } from "./index.js";
 import { SetSource } from "./sources/SetSource.js";
 
 export class Materialite {
@@ -28,6 +30,11 @@ export class Materialite {
 
   newSet<T>() {
     const ret = new SetSource<T>(this.#internal);
+    return ret;
+  }
+
+  newPersistentSet<T>(comparator: Comparator<T>) {
+    const ret = new PersistentSetSource<T>(this.#internal, comparator);
     return ret;
   }
 
