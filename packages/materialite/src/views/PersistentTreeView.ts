@@ -48,7 +48,7 @@ export class PersistentTreeView<T> extends View<T, PersistentTreap<T>> {
         if (
           Math.abs(mult) === 1 &&
           mult === -nextMult &&
-          this.comparator(value, nextValue) === 0
+          this.comparator(value, nextValue) == 0
         ) {
           changed = true;
           // The tree doesn't allow dupes -- so this is a replace.

@@ -12,7 +12,7 @@ import { Comparator } from "@vlcn.io/ds-and-algos/binary-search";
  * A set source that retains its contents in an immutable data structure.
  */
 export class PersistentSetSource<T> {
-  readonly #stream;
+  #stream;
   readonly #internal: ISourceInternal;
   readonly #materialite: MaterialiteForSourceInternal;
   readonly #listeners = new Set<(data: PersistentTreap<T>) => void>();
@@ -61,6 +61,10 @@ export class PersistentSetSource<T> {
 
   get data() {
     return this.#tree;
+  }
+
+  detachPipelines() {
+    this.#stream = new DifferenceStream<T>(true);
   }
 
   onChange(cb: (data: PersistentTreap<T>) => void) {

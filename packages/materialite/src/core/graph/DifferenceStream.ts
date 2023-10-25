@@ -18,7 +18,7 @@ import { Comparator } from "@vlcn.io/ds-and-algos/binary-search";
 import { PersistentTreeView, PrimitiveView } from "../../index.js";
 
 export class DifferenceStream<T> {
-  readonly #writer;
+  #writer;
 
   constructor(root: boolean) {
     // set write to a new difference stream writer
