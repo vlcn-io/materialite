@@ -26,12 +26,18 @@ export class PrimitiveView<T extends PrimitiveValue> extends View<T, T> {
     }
 
     const lastCollection = collections[collections.length - 1]!;
-    const lastValue = lastCollection.entries[lastCollection.entries.length - 1];
+    // const lastValue = lastCollection.entries[lastCollection.entries.length - 1];
+    let lastValue = undefined;
+    for (const [value, mult] of lastCollection.entries) {
+      if (mult > 0) {
+        lastValue = value;
+      }
+    }
     if (lastValue === undefined) {
       return;
     }
 
-    const newData = lastValue[0] as T;
+    const newData = lastValue as T;
     if (newData !== this.#data) {
       this.#data = newData;
       this.notify(newData);

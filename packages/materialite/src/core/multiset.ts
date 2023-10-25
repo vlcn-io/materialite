@@ -10,7 +10,14 @@ export type JoinableValue<K, V> = readonly [K, V];
  * I.e., no optimization is going on here.
  */
 export class Multiset<T> {
-  constructor(public readonly entries: readonly Entry<T>[]) {}
+  #entries: Iterable<Entry<T>>;
+  constructor(entries: Iterable<Entry<T>>) {
+    this.#entries = entries;
+  }
+
+  get entries() {
+    return this.#entries;
+  }
 
   difference(b: Multiset<T>): Multiset<T> {
     return new Multiset([...this.entries, ...b.negate().entries]);
@@ -26,7 +33,7 @@ export class Multiset<T> {
 
   negate(): Multiset<T> {
     return new Multiset(
-      this.entries.map(([value, multiplicity]) => [value, -multiplicity])
+      genMap(this.entries, ([value, multiplicity]) => [value, -multiplicity])
     );
   }
 
@@ -37,12 +44,12 @@ export class Multiset<T> {
 
   map<R>(f: (value: T) => R): Multiset<R> {
     return new Multiset(
-      this.entries.map(([value, multiplicity]) => [f(value), multiplicity])
+      genMap(this.entries, ([value, multiplicity]) => [f(value), multiplicity])
     );
   }
 
   filter(f: (value: T) => boolean): Multiset<T> {
-    return new Multiset(this.entries.filter(([value, _]) => f(value)));
+    return new Multiset(genFilter(this.entries, ([value, _]) => f(value)));
   }
 
   iterate(f: (values: Multiset<T>) => Multiset<T>) {
@@ -100,9 +107,27 @@ export class Multiset<T> {
     return this.entries.toString();
   }
 
+  // TODO: faster way to extend without converting to an array?
   _extend(other: Multiset<T>) {
+    if (!Array.isArray(this.#entries)) {
+      this.#entries = [...this.#entries];
+    }
     for (const e of other.entries) {
-      (this.entries as Entry<T>[]).push(e);
+      (this.#entries as Entry<T>[]).push(e);
+    }
+  }
+}
+
+function* genMap<T, U>(s: Iterable<T>, cb: (x: T) => U) {
+  for (const x of s) {
+    yield cb(x);
+  }
+}
+
+function* genFilter<T>(s: Iterable<T>, cb: (x: T) => boolean) {
+  for (const x of s) {
+    if (cb(x)) {
+      yield x;
     }
   }
 }

@@ -13,7 +13,7 @@ import {
 
 export class SetSource<T> {
   // TODO: should sources remember?
-  readonly #stream;
+  #stream;
   readonly #internal: ISourceInternal;
   readonly #materialite: MaterialiteForSourceInternal;
 
@@ -41,6 +41,10 @@ export class SetSource<T> {
 
   get stream() {
     return this.#stream;
+  }
+
+  detachPipelines() {
+    this.#stream = new DifferenceStream<T>(true);
   }
 
   addAll(values: Iterable<T>): this {

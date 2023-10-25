@@ -1,5 +1,6 @@
 import { Multiset } from "../core/multiset.js";
-import { binarySearch, Comparator } from "@vlcn.io/ds-and-algos/binary-search";
+import { binarySearch } from "@vlcn.io/ds-and-algos/binarySearch";
+import { Comparator } from "@vlcn.io/ds-and-algos/types";
 
 export function materializeMutableArray<T>(
   collection: Multiset<T>,

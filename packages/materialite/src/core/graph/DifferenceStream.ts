@@ -14,7 +14,7 @@ import {
   RootDifferenceStreamWriter,
 } from "./DifferenceWriter.js";
 import { DifferenceStreamReader } from "./DifferenceReader.js";
-import { Comparator } from "@vlcn.io/ds-and-algos/binary-search";
+import { Comparator } from "@vlcn.io/ds-and-algos/types";
 import { PersistentTreeView, PrimitiveView } from "../../index.js";
 
 export class DifferenceStream<T> {
