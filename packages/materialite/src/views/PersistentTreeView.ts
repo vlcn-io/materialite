@@ -41,22 +41,22 @@ export class PersistentTreeView<T> extends View<T, PersistentTreap<T>> {
     data: PersistentTreap<T>
   ): [boolean, PersistentTreap<T>] {
     let changed = false;
-    for (let i = 0; i < c.entries.length; ++i) {
-      let [value, mult] = c.entries[i]!;
-      if (i + 1 < c.entries.length) {
-        const [nextValue, nextMult] = c.entries[i + 1]!;
-        if (
-          Math.abs(mult) === 1 &&
-          mult === -nextMult &&
-          this.comparator(value, nextValue) == 0
-        ) {
-          changed = true;
-          // The tree doesn't allow dupes -- so this is a replace.
-          data = data.add(nextValue);
-          i += 1;
-          continue;
-        }
-      }
+    for (const [value, mult] of c.entries) {
+      // let [value, mult] = c.entries[i]!;
+      // if (i + 1 < c.entries.length) {
+      //   const [nextValue, nextMult] = c.entries[i + 1]!;
+      //   if (
+      //     Math.abs(mult) === 1 &&
+      //     mult === -nextMult &&
+      //     this.comparator(value, nextValue) == 0
+      //   ) {
+      //     changed = true;
+      //     // The tree doesn't allow dupes -- so this is a replace.
+      //     data = data.add(nextValue);
+      //     i += 1;
+      //     continue;
+      //   }
+      // }
 
       if (mult > 0) {
         changed = true;

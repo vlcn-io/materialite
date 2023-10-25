@@ -6,7 +6,7 @@ import {
   Version,
 } from "../core/types.js";
 import { DifferenceStream } from "../index.js";
-import { Comparator } from "@vlcn.io/ds-and-algos/binary-search";
+import { Comparator } from "@vlcn.io/ds-and-algos/types";
 
 /**
  * A set source that retains its contents in an immutable data structure.
@@ -17,6 +17,7 @@ export class PersistentSetSource<T> {
   readonly #materialite: MaterialiteForSourceInternal;
   readonly #listeners = new Set<(data: PersistentTreap<T>) => void>();
   #pending: Entry<T>[] = [];
+  #recomputeAll = false;
   #tree: PersistentTreap<T>;
 
   constructor(
@@ -31,7 +32,6 @@ export class PersistentSetSource<T> {
     this.#internal = {
       // add values to queues, add values to the set
       onCommitPhase1(version: Version) {
-        self.#stream.queueData([version, new Multiset(self.#pending)]);
         for (const [val, mult] of self.#pending) {
           if (mult < 0) {
             self.#tree = self.#tree.delete(val);
@@ -39,7 +39,17 @@ export class PersistentSetSource<T> {
             self.#tree = self.#tree.add(val);
           }
         }
-        self.#pending = [];
+        if (self.#recomputeAll) {
+          self.#pending = [];
+          self.#recomputeAll = false;
+          self.#stream.queueData([
+            version,
+            new Multiset(asEntries(self.#tree)),
+          ]);
+        } else {
+          self.#stream.queueData([version, new Multiset(self.#pending)]);
+          self.#pending = [];
+        }
       },
       // release queues by telling the stream to send data
       onCommitPhase2(version: Version) {
@@ -85,10 +95,14 @@ export class PersistentSetSource<T> {
   }
 
   recomputeAll(): this {
-    for (const v of this.#tree) {
-      this.#pending.push([v, 1]);
-    }
+    this.#recomputeAll = true;
     this.#materialite.addDirtySource(this.#internal);
     return this;
+  }
+}
+
+function* asEntries<T>(tree: PersistentTreap<T>) {
+  for (const v of tree) {
+    yield [v, 1] as const;
   }
 }

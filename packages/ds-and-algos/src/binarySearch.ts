@@ -1,4 +1,4 @@
-export type Comparator<T> = (l: T, r: T) => number;
+import { Comparator } from "./types.js";
 
 export function binarySearch<T>(
   arr: readonly T[],
