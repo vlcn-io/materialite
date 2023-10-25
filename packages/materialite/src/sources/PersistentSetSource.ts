@@ -30,15 +30,30 @@ export class PersistentSetSource<T> {
 
     const self = this;
     this.#internal = {
-      // add values to queues, add values to the set
       onCommitPhase1(version: Version) {
-        for (const [val, mult] of self.#pending) {
+        for (let i = 0; i < self.#pending.length; i++) {
+          const [val, mult] = self.#pending[i]!;
+          // small optimization to reduce operations for replace
+          if (i + 1 < self.#pending.length) {
+            const [nextVal, nextMult] = self.#pending[i + 1]!;
+            if (
+              Math.abs(mult) === 1 &&
+              mult === -nextMult &&
+              comparator(val, nextVal) == 0
+            ) {
+              // The tree doesn't allow dupes -- so this is a replace.
+              self.#tree = self.#tree.add(nextMult > 0 ? nextVal : val);
+              i += 1;
+              continue;
+            }
+          }
           if (mult < 0) {
             self.#tree = self.#tree.delete(val);
           } else if (mult > 0) {
             self.#tree = self.#tree.add(val);
           }
         }
+
         if (self.#recomputeAll) {
           self.#pending = [];
           self.#recomputeAll = false;

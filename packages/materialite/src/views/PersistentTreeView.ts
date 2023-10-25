@@ -2,6 +2,7 @@ import { Version } from "../core/types.js";
 import { Multiset } from "../core/multiset.js";
 import { PersistentTreap } from "@vlcn.io/ds-and-algos/PersistentTreap";
 import { View } from "./View.js";
+import { DifferenceStream } from "../index.js";
 
 /**
  * A sink that maintains the list of values in-order.
@@ -14,6 +15,10 @@ import { View } from "./View.js";
  */
 export class PersistentTreeView<T> extends View<T, PersistentTreap<T>> {
   #data: PersistentTreap<T> = new PersistentTreap<T>(this.comparator);
+
+  constructor(stream: DifferenceStream<T>, comparator: (a: T, b: T) => number) {
+    super(stream, comparator);
+  }
 
   get data() {
     return this.#data;
@@ -41,23 +46,33 @@ export class PersistentTreeView<T> extends View<T, PersistentTreap<T>> {
     data: PersistentTreap<T>
   ): [boolean, PersistentTreap<T>] {
     let changed = false;
-    for (const [value, mult] of c.entries) {
-      // let [value, mult] = c.entries[i]!;
-      // if (i + 1 < c.entries.length) {
-      //   const [nextValue, nextMult] = c.entries[i + 1]!;
-      //   if (
-      //     Math.abs(mult) === 1 &&
-      //     mult === -nextMult &&
-      //     this.comparator(value, nextValue) == 0
-      //   ) {
-      //     changed = true;
-      //     // The tree doesn't allow dupes -- so this is a replace.
-      //     data = data.add(nextValue);
-      //     i += 1;
-      //     continue;
-      //   }
-      // }
+    const iterator = c.entries[Symbol.iterator]();
+    let next;
+    while (!(next = iterator.next()).done) {
+      const [value, mult] = next.value;
+      let nextNext = iterator.next();
+      if (!nextNext.done) {
+        const [nextValue, nextMult] = nextNext.value;
+        if (
+          Math.abs(mult) === 1 &&
+          mult === -nextMult &&
+          this.comparator(nextValue, value) == 0
+        ) {
+          changed = true;
+          // The tree doesn't allow dupes -- so this is a replace.
+          data = data.add(nextMult > 0 ? nextValue : value);
+          continue;
+        }
+      }
 
+      process(value, mult);
+      if (!nextNext.done) {
+        const [value, mult] = nextNext.value;
+        process(value, mult);
+      }
+    }
+
+    function process(value: T, mult: number) {
       if (mult > 0) {
         changed = true;
         data = addAll(data, value, mult);
