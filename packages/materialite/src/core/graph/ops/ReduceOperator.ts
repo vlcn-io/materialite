@@ -1,10 +1,10 @@
-import { TuplableMap } from "@vlcn.io/ds-and-algos/TuplableMap";
 import { Index } from "../../index.js";
 import { Entry, Multiset } from "../../multiset.js";
 import { DifferenceStreamReader } from "../DifferenceReader.js";
 import { DifferenceStreamWriter } from "../DifferenceWriter.js";
 import { UnaryOperator } from "./UnaryOperator.js";
 import { Version } from "../../types.js";
+import { TuplableMap } from "@vlcn.io/ds-and-algos/TuplableMap";
 
 export class ReduceOperator<K, V, O = V> extends UnaryOperator<V, O> {
   readonly #index = new Index<K, V>();

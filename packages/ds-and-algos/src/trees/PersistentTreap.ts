@@ -29,6 +29,10 @@ export class PersistentTreap<T> {
     this.comparator = comparator;
   }
 
+  static empty<T>() {
+    return empty as PersistentTreap<T>;
+  }
+
   get size() {
     return this.root?.size ?? 0;
   }
@@ -291,3 +295,5 @@ function* inOrderTraversal<T>(node: Node<T> | null): Generator<T> {
     currentNode = currentNode.right;
   }
 }
+
+const empty = new PersistentTreap<any>((_l, _r) => 0);

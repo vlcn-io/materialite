@@ -4,7 +4,7 @@ import {
   MaterialiteForSourceInternal,
   Version,
 } from "./core/types.js";
-import { PersistentSetSource } from "./index.js";
+import { MutableMapSource, PersistentSetSource } from "./index.js";
 import { SetSource } from "./sources/SetSource.js";
 
 export class Materialite {
@@ -35,6 +35,11 @@ export class Materialite {
 
   newPersistentSet<T>(comparator: Comparator<T>) {
     const ret = new PersistentSetSource<T>(this.#internal, comparator);
+    return ret;
+  }
+
+  newMutableMap<K, V>(getKey: (v: V) => K) {
+    const ret = new MutableMapSource<K, V>(this.#internal, getKey);
     return ret;
   }
 

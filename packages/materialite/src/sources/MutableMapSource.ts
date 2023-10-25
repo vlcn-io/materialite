@@ -1,4 +1,3 @@
-import { PersistentTreap } from "@vlcn.io/ds-and-algos/PersistentTreap";
 import { Entry, Multiset } from "../core/multiset.js";
 import {
   ISourceInternal,
@@ -6,30 +5,24 @@ import {
   Version,
 } from "../core/types.js";
 import { DifferenceStream } from "../index.js";
-import { Comparator } from "@vlcn.io/ds-and-algos/types";
 import { IMemorableSource } from "./Source.js";
 
 /**
- * A set source that retains its contents in an immutable data structure.
+ * A MapSource which retains values in a mutable structure.
  */
-export class PersistentSetSource<T>
-  implements IMemorableSource<T, PersistentTreap<T>>
-{
+export class MutableMapSource<K, T> implements IMemorableSource<T, Map<K, T>> {
   #stream;
   readonly #internal: ISourceInternal;
   readonly #materialite: MaterialiteForSourceInternal;
-  readonly #listeners = new Set<(data: PersistentTreap<T>) => void>();
+  readonly #listeners = new Set<(data: Map<K, T>) => void>();
   #pending: Entry<T>[] = [];
   #recomputeAll = false;
-  #tree: PersistentTreap<T>;
+  #map: Map<K, T>;
 
-  constructor(
-    materialite: MaterialiteForSourceInternal,
-    comparator: Comparator<T>
-  ) {
+  constructor(materialite: MaterialiteForSourceInternal, getKey: (t: T) => K) {
     this.#materialite = materialite;
     this.#stream = new DifferenceStream<T>(true);
-    this.#tree = new PersistentTreap<T>(comparator);
+    this.#map = new Map();
 
     const self = this;
     this.#internal = {
@@ -42,18 +35,18 @@ export class PersistentSetSource<T>
             if (
               Math.abs(mult) === 1 &&
               mult === -nextMult &&
-              comparator(val, nextVal) == 0
+              getKey(val) === getKey(nextVal)
             ) {
-              // The tree doesn't allow dupes -- so this is a replace.
-              self.#tree = self.#tree.add(nextMult > 0 ? nextVal : val);
+              // Do we need this optimization for a regular map?
+              self.#map.set(getKey(nextVal), nextMult > 0 ? nextVal : val);
               i += 1;
               continue;
             }
           }
           if (mult < 0) {
-            self.#tree = self.#tree.delete(val);
+            self.#map.delete(getKey(val));
           } else if (mult > 0) {
-            self.#tree = self.#tree.add(val);
+            self.#map.set(getKey(val), val);
           }
         }
 
@@ -62,7 +55,7 @@ export class PersistentSetSource<T>
           self.#recomputeAll = false;
           self.#stream.queueData([
             version,
-            new Multiset(asEntries(self.#tree)),
+            new Multiset(asEntries(self.#map.values())),
           ]);
         } else {
           self.#stream.queueData([version, new Multiset(self.#pending)]);
@@ -72,9 +65,8 @@ export class PersistentSetSource<T>
       // release queues by telling the stream to send data
       onCommitPhase2(version: Version) {
         self.#stream.notify(version);
-        const tree = self.#tree;
         for (const l of self.#listeners) {
-          l(tree);
+          l(self.#map);
         }
       },
       onRollback() {
@@ -88,14 +80,14 @@ export class PersistentSetSource<T>
   }
 
   get data() {
-    return this.#tree;
+    return this.#map;
   }
 
   detachPipelines() {
     this.#stream = new DifferenceStream<T>(true);
   }
 
-  onChange(cb: (data: PersistentTreap<T>) => void) {
+  onChange(cb: (data: Map<K, T>) => void) {
     this.#listeners.add(cb);
     return () => this.#listeners.delete(cb);
   }
@@ -119,8 +111,8 @@ export class PersistentSetSource<T>
   }
 }
 
-function* asEntries<T>(tree: PersistentTreap<T>) {
-  for (const v of tree) {
+function* asEntries<T>(m: Iterable<T>) {
+  for (const v of m) {
     yield [v, 1] as const;
   }
 }

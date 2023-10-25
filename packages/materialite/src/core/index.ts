@@ -59,10 +59,12 @@ export class Index<K, V> {
     return new Multiset(ret);
   }
 
+  // TODO: test compaction.
+  // The idea here is to get rid of duplicate values and just update their multiplicity.
+  // The result of a join, however, is a tuple so we can't use a regular JS map given
+  // each tuple will have a unique identity according to `Map`.
   compact(keys: K[] = []) {
     function consolidateValues(values: Entry<V>[]): [V, number][] {
-      // TODO: tmap needs to be something better for consolidation...
-      // Maybe we use _actual_ tuple types and the rest is normal object equality.
       const consolidated = new TuplableMap<V, number>();
       for (const [value, multiplicity] of values) {
         if (multiplicity === 0) {

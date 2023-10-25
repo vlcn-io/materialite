@@ -4,7 +4,8 @@ import { isTuple } from "./tuple.js";
 /**
  * A regular JavaScript map but it can have tuples of arbitrary things for keys.
  *
- * We'd have to encode the tuple entries.
+ * Hmm... we might not need this anymore.
+ * Given we've changed to having all operators take `Key` functions.
  */
 export class TuplableMap<K, V> implements Map<K, V> {
   #map: Map<any, [K, V]>;

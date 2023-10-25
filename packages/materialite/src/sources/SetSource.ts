@@ -10,8 +10,9 @@ import {
   MaterialiteForSourceInternal,
   Version,
 } from "../core/types.js";
+import { ISource } from "./Source.js";
 
-export class SetSource<T> {
+export class SetSource<T> implements ISource<T> {
   // TODO: should sources remember?
   #stream;
   readonly #internal: ISourceInternal;

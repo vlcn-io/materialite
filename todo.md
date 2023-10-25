@@ -1,0 +1,2 @@
+- ref count so we can tear down a stream once all consumers are gone. E.g., last consumer removed from view? Remove view from ops and up the chain.
+- `groupBy` and sink `groupBy`. This is just reduce?
