@@ -40,8 +40,8 @@ Three concepts:
 Sinks are always sorted such that we can find the row to be updated after some different has been written to the source.
 
 ```ts
-const materialite = new Materialite(keyFn);
-const source = materialite.newMutableMap(); // or StatelessSetSource or PersistentSetSource
+const materialite = new Materialite();
+const source = materialite.newMutableMap(keyFn); // or StatelessSetSource or PersistentSetSource
 const derived = source.stream.map(() => ...).filter(() => ...).join(otherStream, keyFn, keyFn2).reduce(() => ...);
 const view = derived.materialize(comparator)
 view.onChange((data) => {
