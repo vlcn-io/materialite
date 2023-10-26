@@ -46,9 +46,11 @@ export class PersistentTreeView<T> extends View<T, PersistentTreap<T>> {
     data: PersistentTreap<T>
   ): [boolean, PersistentTreap<T>] {
     let changed = false;
+    let empty = true;
     const iterator = c.entries[Symbol.iterator]();
     let next;
     while (!(next = iterator.next()).done) {
+      empty = false;
       const [value, mult] = next.value;
       let nextNext = iterator.next();
       if (!nextNext.done) {
@@ -82,7 +84,7 @@ export class PersistentTreeView<T> extends View<T, PersistentTreap<T>> {
       }
     }
 
-    return [changed, data];
+    return [changed || empty, data];
   }
 }
 
