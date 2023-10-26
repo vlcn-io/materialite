@@ -40,18 +40,24 @@ Three concepts:
 Sinks are always sorted such that we can find the row to be updated after some different has been written to the source.
 
 ```ts
-const source = new SetSource();
-const derived = source.stream.map(() => ...).filter(() => ...).reduce(() => ...);
-const sink = new PersistentTreeSink(derived, (l, r) => l.id - r.id);
-sink.onChange((data) => {
+const materialite = new Materialite(keyFn);
+const source = materialite.newMutableMap(); // or StatelessSetSource or PersistentSetSource
+const derived = source.stream.map(() => ...).filter(() => ...).join(otherStream, keyFn, keyFn2).reduce(() => ...);
+const view = derived.materialize(comparator)
+view.onChange((data) => {
   ...
-  // do stuff with data
-  // iterate over it, render it, whatever.
+  // do stuff with the view
+  // changes to the view include the full materialize view
+  // if you want to listen just to diffs, listen to the stream directly
 });
 
 set.add(...);
 set.delete(...);
-...
+
+materialite.tx(() => {
+  // do many set/delete operations in a single tx
+  // no pipelines will run until the tx commits
+})
 ```
 
 Each operation applied to `stream` will only operate on the diff of the dataset rather than the entire dataset each time the dataset is changed.
