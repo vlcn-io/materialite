@@ -22,6 +22,7 @@ export class PrimitiveView<T extends PrimitiveValue> extends View<T, T> {
   protected run(version: Version) {
     const collections = this.reader.drain(version);
     if (collections.length === 0) {
+      this.notify(this.#data);
       return;
     }
 
