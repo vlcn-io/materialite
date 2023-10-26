@@ -1,5 +1,17 @@
 # materialite
 
+Incremental view maintenance for JavaScript.
+
+Problem --
+
+You have a pipeline:
+
+```
+data.map(...).filter(...).reduce(...)
+```
+
+which you don't want to re-run from scratch each time something in `data` changes. Instead you'd like to only run against the data that changed and have your result incrementally updated. That's what this'll do for you.
+
 ## Install & Build
 
 ```sh
@@ -43,7 +55,7 @@ Sinks are always sorted such that we can find the row to be updated after some d
 const materialite = new Materialite();
 const source = materialite.newMutableMap(keyFn); // or StatelessSetSource or PersistentSetSource
 const derived = source.stream.map(() => ...).filter(() => ...).join(otherStream, keyFn, keyFn2).reduce(() => ...);
-const view = derived.materialize(comparator)
+const view = derived.materialize(comparator);
 view.onChange((data) => {
   ...
   // do stuff with the view
@@ -58,6 +70,10 @@ materialite.tx(() => {
   // do many set/delete operations in a single tx
   // no pipelines will run until the tx commits
 })
+
+// cleanup. This API will be improving to be composable and pipelines
+// will instead be cleaned up when they have no more views or listeners.
+source.detachPipelines();
 ```
 
 Each operation applied to `stream` will only operate on the diff of the dataset rather than the entire dataset each time the dataset is changed.
