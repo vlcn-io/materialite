@@ -13,6 +13,7 @@ export class DebugOperator extends UnaryOperator<any, any> {
     const inner = (version: Version) => {
       for (const collection of this.inputMessages(version)) {
         f(collection);
+        this.output.sendData(version, collection);
       }
     };
     super(input, output, inner);
