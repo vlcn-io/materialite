@@ -17,6 +17,23 @@ test("Materialite#setSource", () => {
   set.delete(1);
 });
 
+// test("Materialite - reduce for groupBy", () => {
+//   const materialite = new Materialite();
+//   type Item = {
+//     id: number;
+//     category: "a" | "b" | "c";
+//     name: string;
+//   };
+//   const set = materialite.newSet<Item>();
+//   const stream = set.stream.reduce(
+//     (x) => {
+//       const grouping =
+//       return [x, 1];
+//     },
+//     (item) => item.category
+//   );
+// });
+
 test("Materialite#setSource - nothing released until commit", () => {});
 
 test("db/overtone example - materialize track view", () => {

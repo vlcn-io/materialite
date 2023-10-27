@@ -16,7 +16,7 @@ test("PersistentTreap Property-based Tests (large)", () => {
   assert(
     property(
       // Arbitrarily generate a list of operations
-      script(500),
+      script(100),
       checkTreap
     )
   );

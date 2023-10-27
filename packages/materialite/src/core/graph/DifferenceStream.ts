@@ -57,6 +57,9 @@ export class DifferenceStream<T> {
     return output;
   }
 
+  // split<K>(f: (x: T) => K): Map<K, DifferenceStream<T>> {
+  // }
+
   negate() {
     const reader = this.#writer.newReader();
     const output = new DifferenceStream<T>([[this, reader]]);

@@ -1,0 +1,1 @@
+Maybe we should weakly hold materialized views? And if the view is GC'ed we can clean up the pipeline leading to it.

@@ -29,6 +29,10 @@ export abstract class View<T, CT> {
     });
   }
 
+  get stream() {
+    return this.#stream;
+  }
+
   protected notify(d: CT) {
     for (const listener of this.#listeners) {
       listener(d);
@@ -60,6 +64,7 @@ export abstract class View<T, CT> {
   }
 
   destroy() {
+    this.#listeners.clear();
     this.#stream.removeReader(this.reader);
   }
 
