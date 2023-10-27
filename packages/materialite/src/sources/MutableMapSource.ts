@@ -11,7 +11,8 @@ import { IMemorableSource } from "./Source.js";
  * A MapSource which retains values in a mutable structure.
  */
 export class MutableMapSource<K, T> implements IMemorableSource<T, Map<K, T>> {
-  #stream;
+  readonly type = "stateful";
+  #stream: DifferenceStream<T>;
   readonly #internal: ISourceInternal;
   readonly #materialite: MaterialiteForSourceInternal;
   readonly #listeners = new Set<(data: Map<K, T>) => void>();
@@ -21,7 +22,7 @@ export class MutableMapSource<K, T> implements IMemorableSource<T, Map<K, T>> {
 
   constructor(materialite: MaterialiteForSourceInternal, getKey: (t: T) => K) {
     this.#materialite = materialite;
-    this.#stream = new DifferenceStream<T>([]);
+    this.#stream = new DifferenceStream<T>([], this);
     this.#map = new Map();
 
     const self = this;
@@ -84,7 +85,7 @@ export class MutableMapSource<K, T> implements IMemorableSource<T, Map<K, T>> {
   }
 
   detachPipelines() {
-    this.#stream = new DifferenceStream<T>([]);
+    this.#stream = new DifferenceStream<T>([], this);
   }
 
   onChange(cb: (data: Map<K, T>) => void) {

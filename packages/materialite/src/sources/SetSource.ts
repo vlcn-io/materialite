@@ -13,8 +13,9 @@ import {
 import { IForgetfulSource } from "./Source.js";
 
 export class SetSource<T> implements IForgetfulSource<T> {
+  readonly type = "stateless";
   // TODO: should sources remember?
-  #stream;
+  #stream: DifferenceStream<T>;
   readonly #internal: ISourceInternal;
   readonly #materialite: MaterialiteForSourceInternal;
 
@@ -22,7 +23,7 @@ export class SetSource<T> implements IForgetfulSource<T> {
 
   constructor(materialite: MaterialiteForSourceInternal) {
     this.#materialite = materialite;
-    this.#stream = new DifferenceStream<T>([]);
+    this.#stream = new DifferenceStream<T>([], this);
     const self = this;
     this.#internal = {
       // add values to queues, add values to the set
@@ -45,7 +46,7 @@ export class SetSource<T> implements IForgetfulSource<T> {
   }
 
   detachPipelines() {
-    this.#stream = new DifferenceStream<T>([]);
+    this.#stream = new DifferenceStream<T>([], this);
   }
 
   addAll(values: Iterable<T>): this {

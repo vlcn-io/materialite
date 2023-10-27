@@ -1,6 +1,9 @@
 import { DifferenceStream } from "../index.js";
 
+export type Source<T, CT> = IForgetfulSource<T> | IMemorableSource<T, CT>;
+
 export interface ISource<T> {
+  readonly type: "stateful" | "stateless";
   readonly stream: DifferenceStream<T>;
   /**
    * Detaches all pipelines from this source.
@@ -20,9 +23,12 @@ export interface ISource<T> {
   delete(v: T): void;
 }
 
-export interface IForgetfulSource<T> extends ISource<T> {}
+export interface IForgetfulSource<T> extends ISource<T> {
+  readonly type: "stateless";
+}
 
 export interface IMemorableSource<T, CT> extends ISource<T> {
+  readonly type: "stateful";
   readonly data: CT;
   recomputeAll(): this;
 }

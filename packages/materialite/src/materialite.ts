@@ -22,6 +22,7 @@ export class Materialite {
         self.#dirtySources.add(source);
         // auto-commit if not in a transaction
         if (self.#currentTx === null) {
+          self.#currentTx = self.#version + 1;
           self.#commit();
         }
       },
@@ -63,7 +64,7 @@ export class Materialite {
    */
   tx(fn: () => void) {
     if (this.#currentTx === null) {
-      this.#currentTx = ++this.#version;
+      this.#currentTx = this.#version + 1;
     } else {
       // nested transaction
       // just run the function as we're already inside the

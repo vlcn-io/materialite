@@ -15,7 +15,8 @@ import { IMemorableSource } from "./Source.js";
 export class PersistentSetSource<T>
   implements IMemorableSource<T, PersistentTreap<T>>
 {
-  #stream;
+  readonly type = "stateful";
+  #stream: DifferenceStream<T>;
   readonly #internal: ISourceInternal;
   readonly #materialite: MaterialiteForSourceInternal;
   readonly #listeners = new Set<(data: PersistentTreap<T>) => void>();
@@ -28,7 +29,7 @@ export class PersistentSetSource<T>
     comparator: Comparator<T>
   ) {
     this.#materialite = materialite;
-    this.#stream = new DifferenceStream<T>([]);
+    this.#stream = new DifferenceStream<T>([], this);
     this.#tree = new PersistentTreap<T>(comparator);
 
     const self = this;
@@ -92,7 +93,7 @@ export class PersistentSetSource<T>
   }
 
   detachPipelines() {
-    this.#stream = new DifferenceStream<T>([]);
+    this.#stream = new DifferenceStream<T>([], this);
   }
 
   onChange(cb: (data: PersistentTreap<T>) => void) {

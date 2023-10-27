@@ -33,6 +33,10 @@ export abstract class View<T, CT> {
     return this.#stream;
   }
 
+  pull() {
+    this.#stream.pull();
+  }
+
   protected notify(d: CT) {
     for (const listener of this.#listeners) {
       listener(d);
