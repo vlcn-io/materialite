@@ -38,8 +38,25 @@ export abstract class View<T, CT> {
   onChange(listener: (s: CT) => void) {
     this.#listeners.add(listener);
     return () => {
-      this.#listeners.delete(listener);
+      this.removeListener(listener);
     };
+  }
+
+  /**
+   * If there are 0 listeners left after removing the given listener,
+   * the view is destroyed.
+   *
+   * To opt out of this behavior, pass `autoCleanup: false`
+   * @param listener
+   */
+  removeListener(
+    listener: (s: CT) => void,
+    options: { autoCleanup?: boolean } = { autoCleanup: true }
+  ) {
+    this.#listeners.delete(listener);
+    if (this.#listeners.size === 0 && options.autoCleanup === true) {
+      this.destroy();
+    }
   }
 
   destroy() {

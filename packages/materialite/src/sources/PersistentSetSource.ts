@@ -28,7 +28,7 @@ export class PersistentSetSource<T>
     comparator: Comparator<T>
   ) {
     this.#materialite = materialite;
-    this.#stream = new DifferenceStream<T>(true);
+    this.#stream = new DifferenceStream<T>([]);
     this.#tree = new PersistentTreap<T>(comparator);
 
     const self = this;
@@ -92,7 +92,7 @@ export class PersistentSetSource<T>
   }
 
   detachPipelines() {
-    this.#stream = new DifferenceStream<T>(true);
+    this.#stream = new DifferenceStream<T>([]);
   }
 
   onChange(cb: (data: PersistentTreap<T>) => void) {

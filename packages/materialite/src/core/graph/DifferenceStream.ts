@@ -19,10 +19,22 @@ import { PersistentTreeView, PrimitiveView } from "../../index.js";
 
 export class DifferenceStream<T> {
   #writer;
+  // Keep track of upstreams so when we destroy this stream
+  // we can remove ourselves from our upstreams and then that stream,
+  // if it has no more consumers, can destroy itself.
+  readonly #upstreams: readonly [
+    DifferenceStream<unknown>,
+    DifferenceStreamReader<unknown>
+  ][];
 
-  constructor(root: boolean) {
-    // set write to a new difference stream writer
-    if (root) {
+  constructor(
+    upstreams: readonly [
+      DifferenceStream<unknown>,
+      DifferenceStreamReader<unknown>
+    ][]
+  ) {
+    this.#upstreams = upstreams;
+    if (upstreams.length === 0) {
       this.#writer = new RootDifferenceStreamWriter<T>();
     } else {
       this.#writer = new DifferenceStreamWriter<T>();
@@ -30,33 +42,36 @@ export class DifferenceStream<T> {
   }
 
   map<O>(f: (value: T) => O): DifferenceStream<O> {
-    const output = new DifferenceStream<O>(false);
     const reader = this.#writer.newReader();
+    const output = new DifferenceStream<O>([[this, reader]]);
     const op = new MapOperator<T, O>(reader, output.#writer, f);
     reader.setOperator(op as any);
     return output;
   }
 
   filter(f: (x: T) => boolean): DifferenceStream<T> {
-    const output = new DifferenceStream<T>(false);
     const reader = this.#writer.newReader();
+    const output = new DifferenceStream<T>([[this, reader]]);
     const op = new FilterOperator<T>(reader, output.#writer, f);
     reader.setOperator(op);
     return output;
   }
 
   negate() {
-    const output = new DifferenceStream<T>(false);
     const reader = this.#writer.newReader();
+    const output = new DifferenceStream<T>([[this, reader]]);
     const op = new NegateOperator<T>(reader, output.#writer);
     reader.setOperator(op);
     return output;
   }
 
   concat<T2>(other: DifferenceStream<T2>) {
-    const output = new DifferenceStream<T | T2>(false);
     const reader1 = this.#writer.newReader();
     const reader2 = other.#writer.newReader();
+    const output = new DifferenceStream<T | T2>([
+      [this, reader1],
+      [other, reader2],
+    ]);
     const op = new ConcatOperator<T, T2>(reader1, reader2, output.#writer);
     reader1.setOperator(op as any);
     reader2.setOperator(op as any);
@@ -72,9 +87,12 @@ export class DifferenceStream<T> {
       ? JoinResultVariadic<[T1, ...T2, R]>
       : JoinResultVariadic<[T, R]>
   > {
-    const output = new DifferenceStream<any>(false);
     const reader1 = this.#writer.newReader();
     const reader2 = other.#writer.newReader();
+    const output = new DifferenceStream<any>([
+      [this, reader1],
+      [other, reader2],
+    ]);
     const op = new JoinOperator<K, T, R>(
       reader1,
       reader2,
@@ -88,16 +106,16 @@ export class DifferenceStream<T> {
   }
 
   reduce<K, O>(fn: (i: Entry<T>[]) => Entry<O>[], getKey: (i: T) => K) {
-    const output = new DifferenceStream<O>(false);
     const reader = this.#writer.newReader();
+    const output = new DifferenceStream<O>([[this, reader]]);
     const operator = new ReduceOperator(reader, output.#writer, getKey, fn);
     reader.setOperator(operator as any);
     return output;
   }
 
   count<K>(getKey: (i: T) => K) {
-    const output = new DifferenceStream<number>(false);
     const reader = this.#writer.newReader();
+    const output = new DifferenceStream<number>([[this, reader]]);
     const operator = new CountOperator(reader, output.#writer, getKey);
     reader.setOperator(operator as any);
     return output;
@@ -109,8 +127,8 @@ export class DifferenceStream<T> {
    * @returns returns the size of the stream
    */
   size() {
-    const output = new DifferenceStream<number>(false);
     const reader = this.#writer.newReader();
+    const output = new DifferenceStream<number>([[this, reader]]);
     const operator = new LinearCountOperator(reader, output.#writer);
     reader.setOperator(operator as any);
     return output;
@@ -152,8 +170,8 @@ export class DifferenceStream<T> {
   }
 
   debug(f: (i: Multiset<T>) => void) {
-    const output = new DifferenceStream<T>(false);
     const reader = this.#writer.newReader();
+    const output = new DifferenceStream<T>([[this, reader]]);
     const op = new DebugOperator(reader, output.#writer, f);
     reader.setOperator(op);
     return output;
@@ -172,7 +190,22 @@ export class DifferenceStream<T> {
     return this.#writer.newReader();
   }
 
-  removeReader(reader: DifferenceStreamReader<T>) {
+  removeReader(
+    reader: DifferenceStreamReader<T>,
+    options: { autoCleanup?: boolean } = { autoCleanup: true }
+  ) {
     this.#writer.removeReader(reader);
+    // if writer has no readers
+    // then destroy the stream
+    if (this.#writer.readers.length === 0 && options.autoCleanup === true) {
+      this.destroy();
+    }
+  }
+
+  destroy() {
+    // remove ourselves from our upstreams
+    for (const [upstream, reader] of this.#upstreams) {
+      upstream.removeReader(reader);
+    }
   }
 }

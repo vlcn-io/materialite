@@ -21,7 +21,7 @@ export class MutableMapSource<K, T> implements IMemorableSource<T, Map<K, T>> {
 
   constructor(materialite: MaterialiteForSourceInternal, getKey: (t: T) => K) {
     this.#materialite = materialite;
-    this.#stream = new DifferenceStream<T>(true);
+    this.#stream = new DifferenceStream<T>([]);
     this.#map = new Map();
 
     const self = this;
@@ -84,7 +84,7 @@ export class MutableMapSource<K, T> implements IMemorableSource<T, Map<K, T>> {
   }
 
   detachPipelines() {
-    this.#stream = new DifferenceStream<T>(true);
+    this.#stream = new DifferenceStream<T>([]);
   }
 
   onChange(cb: (data: Map<K, T>) => void) {

@@ -10,9 +10,9 @@ import {
   MaterialiteForSourceInternal,
   Version,
 } from "../core/types.js";
-import { ISource } from "./Source.js";
+import { IForgetfulSource } from "./Source.js";
 
-export class SetSource<T> implements ISource<T> {
+export class SetSource<T> implements IForgetfulSource<T> {
   // TODO: should sources remember?
   #stream;
   readonly #internal: ISourceInternal;
@@ -22,7 +22,7 @@ export class SetSource<T> implements ISource<T> {
 
   constructor(materialite: MaterialiteForSourceInternal) {
     this.#materialite = materialite;
-    this.#stream = new DifferenceStream<T>(true);
+    this.#stream = new DifferenceStream<T>([]);
     const self = this;
     this.#internal = {
       // add values to queues, add values to the set
@@ -45,7 +45,7 @@ export class SetSource<T> implements ISource<T> {
   }
 
   detachPipelines() {
-    this.#stream = new DifferenceStream<T>(true);
+    this.#stream = new DifferenceStream<T>([]);
   }
 
   addAll(values: Iterable<T>): this {
