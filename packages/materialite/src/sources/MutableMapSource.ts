@@ -54,7 +54,6 @@ export class MutableMapSource<K, T> implements IMemorableSource<T, Map<K, T>> {
         if (self.#recomputeAll) {
           self.#pending = [];
           self.#recomputeAll = false;
-          console.log("pushing it all");
           self.#stream.queueData([version, new Multiset(asEntries(self.#map))]);
         } else {
           self.#stream.queueData([version, new Multiset(self.#pending)]);
@@ -104,7 +103,6 @@ export class MutableMapSource<K, T> implements IMemorableSource<T, Map<K, T>> {
   }
 
   recomputeAll(): this {
-    console.log("recomputeAll");
     this.#recomputeAll = true;
     this.#materialite.addDirtySource(this.#internal);
     return this;
