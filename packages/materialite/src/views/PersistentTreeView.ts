@@ -26,6 +26,7 @@ export class PersistentTreeView<T> extends View<T, PersistentTreap<T>> {
 
   protected run(version: Version) {
     const collections = this.reader.drain(version);
+    console.log("run with", collections);
     if (collections.length === 0) {
       return;
     }
@@ -52,6 +53,7 @@ export class PersistentTreeView<T> extends View<T, PersistentTreap<T>> {
     while (!(next = iterator.next()).done) {
       empty = false;
       const [value, mult] = next.value;
+      console.log(value);
       let nextNext = iterator.next();
       if (!nextNext.done) {
         const [nextValue, nextMult] = nextNext.value;

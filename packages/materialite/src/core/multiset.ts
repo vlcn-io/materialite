@@ -118,16 +118,30 @@ export class Multiset<T> {
   }
 }
 
-function* genMap<T, U>(s: Iterable<T>, cb: (x: T) => U) {
-  for (const x of s) {
-    yield cb(x);
-  }
-}
-
-function* genFilter<T>(s: Iterable<T>, cb: (x: T) => boolean) {
-  for (const x of s) {
-    if (cb(x)) {
-      yield x;
+function genMap<T, U>(s: Iterable<T>, cb: (x: T) => U) {
+  function* gen() {
+    for (const x of s) {
+      yield cb(x);
     }
   }
+  return {
+    *[Symbol.iterator]() {
+      yield* gen();
+    },
+  };
+}
+
+function genFilter<T>(s: Iterable<T>, cb: (x: T) => boolean) {
+  function* gen() {
+    for (const x of s) {
+      if (cb(x)) {
+        yield x;
+      }
+    }
+  }
+  return {
+    *[Symbol.iterator]() {
+      yield* gen();
+    },
+  };
 }

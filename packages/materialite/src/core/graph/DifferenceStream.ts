@@ -230,6 +230,7 @@ export class DifferenceStream<T> {
     // if writer has no readers
     // then destroy the stream
     if (this.#writer.readers.length === 0 && options.autoCleanup === true) {
+      console.log("Destroying stream");
       this.destroy();
     }
   }

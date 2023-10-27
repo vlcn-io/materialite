@@ -120,8 +120,15 @@ export class PersistentSetSource<T>
   }
 }
 
-function* asEntries<T>(tree: PersistentTreap<T>) {
-  for (const v of tree) {
-    yield [v, 1] as const;
+function* asEntries<T>(m: PersistentTreap<T>) {
+  function* gen() {
+    for (const v of m) {
+      yield [v, 1] as const;
+    }
   }
+  return {
+    *[Symbol.iterator]() {
+      yield* gen();
+    },
+  };
 }
