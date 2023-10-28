@@ -1,3 +1,5 @@
+// Copyright (c) 2023 One Law LLC
+
 import { Primitive } from "./types.js";
 
 export function minBy<T>(x: Iterable<T>, f: (x: T) => Primitive) {

@@ -1,3 +1,5 @@
+// Copyright (c) 2023 One Law LLC
+
 import { TuplableMap } from "@vlcn.io/ds-and-algos/TuplableMap";
 
 export type Entry<T> = readonly [T, Multiplicity];

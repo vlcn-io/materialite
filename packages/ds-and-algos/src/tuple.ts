@@ -1,3 +1,5 @@
+// Copyright (c) 2023 One Law LLC
+
 const tupleSymbol = Symbol("tupleSymbol");
 const joinResultSymbol = Symbol("joinResultSymbol");
 

@@ -1,3 +1,5 @@
+// Copyright (c) 2023 One Law LLC
+
 import { PersistentTreap } from "./trees/PersistentTreap.js";
 
 // Repeatedly remove and add from our treap

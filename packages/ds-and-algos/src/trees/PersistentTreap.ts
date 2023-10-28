@@ -1,3 +1,5 @@
+// Copyright (c) 2023 One Law LLC
+
 export class Node<T> {
   size: number = 1;
   constructor(

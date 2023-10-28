@@ -1,3 +1,5 @@
+// Copyright (c) 2023 One Law LLC
+
 import { isTuple } from "@vlcn.io/ds-and-algos/tuple";
 import { objectId } from "@vlcn.io/ds-and-algos/objectTracking";
 

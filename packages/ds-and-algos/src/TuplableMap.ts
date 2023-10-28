@@ -1,3 +1,5 @@
+// Copyright (c) 2023 One Law LLC
+
 import { objectId } from "./objectTracking.js";
 import { isTuple } from "./tuple.js";
 
