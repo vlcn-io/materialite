@@ -45,7 +45,8 @@ export class Materialite {
    *
    * 1. The retaining of values allows for late pipeline additions to receive all data they may have missed.
    * 2. The versioning allows for late pipeline additions to receive data from a specific point in time.
-   * 3. Being sorted allows cheaper construction of the final materialized view on pipeline modification.
+   * 3. Being sorted allows cheaper construction of the final materialized view on pipeline modification if the
+   *   order of the view matches the order of the source.
    *
    * @param comparator
    * @returns
@@ -55,10 +56,33 @@ export class Materialite {
     return ret;
   }
 
+  /**
+   * A source that retains values in a mutable, sorted data structure.
+   *
+   * 1. The retaining of values allows for late pipeline additions to receive all data they may have missed.
+   * 2. Being sorted allows cheaper construction of the final materialized view on pipeline modification if the
+   *   order of the view matches the order of the source.
+   */
   newSortedSet<T>(comparator: Comparator<T>) {
     // a treap that is not persistent.
   }
 
+  /**
+   * A source that retains values in a mutable, unordered data structure.
+   *
+   * 1. The retaining of values allows for late pipeline additions to receive all data they may have missed.
+   *
+   * The fact that the source is unsorted means that we can build it faster than a sorted source. This is
+   * useful where the source and view will not have the same ordering.
+   *
+   * If source and view will have the same order, use a sorted source.
+   *
+   * If many views will be created from the same source but with many different orderings,
+   * use this source.
+   *
+   * @param getKey
+   * @returns
+   */
   newStatefulUnorderedSet<K, V>(getKey: KeyFn<V, K>) {
     const ret = new MutableMapSource<K, V>(this.#internal, getKey);
     return ret;
