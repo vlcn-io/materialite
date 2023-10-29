@@ -9,7 +9,7 @@ function inspect(e: any) {
 
 test("Materialite#setSource", () => {
   const materialite = new Materialite();
-  const set = materialite.newSet<number>();
+  const set = materialite.newStatelessSet<number>();
 
   set.stream.map((v) => v + 1).debug((v) => inspect(v));
   set.add(1);
@@ -105,12 +105,12 @@ test("db/overtone example - materialize track view", () => {
 
   // TODO: what if operators are attached after the source is committed?
   // Maybe no initial construction allowed?
-  const playlistSource = materialite.newSet<Playlist>();
-  const trackSource = materialite.newSet<Track>();
-  const albumSource = materialite.newSet<Album>();
-  const playlistTrackSource = materialite.newSet<TrackPlaylist>();
-  const trackArtistSource = materialite.newSet<TrackArtist>();
-  const artistSource = materialite.newSet<Artist>();
+  const playlistSource = materialite.newStatelessSet<Playlist>();
+  const trackSource = materialite.newStatelessSet<Track>();
+  const albumSource = materialite.newStatelessSet<Album>();
+  const playlistTrackSource = materialite.newStatelessSet<TrackPlaylist>();
+  const trackArtistSource = materialite.newStatelessSet<TrackArtist>();
+  const artistSource = materialite.newStatelessSet<Artist>();
 
   // playlistTrackSource.stream.debug((v) => inspect(v));
 

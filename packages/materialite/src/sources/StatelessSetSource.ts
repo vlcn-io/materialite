@@ -10,11 +10,14 @@ import {
   MaterialiteForSourceInternal,
   Version,
 } from "../core/types.js";
-import { IForgetfulSource } from "./Source.js";
+import { IStatelessSource, IUnsortedSource, KeyFn } from "./Source.js";
 
-export class SetSource<T> implements IForgetfulSource<T> {
-  readonly type = "stateless";
-  // TODO: should sources remember?
+export class SetSource<T>
+  implements IStatelessSource<T>, IUnsortedSource<T, T>
+{
+  readonly _state = "stateless";
+  readonly _sort = "unsorted";
+  readonly keyFn: KeyFn<T, T> = (v) => v;
   #stream: DifferenceStream<T>;
   readonly #internal: ISourceInternal;
   readonly #materialite: MaterialiteForSourceInternal;

@@ -3,7 +3,7 @@ import { Materialite } from "../materialite.js";
 
 test("cleaning up the only user of a stream cleans up the entire pipeline", () => {
   const materialite = new Materialite();
-  const set = materialite.newSet<number>();
+  const set = materialite.newStatelessSet<number>();
 
   let notifyCount = 0;
   const final = set.stream
@@ -22,7 +22,7 @@ test("cleaning up the only user of a stream cleans up the entire pipeline", () =
 
 test("cleaning up the only user of a stream cleans up the entire pipeline but stops at a used fork", () => {
   const materialite = new Materialite();
-  const set = materialite.newSet<number>();
+  const set = materialite.newStatelessSet<number>();
 
   let notifyCount = 0;
   const stream1 = set.stream.debug((_) => notifyCount++);

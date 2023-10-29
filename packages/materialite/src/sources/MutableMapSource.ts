@@ -5,17 +5,22 @@ import {
   Version,
 } from "../core/types.js";
 import { DifferenceStream } from "../index.js";
-import { IMemorableSource } from "./Source.js";
+import { IStatefulSource, IUnsortedSource, KeyFn } from "./Source.js";
 
 /**
  * A MapSource which retains values in a mutable structure.
  */
-export class MutableMapSource<K, T> implements IMemorableSource<T, Map<K, T>> {
-  readonly type = "stateful";
-  #stream: DifferenceStream<T>;
+export class MutableMapSource<K, T>
+  implements IStatefulSource<T, Map<K, T>>, IUnsortedSource<T, K>
+{
+  readonly _state = "stateful";
+  readonly _sort = "unsorted";
   readonly #internal: ISourceInternal;
   readonly #materialite: MaterialiteForSourceInternal;
   readonly #listeners = new Set<(data: Map<K, T>) => void>();
+  readonly keyFn: KeyFn<T, K>;
+
+  #stream: DifferenceStream<T>;
   #pending: Entry<T>[] = [];
   #recomputeAll = false;
   #map: Map<K, T>;
@@ -24,6 +29,7 @@ export class MutableMapSource<K, T> implements IMemorableSource<T, Map<K, T>> {
     this.#materialite = materialite;
     this.#stream = new DifferenceStream<T>([], this);
     this.#map = new Map();
+    this.keyFn = getKey;
 
     const self = this;
     this.#internal = {
@@ -102,7 +108,7 @@ export class MutableMapSource<K, T> implements IMemorableSource<T, Map<K, T>> {
     return this;
   }
 
-  recomputeAll(): this {
+  resendAll(): this {
     this.#recomputeAll = true;
     this.#materialite.addDirtySource(this.#internal);
     return this;

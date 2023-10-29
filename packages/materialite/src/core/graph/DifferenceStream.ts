@@ -53,9 +53,9 @@ export class DifferenceStream<T> {
 
   pull() {
     if (this.#source) {
-      if (this.#source.type === "stateful") {
+      if (this.#source._state === "stateful") {
         // TODO: possible to recompute only down the branch that requested recomputation?
-        this.#source.recomputeAll();
+        this.#source.resendAll();
       }
     } else {
       for (const [upstream, _] of this.#upstreams) {

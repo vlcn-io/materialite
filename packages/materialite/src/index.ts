@@ -3,10 +3,13 @@ export { Materialite } from "./materialite.js";
 export { DifferenceStream } from "./core/graph/DifferenceStream.js";
 
 // Sources
-export { SetSource } from "./sources/SetSource.js";
-export { PersistentSetSource } from "./sources/PersistentSetSource.js";
+export { SetSource } from "./sources/StatelessSetSource.js";
+export { PersistentSetSource } from "./sources/ImmutableSetSource.js";
 export { MutableMapSource } from "./sources/MutableMapSource.js";
-export type { IMemorableSource, ISource } from "./sources/Source.js";
+export type {
+  IStatefulSource as IMemorableSource,
+  ISource,
+} from "./sources/Source.js";
 
 // Views
 export { PrimitiveView } from "./views/PrimitiveView.js";

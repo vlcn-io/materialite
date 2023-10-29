@@ -1,4 +1,4 @@
-import { PersistentSetSource } from "../sources/PersistentSetSource.js";
+import { PersistentSetSource } from "../sources/ImmutableSetSource.js";
 import { View } from "../views/View.js";
 
 export class Pair<S, V, VCT> {

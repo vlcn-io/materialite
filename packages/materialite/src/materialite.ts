@@ -5,7 +5,8 @@ import {
   Version,
 } from "./core/types.js";
 import { MutableMapSource, PersistentSetSource } from "./index.js";
-import { SetSource } from "./sources/SetSource.js";
+import { SetSource } from "./sources/StatelessSetSource.js";
+import { KeyFn } from "./sources/Source.js";
 
 export class Materialite {
   #version: Version;
@@ -29,17 +30,36 @@ export class Materialite {
     };
   }
 
-  newSet<T>() {
+  /**
+   * A source that does not retain and values and
+   * only sends them down the stream.
+   * @returns
+   */
+  newStatelessSet<T>() {
     const ret = new SetSource<T>(this.#internal);
     return ret;
   }
 
-  newPersistentSet<T>(comparator: Comparator<T>) {
+  /**
+   * A source that retains values in a versioned, immutable, and sorted data structure.
+   *
+   * 1. The retaining of values allows for late pipeline additions to receive all data they may have missed.
+   * 2. The versioning allows for late pipeline additions to receive data from a specific point in time.
+   * 3. Being sorted allows cheaper construction of the final materialized view on pipeline modification.
+   *
+   * @param comparator
+   * @returns
+   */
+  newImmutableSortedSet<T>(comparator: Comparator<T>) {
     const ret = new PersistentSetSource<T>(this.#internal, comparator);
     return ret;
   }
 
-  newMutableMap<K, V>(getKey: (v: V) => K) {
+  newSortedSet<T>(comparator: Comparator<T>) {
+    // a treap that is not persistent.
+  }
+
+  newStatefulUnorderedSet<K, V>(getKey: KeyFn<V, K>) {
     const ret = new MutableMapSource<K, V>(this.#internal, getKey);
     return ret;
   }
@@ -102,3 +122,19 @@ export class Materialite {
     }
   }
 }
+
+/*
+import { Comparator } from "@vlcn.io/ds-and-algos/types";
+import { IThirdPartySource } from "./source/Source.js";
+
+export class Materialite {
+  constructor() {}
+
+  // Create a new in-memory source
+  newSource() {}
+
+  // User provided source
+  // If source.comparator matches comparator we can use source directly
+  connect<T>(source: IThirdPartySource<T>, comparator: Comparator<T>) {}
+}
+*/

@@ -7,15 +7,17 @@ import {
 } from "../core/types.js";
 import { DifferenceStream } from "../index.js";
 import { Comparator } from "@vlcn.io/ds-and-algos/types";
-import { IMemorableSource } from "./Source.js";
+import { ISortedSource, IStatefulSource } from "./Source.js";
 
 /**
  * A set source that retains its contents in an immutable data structure.
  */
 export class PersistentSetSource<T>
-  implements IMemorableSource<T, PersistentTreap<T>>
+  implements IStatefulSource<T, PersistentTreap<T>>, ISortedSource<T>
 {
-  readonly type = "stateful";
+  readonly _state = "stateful";
+  readonly _sort: "sorted";
+
   #stream: DifferenceStream<T>;
   readonly #internal: ISourceInternal;
   readonly #materialite: MaterialiteForSourceInternal;
@@ -23,6 +25,7 @@ export class PersistentSetSource<T>
   #pending: Entry<T>[] = [];
   #recomputeAll = false;
   #tree: PersistentTreap<T>;
+  readonly comparator: Comparator<T>;
 
   constructor(
     materialite: MaterialiteForSourceInternal,
@@ -31,6 +34,7 @@ export class PersistentSetSource<T>
     this.#materialite = materialite;
     this.#stream = new DifferenceStream<T>([], this);
     this.#tree = new PersistentTreap<T>(comparator);
+    this.comparator = comparator;
 
     const self = this;
     this.#internal = {
@@ -113,7 +117,7 @@ export class PersistentSetSource<T>
     return this;
   }
 
-  recomputeAll(): this {
+  resendAll(): this {
     this.#recomputeAll = true;
     this.#materialite.addDirtySource(this.#internal);
     return this;
