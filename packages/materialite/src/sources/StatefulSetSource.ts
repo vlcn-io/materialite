@@ -30,7 +30,7 @@ export abstract class StatefulSetSource<T>
     treapConstructor: () => ITreap<T>
   ) {
     this.#materialite = materialite;
-    this.#stream = new DifferenceStream<T>([], this);
+    this.#stream = new DifferenceStream<T>([], this, null);
     this.#tree = treapConstructor();
     this.comparator = comparator;
 
@@ -95,7 +95,7 @@ export abstract class StatefulSetSource<T>
   }
 
   detachPipelines() {
-    this.#stream = new DifferenceStream<T>([], this);
+    this.#stream = new DifferenceStream<T>([], this, null);
   }
 
   onChange(cb: (data: PersistentTreap<T>) => void) {

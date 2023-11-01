@@ -1,3 +1,8 @@
+Each operator? stream? needs to know its last seen version.
+We should ignore data if its version is before our last seen version. E.g., recomputation events.
+
+
+---
 Can we really do this incremental pagination?
 
 // Default materialize methods assume same order as source.
@@ -25,6 +30,18 @@ or `after` must come before `first` in a stream operator?
 what we need.
 
 Maybe attaching a view can pass down a cursor for the `recomputeAll` piece?
+
+So we have:
+
+// after and first would require sorting takes place at the source.
+// after should likely come before any filters...
+// so we can jump to that place in the source stream
+// this is information we could push down into the source expression.
+s.filter().map().after(x).first(y).materialize()
+
+// after is a partial of T for use by comparator?
+
+Support a general message passing structure down the pipeline to the source?
 
 ----
 

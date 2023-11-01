@@ -1,9 +1,11 @@
 import { Version } from "../../types.js";
 import { DifferenceStreamReader } from "../DifferenceReader.js";
 import { DifferenceStreamWriter } from "../DifferenceWriter.js";
+import { OperatorMsg } from "../Msg.js";
 
 export interface IOperator {
   run(version: Version): void;
+  getMsgForUpstream(): OperatorMsg | null;
 }
 /**
  * A dataflow operator (node) that has many incoming edges (read handles) and one outgoing edge (write handle).
@@ -34,5 +36,9 @@ export class Operator<O> implements IOperator {
       }
     }
     return false;
+  }
+
+  getMsgForUpstream() {
+    return null;
   }
 }

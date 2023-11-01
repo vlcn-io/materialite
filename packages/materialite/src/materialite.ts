@@ -64,7 +64,7 @@ export class Materialite {
    * 2. Being sorted allows cheaper construction of the final materialized view on pipeline modification if the
    *   order of the view matches the order of the source.
    */
-  newSortedSet<T>(comparator: Comparator<T>) {
+  newSortedSet<T>(_comparator: Comparator<T>) {
     // a treap that is not persistent.
     // const ret = new
   }

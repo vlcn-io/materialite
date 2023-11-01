@@ -11,7 +11,7 @@ test("Materialite#setSource", () => {
   const materialite = new Materialite();
   const set = materialite.newStatelessSet<number>();
 
-  set.stream.map((v) => v + 1).debug((v) => inspect(v));
+  set.stream.map((v) => v + 1).effect((v) => inspect(v));
   set.add(1);
   set.add(1);
   set.delete(1);

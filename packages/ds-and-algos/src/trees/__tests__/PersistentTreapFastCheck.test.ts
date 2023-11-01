@@ -1,7 +1,8 @@
 import { assert, property } from "fast-check";
 import fc from "fast-check";
-import { PersistentTreap, Node } from "../PersistentTreap.js";
+import { PersistentTreap } from "../PersistentTreap.js";
 import { expect, test } from "vitest";
+import { Node } from "../../types.js";
 
 // Assuming your treap class is imported as:
 // import { PersistentTreap } from './path_to_treap';

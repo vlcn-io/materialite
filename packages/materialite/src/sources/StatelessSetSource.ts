@@ -26,7 +26,7 @@ export class SetSource<T>
 
   constructor(materialite: MaterialiteForSourceInternal) {
     this.#materialite = materialite;
-    this.#stream = new DifferenceStream<T>([], this);
+    this.#stream = new DifferenceStream<T>([], this, null);
     const self = this;
     this.#internal = {
       // add values to queues, add values to the set
@@ -49,7 +49,7 @@ export class SetSource<T>
   }
 
   detachPipelines() {
-    this.#stream = new DifferenceStream<T>([], this);
+    this.#stream = new DifferenceStream<T>([], this, null);
   }
 
   addAll(values: Iterable<T>): this {

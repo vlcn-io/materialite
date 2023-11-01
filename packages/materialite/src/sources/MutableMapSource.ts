@@ -27,7 +27,7 @@ export class MutableMapSource<K, T>
 
   constructor(materialite: MaterialiteForSourceInternal, getKey: (t: T) => K) {
     this.#materialite = materialite;
-    this.#stream = new DifferenceStream<T>([], this);
+    this.#stream = new DifferenceStream<T>([], this, null);
     this.#map = new Map();
     this.keyFn = getKey;
 
@@ -88,7 +88,7 @@ export class MutableMapSource<K, T>
   }
 
   detachPipelines() {
-    this.#stream = new DifferenceStream<T>([], this);
+    this.#stream = new DifferenceStream<T>([], this, null);
   }
 
   onChange(cb: (data: Map<K, T>) => void) {

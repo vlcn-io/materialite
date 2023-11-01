@@ -55,6 +55,9 @@ export class DOMView<T extends Node, K> {
       run(version: Version) {
         self.#run(version);
       },
+      getMsgForUpstream() {
+        return null;
+      },
     });
   }
 

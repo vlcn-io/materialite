@@ -26,6 +26,9 @@ export abstract class View<T, CT> {
       run(version: Version) {
         self.run(version);
       },
+      getMsgForUpstream() {
+        return null;
+      },
     });
   }
 
@@ -34,7 +37,10 @@ export abstract class View<T, CT> {
   }
 
   pull() {
-    this.#stream.pull();
+    this.#stream.pull({
+      _tag: "pull",
+      operatorMessages: [],
+    });
   }
 
   protected notify(d: CT) {
