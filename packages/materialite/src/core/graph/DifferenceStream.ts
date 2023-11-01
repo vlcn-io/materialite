@@ -109,6 +109,7 @@ export class DifferenceStream<T> {
   }
 
   pull(msg: Msg) {
+    this.#writer.handlePullMsg(msg);
     if (this.#source) {
       if (this.#source._state === "stateful") {
         // TODO: possible to recompute only down the branch that requested recomputation?
