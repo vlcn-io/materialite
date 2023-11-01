@@ -1,18 +1,9 @@
 // Copyright (c) 2023 One Law LLC
 
-export class Node<T> {
-  size: number = 1;
-  constructor(
-    public value: T,
-    public priority: number,
-    public left: Node<T> | null = null,
-    public right: Node<T> | null = null
-  ) {}
-}
-
+import { ITreap, Node } from "../types.js";
 type Comparator<T> = (a: T, b: T) => number;
 
-export class PersistentTreap<T> {
+export class Treap<T> implements ITreap<T> {
   private comparator: Comparator<T>;
   private root: Node<T> | null = null;
 
@@ -21,7 +12,7 @@ export class PersistentTreap<T> {
   }
 
   static empty<T>() {
-    return empty as PersistentTreap<T>;
+    return empty as Treap<T>;
   }
 
   get size() {
@@ -32,23 +23,23 @@ export class PersistentTreap<T> {
     return this.root;
   }
 
-  add(value: T): PersistentTreap<T> {
+  add(value: T): Treap<T> {
     const priority = Math.random(); // Random priority
     const root = this._insert(this.root, value, priority);
-    const ret = new PersistentTreap(this.comparator);
+    const ret = new Treap(this.comparator);
     ret.root = root;
     return ret;
   }
 
-  delete(value: T): PersistentTreap<T> {
+  delete(value: T): Treap<T> {
     const root = this._remove(this.root, value);
-    const ret = new PersistentTreap(this.comparator);
+    const ret = new Treap(this.comparator);
     ret.root = root;
     return ret;
   }
 
-  clear(): PersistentTreap<T> {
-    const ret = new PersistentTreap(this.comparator);
+  clear(): Treap<T> {
+    const ret = new Treap(this.comparator);
     ret.root = null;
     return ret;
   }
@@ -287,4 +278,4 @@ function* inOrderTraversal<T>(node: Node<T> | null): Generator<T> {
   }
 }
 
-const empty = new PersistentTreap<any>((_l, _r) => 0);
+const empty = new Treap<any>((_l, _r) => 0);

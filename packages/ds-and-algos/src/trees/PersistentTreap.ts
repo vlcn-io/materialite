@@ -1,15 +1,6 @@
 // Copyright (c) 2023 One Law LLC
 
-export class Node<T> {
-  size: number = 1;
-  constructor(
-    public value: T,
-    public priority: number,
-    public left: Node<T> | null = null,
-    public right: Node<T> | null = null
-  ) {}
-}
-
+import { ITreap, Node } from "../types.js";
 type Comparator<T> = (a: T, b: T) => number;
 
 /**
@@ -23,7 +14,7 @@ type Comparator<T> = (a: T, b: T) => number;
  * Also stores `size` in each node so we can index it like an array.
  * Important for virtualized table views.
  */
-export class PersistentTreap<T> {
+export class PersistentTreap<T> implements ITreap<T> {
   private comparator: Comparator<T>;
   private root: Node<T> | null = null;
 

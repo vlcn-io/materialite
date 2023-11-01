@@ -36,7 +36,7 @@ The main concepts in `Materialite` are:
 2. Streams
 3. Materialized Views
 
-And everything starts with a `Materialite` instance. This instance is used to create data sources, connect third party sources and commit transactions. Sources have streams against which computation (map/filter/reduce/join/count/union) can be written. Those streams can then be materialized into an incrementally maintained collection that represents the result of the computation.
+Everything starts with a `Materialite` instance. This instance is used to create data sources, connect third party sources and commit transactions. Sources emit streams against which computation (map/filter/reduce/join/count/union) can be written. Those streams can then be materialized into an incrementally maintained collection that represents the results of the computation.
 
 ```ts
 const materialite = new Materialite();

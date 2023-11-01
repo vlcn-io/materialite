@@ -4,9 +4,10 @@ import {
   MaterialiteForSourceInternal,
   Version,
 } from "./core/types.js";
-import { MutableMapSource, PersistentSetSource } from "./index.js";
+import { MutableMapSource } from "./sources/MutableMapSource.js";
 import { SetSource } from "./sources/StatelessSetSource.js";
 import { KeyFn } from "./sources/Source.js";
+import { ImmutableSetSource } from "./sources/ImmutableSetSource.js";
 
 export class Materialite {
   #version: Version;
@@ -52,7 +53,7 @@ export class Materialite {
    * @returns
    */
   newImmutableSortedSet<T>(comparator: Comparator<T>) {
-    const ret = new PersistentSetSource<T>(this.#internal, comparator);
+    const ret = new ImmutableSetSource<T>(this.#internal, comparator);
     return ret;
   }
 
@@ -65,6 +66,7 @@ export class Materialite {
    */
   newSortedSet<T>(comparator: Comparator<T>) {
     // a treap that is not persistent.
+    // const ret = new
   }
 
   /**
@@ -83,7 +85,7 @@ export class Materialite {
    * @param getKey
    * @returns
    */
-  newStatefulUnorderedSet<K, V>(getKey: KeyFn<V, K>) {
+  newUnorderedSet<K, V>(getKey: KeyFn<V, K>) {
     const ret = new MutableMapSource<K, V>(this.#internal, getKey);
     return ret;
   }

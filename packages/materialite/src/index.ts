@@ -4,7 +4,7 @@ export { DifferenceStream } from "./core/graph/DifferenceStream.js";
 
 // Sources
 export { SetSource } from "./sources/StatelessSetSource.js";
-export { PersistentSetSource } from "./sources/ImmutableSetSource.js";
+export { ImmutableSetSource as PersistentSetSource } from "./sources/ImmutableSetSource.js";
 export { MutableMapSource } from "./sources/MutableMapSource.js";
 export type {
   IStatefulSource as IMemorableSource,

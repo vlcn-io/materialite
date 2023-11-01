@@ -1,3 +1,33 @@
+Can we really do this incremental pagination?
+
+// Default materialize methods assume same order as source.
+// materialize window returns a window into the materialization that we can slide around...
+s.filter.map.materializeWindow();
+s.filter.map.materialize();
+
+// fluent api to construct the view?
+s.filter().map().view.after(x).first(y).materialize()
+// sliding view is same as re-constructing the materialization
+// but we have extra params with which to call the source.
+// mainly the after. We'll stop pulling from source once `first` is consumed.
+
+How can we fork different views with different ranges against the source?
+They all have different query criteria against the source.
+
+If it is a pull model we can simply stop consuming the source iterator once we've consumed `first`.
+`first` is a stream operator which understands when things are in/out of the window and to drop or not.
+
+So first likely needs to also take an `after` since we need to understand both components to maintain the window
+in the stream operator itself.
+
+or `after` must come before `first` in a stream operator?
+`after` could enrich requests for `recomputeAll`? We're sending info down the stream and tacking metadata on about
+what we need.
+
+Maybe attaching a view can pass down a cursor for the `recomputeAll` piece?
+
+----
+
 Maybe we should weakly hold materialized views? And if the view is GC'ed we can clean up the pipeline leading to it.
 
 Limits, sorts, offsets...

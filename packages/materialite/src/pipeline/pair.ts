@@ -1,9 +1,9 @@
-import { PersistentSetSource } from "../sources/ImmutableSetSource.js";
+import { ImmutableSetSource } from "../sources/ImmutableSetSource.js";
 import { View } from "../views/View.js";
 
 export class Pair<S, V, VCT> {
   constructor(
-    private readonly source: PersistentSetSource<S>,
+    private readonly source: ImmutableSetSource<S>,
     private readonly view: View<V, VCT>
   ) {}
 
@@ -16,7 +16,7 @@ export class Pair<S, V, VCT> {
 }
 
 export function pair<S, V, VCT>(
-  source: PersistentSetSource<S>,
+  source: ImmutableSetSource<S>,
   view: View<V, VCT>
 ) {
   return new Pair<S, V, VCT>(source, view);

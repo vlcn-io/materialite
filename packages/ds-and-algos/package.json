@@ -14,6 +14,7 @@
     "./binarySearch": "./dist/binarySearch.js",
     "./minBy": "./dist/minBy.js",
     "./PersistentTreap": "./dist/trees/PersistentTreap.js",
+    "./Treap": "./dist/trees/Treap.js",
     "./types": "./dist/types.js"
   },
   "scripts": {
