@@ -1,4 +1,9 @@
 # materialite
+----
+
+This project is not ready for public consumption. All APIs are currently being overhauled to better support integration with existing databases: https://github.com/vlcn-io/materialite/pull/1
+
+----
 
 Incremental view maintenance for JavaScript.
 
