@@ -125,6 +125,20 @@ export class Treap<T> implements ITreap<T> {
     return null;
   }
 
+  getMin(): T | null {
+    if (!this.root) return null;
+    return this._findMin(this.root).value;
+  }
+
+  getMax(): T | null {
+    if (!this.root) return null;
+    let currentNode = this.root;
+    while (currentNode.right) {
+      currentNode = currentNode.right;
+    }
+    return currentNode.value;
+  }
+
   private _getByIndex(node: Node<T> | null, index: number): T | null {
     if (!node) return null;
 

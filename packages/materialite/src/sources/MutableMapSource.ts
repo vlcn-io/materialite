@@ -109,7 +109,7 @@ export class MutableMapSource<K, T>
     return this;
   }
 
-  resendAll(msg: Msg): this {
+  resendAll(_msg: Msg): this {
     this.#recomputeAll = true;
     this.#materialite.addDirtySource(this.#internal);
     return this;

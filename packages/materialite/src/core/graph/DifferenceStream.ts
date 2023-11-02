@@ -20,6 +20,7 @@ import { Source } from "../../sources/Source.js";
 import { Msg } from "./Msg.js";
 import { IOperator } from "./ops/Operator.js";
 import { AfterOperator } from "./ops/AfterOperator.js";
+import { TakeOperator } from "./ops/TakeOperator.js";
 
 /**
  * A difference stream represents a stream of differences.
@@ -140,10 +141,13 @@ export class DifferenceStream<T> {
     });
   }
 
-  take<K>(n: number, keyFn: (i: T) => K) {
-    // keeps track of a window of size n
-    // once n is reached, it will stop sending data
-    // unless the item(s) being sent are part of the window
+  take(n: number, comparator: Comparator<T>) {
+    const reader = this.#writer.newReader();
+    return new DifferenceStream<T>([[this, reader]], null, (writer) => {
+      const op = new TakeOperator<T>(reader, writer, n, comparator);
+      reader.setOperator(op);
+      return op;
+    });
   }
 
   map<O>(f: (value: T) => O): DifferenceStream<O> {

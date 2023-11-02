@@ -21,7 +21,7 @@ export abstract class StatefulSetSource<T>
   readonly #materialite: MaterialiteForSourceInternal;
   readonly #listeners = new Set<(data: ITreap<T>) => void>();
   #pending: Entry<T>[] = [];
-  #recomputeAll = false;
+  #recomputeAll: Msg | null = null;
   #tree: ITreap<T>;
   readonly comparator: Comparator<T>;
 
@@ -63,9 +63,10 @@ export abstract class StatefulSetSource<T>
 
         if (self.#recomputeAll) {
           self.#pending = [];
-          self.#recomputeAll = false;
+          self.#recomputeAll = null;
           self.#stream.queueData([
             version,
+            // TODO: iterator at `after` position
             new Multiset(asEntries(self.#tree)),
           ]);
         } else {
@@ -117,7 +118,7 @@ export abstract class StatefulSetSource<T>
   }
 
   resendAll(msg: Msg): this {
-    this.#recomputeAll = true;
+    this.#recomputeAll = msg;
     this.#materialite.addDirtySource(this.#internal);
     return this;
   }

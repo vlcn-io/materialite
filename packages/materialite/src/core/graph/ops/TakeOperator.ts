@@ -38,10 +38,12 @@ import { Treap } from "@vlcn.io/ds-and-algos/Treap";
  * We could also implement an unordered take...
  */
 export class TakeOperator<I> extends LinearUnaryOperator<I, I> {
-  #tree;
-  #limit;
-  #max: I | undefined;
-  #min: I | undefined;
+  readonly #tree;
+  readonly #comparator: Comparator<I>;
+  readonly #limit;
+
+  #max: Entry<I> | undefined;
+  #min: Entry<I> | undefined;
   #size: 0;
 
   constructor(
@@ -51,7 +53,8 @@ export class TakeOperator<I> extends LinearUnaryOperator<I, I> {
     comparator: Comparator<I>
   ) {
     super(input, output, (c: Multiset<I>) => this.#inner(c));
-    this.#tree = new Treap(comparator);
+    this.#tree = new Treap<Entry<I>>((l, r) => comparator(l[0], r[0]));
+    this.#comparator = comparator;
     this.#limit = n;
   }
 
@@ -74,7 +77,99 @@ export class TakeOperator<I> extends LinearUnaryOperator<I, I> {
     return new Multiset(ret);
   }
 
-  #processRemove() {}
+  #processRemove(val: I, mult: number, ret: Entry<I>[]) {
+    const min = this.#min;
+    const max = this.#max;
+    // We assume that a thing must exist before it can be remove.
+    // Given that, we don't need to add negatives to the window.
+    if (min === undefined || max === undefined) {
+      return;
+    }
+    if (this.#isOutOfRange(val, min, max)) {
+      return;
+    }
 
-  #processAdd() {}
+    const existing = this.#tree.get([val, 0]);
+    if (existing != null) {
+      const [_, existingMult] = existing;
+      if (existingMult + mult <= 0) {
+        this.#size -= existingMult;
+        this.#tree.delete([val, 0]);
+      } else {
+        // replace existing with updated multipilicity
+        this.#size += mult;
+        this.#tree.add([val, existingMult + mult]);
+      }
+      // Pass the event down the line
+      ret.push([val, mult]);
+    }
+  }
+
+  // TODO: cap the `mult` of the add to the limit?
+  #processAdd(val: I, mult: number, ret: Entry<I>[]) {
+    if (this.#min === undefined || this.#max === undefined) {
+      this.#min = [val, mult];
+      this.#max = [val, mult];
+      this.#size += mult;
+      this.#tree.add([val, mult]);
+      ret.push([val, mult]);
+      return;
+    }
+
+    const isLessThenMin = this.#comparator(val, this.#min[0]) < 0;
+    const isGreaterThanMax = this.#comparator(val, this.#max[0]) > 0;
+    if (this.#tree.size >= this.#limit) {
+      if (isLessThenMin) {
+        // we're under the min and at limit?
+        // discard removal since we don't have it
+        return;
+      }
+      if (isGreaterThanMax) {
+        // we're above the max and at limit?
+        // discard removal since we don't have it
+        return;
+      }
+
+      // otherwise, we're in the middle of the window
+      // insert new and evict max
+      // TODO: take mult into account for the eviction.
+      // We do not need to evict all max if new insert is mult 1 and max as mult 2, for example.
+      // Also need to handle if we need to evict many maxes because of very large mult on new entry.
+      this.#size -= this.#max[1];
+      this.#tree.delete(this.#max);
+      // retract the max from the downstream
+      ret.push([this.#max[0], -this.#max[1]]);
+
+      // add the new value
+      this.#size += mult;
+      this.#tree.add([val, mult]);
+      ret.push([val, mult]);
+
+      // now find new max
+      this.#max = this.#tree.getMax()!;
+      return;
+    }
+    if (this.#size < this.#limit) {
+      // just add given we're under size.
+      const newMult = Math.min(mult, this.#limit - this.#size);
+      this.#size += newMult;
+      this.#tree.add([val, newMult]);
+      ret.push([val, newMult]);
+    }
+  }
+
+  #isOutOfRange(val: I, min: Entry<I>, max: Entry<I>) {
+    // we're under the min and at limit?
+    // discard removal since we don't have it
+    if (this.#comparator(val, min[0]) < 0 && this.#size === this.#limit) {
+      return true;
+    }
+    // we're above the max and at limit?
+    // discard removal since we don't have it
+    if (this.#comparator(val, max[0]) > 0 && this.#size === this.#limit) {
+      return true;
+    }
+
+    return false;
+  }
 }
