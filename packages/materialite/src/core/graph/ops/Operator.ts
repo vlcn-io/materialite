@@ -43,7 +43,13 @@ export class Operator<O> implements IOperator {
     return false;
   }
 
-  pull(): OperatorMsg | null {
+  /**
+   * If an operator is pulled, it sends the pull
+   * up the stream to its inputs.
+   * @param msg
+   * @returns
+   */
+  pull(msg: Msg): OperatorMsg | null {
     return null;
   }
 

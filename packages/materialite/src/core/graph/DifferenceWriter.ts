@@ -46,6 +46,8 @@ abstract class AbstractDifferenceStreamWriter<T> {
       // Writer so we never even queue.
       return;
     }
+    // TODO: check the queues. Maybe they should not receive this data
+    // because they are on a fork that didn't pull it.
     this.queueData([version, data]);
     this.notify(version);
   }
@@ -55,6 +57,7 @@ abstract class AbstractDifferenceStreamWriter<T> {
       return;
     }
     this.lastVersionSent = -1;
+    this.operator?.pull(msg);
   }
 
   notify(version: Version) {
