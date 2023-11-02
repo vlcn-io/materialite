@@ -50,6 +50,9 @@ export class Operator<O> implements IOperator {
    * @returns
    */
   pull(msg: Msg): OperatorMsg | null {
+    for (const input of this.inputs) {
+      input.pull(msg);
+    }
     return null;
   }
 

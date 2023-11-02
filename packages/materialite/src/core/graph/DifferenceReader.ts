@@ -1,6 +1,7 @@
 import { Multiset } from "../multiset.js";
 import { Version } from "../types.js";
 import { DifferenceStreamWriter } from "./DifferenceWriter.js";
+import { Msg } from "./Msg.js";
 import { IOperator } from "./ops/Operator.js";
 /**
  * A read handle for a dataflow edge that receives data from a writer.
@@ -39,6 +40,11 @@ export class DifferenceStreamReader<T = any> {
       ret.push(this.queue.shift()![1]);
     }
     return ret;
+  }
+
+  pull(msg: Msg) {
+    // TODO: reset queue?
+    this.#upstream.pull(msg);
   }
 
   get length() {
