@@ -18,8 +18,11 @@ import { TakeOperator } from "./ops/TakeOperator.js";
 
 import { PersistentTreeView } from "../../views/PersistentTreeView.js";
 import { PrimitiveView } from "../../views/PrimitiveView.js";
+import { IDifferenceStream } from "./IDifferenceStream.js";
 
-export abstract class AbstractDifferenceStream<T> {
+export abstract class AbstractDifferenceStream<T>
+  implements IDifferenceStream<T>
+{
   constructor(protected writer: DifferenceStreamWriter<T>) {}
   abstract pull(msg: Msg): void;
 

@@ -1,3 +1,8 @@
+Check pull implementation.
+Ensure readers are impacted by `pull` too so writers do not send to readers that did not pull.
+
+
+---
 
 If an operator receives a recompute all passing through it, it should blow away its state.
 ^-- well the push down and forking problem.
