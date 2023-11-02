@@ -40,7 +40,7 @@ export class DifferenceStreamWriter<T> {
     this.notify(version);
   }
 
-  handlePullMsg(msg: Msg) {
+  pull(msg: Msg) {
     if (msg._tag != "pull") {
       return;
     }

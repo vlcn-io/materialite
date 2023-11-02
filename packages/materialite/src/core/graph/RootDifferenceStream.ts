@@ -18,10 +18,17 @@ export class RootDifferenceStream<T> extends AbstractDifferenceStream<T> {
   }
 
   pull(msg: Msg) {
-    this.writer.handlePullMsg(msg);
+    this.writer.pull(msg);
     if (this.#source._state === "stateful") {
-      // TODO: possible to recompute only down the branch that requested recomputation?
       this.#source.resendAll(msg);
     }
   }
 }
+
+/**
+ * pull...
+ *
+ * changing writers but do we need to change readers too?
+ *
+ * source - w -
+ */

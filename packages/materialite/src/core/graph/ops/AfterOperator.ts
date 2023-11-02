@@ -24,7 +24,7 @@ export class AfterOperator<T> extends LinearUnaryOperator<T, T> {
     this.#cursor = v;
   }
 
-  getMsgForUpstream(): AfterMsg<T> {
+  pull(): AfterMsg<T> {
     return {
       _tag: "after",
       cursor: this.#cursor,

@@ -77,9 +77,9 @@ export class DifferenceStream<T> extends AbstractDifferenceStream<T> {
   }
 
   pull(msg: Msg) {
-    this.writer.handlePullMsg(msg);
+    this.writer.pull(msg);
     for (const [upstream, _] of this.#upstreams) {
-      const opMsg = this.#operator?.getMsgForUpstream();
+      const opMsg = this.#operator?.pull();
       if (opMsg != null) {
         msg.operatorMessages.push(opMsg);
       }

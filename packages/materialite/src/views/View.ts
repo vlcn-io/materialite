@@ -26,7 +26,7 @@ export abstract class View<T, CT> {
       run(version: Version) {
         self.run(version);
       },
-      getMsgForUpstream() {
+      pull() {
         return null;
       },
     });
