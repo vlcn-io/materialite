@@ -1,11 +1,12 @@
 import { Version } from "../../types.js";
 import { DifferenceStreamReader } from "../DifferenceReader.js";
 import { DifferenceStreamWriter } from "../DifferenceWriter.js";
-import { OperatorMsg } from "../Msg.js";
+import { Msg, OperatorMsg } from "../Msg.js";
 
 export interface IOperator {
   run(version: Version): void;
-  pull(): OperatorMsg | null;
+  pull(msg: Msg): void;
+  destroy(): void;
 }
 /**
  * A dataflow operator (node) that has many incoming edges (read handles) and one outgoing edge (write handle).
@@ -20,6 +21,10 @@ export class Operator<O> implements IOperator {
     fn: (version: Version) => void
   ) {
     this.#fn = fn;
+    for (const input of inputs) {
+      input.setOperator(this);
+    }
+    this.output.setOperator(this);
   }
 
   run(version: Version) {
@@ -40,5 +45,11 @@ export class Operator<O> implements IOperator {
 
   pull(): OperatorMsg | null {
     return null;
+  }
+
+  destroy(): void {
+    for (const input of this.inputs) {
+      input.destroy();
+    }
   }
 }

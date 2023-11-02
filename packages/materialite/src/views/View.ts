@@ -29,6 +29,9 @@ export abstract class View<T, CT> {
       pull() {
         return null;
       },
+      destroy() {
+        self.#stream.removeReader(self.reader);
+      },
     });
   }
 

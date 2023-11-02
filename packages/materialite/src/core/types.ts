@@ -9,3 +9,4 @@ export interface ISourceInternal {
 export type MaterialiteForSourceInternal = {
   addDirtySource(source: ISourceInternal): void;
 };
+export type DestroyOptions = { autoCleanup?: boolean };

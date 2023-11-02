@@ -1,6 +1,22 @@
 
 If an operator receives a recompute all passing through it, it should blow away its state.
+^-- well the push down and forking problem.
 
+Maybe we keep the simplification of not allowing pushing down from non hoistable stream instances.
+
+Recompute all going only down the requested branch is fine so long as
+we don't hit stateful operators which are forked to other branches.
+
+
+---
+
+How do kanban w/ presence of after?
+
+Not forked off of original query given original one now has paging involved.
+
+Kanban is separate afters with their own filters.
+
+WHERE date > :c_data OR date = :c_date AND id > :c_id ORDER BY date, id
 
 ---
 

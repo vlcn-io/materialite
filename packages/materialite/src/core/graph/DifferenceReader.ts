@@ -1,17 +1,31 @@
 import { Multiset } from "../multiset.js";
 import { Version } from "../types.js";
+import { DifferenceStreamWriter } from "./DifferenceWriter.js";
 import { IOperator } from "./ops/Operator.js";
 /**
  * A read handle for a dataflow edge that receives data from a writer.
  */
 export class DifferenceStreamReader<T = any> {
   protected readonly queue;
+  readonly #upstream: DifferenceStreamWriter<T>;
   #operator: IOperator;
-  constructor(queue: [Version, Multiset<T>][]) {
+  constructor(
+    upstream: DifferenceStreamWriter<T>,
+    queue: [Version, Multiset<T>][]
+  ) {
     this.queue = queue;
+    this.#upstream = upstream;
+  }
+
+  destroy() {
+    this.#upstream.removeReader(this);
+    this.queue.length = 0;
   }
 
   setOperator(operator: IOperator) {
+    if (this.#operator != null) {
+      throw new Error("Operator already set!");
+    }
     this.#operator = operator;
   }
 
@@ -36,7 +50,7 @@ export class DifferenceStreamReader<T = any> {
   }
 }
 
-export class DifferenceStreamRederFromRoot<
+export class DifferenceStreamReaderFromRoot<
   T
 > extends DifferenceStreamReader<T> {
   drain(version: Version) {

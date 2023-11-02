@@ -58,6 +58,9 @@ export class DOMView<T extends Node, K> {
       pull() {
         return null;
       },
+      destroy() {
+        self.#stream.removeReader(self.#reader);
+      },
     });
   }
 
