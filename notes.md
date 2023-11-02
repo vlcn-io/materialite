@@ -1,3 +1,13 @@
+This whole "message passing from view to source" and accumulating data at each operator is very much like your
+Aphrodite query builder (https://tantaman.com/2022-05-26-query-planning.html).
+
+We accumulate operations and push them into the source expression such that we can do efficient re-computation.
+
+So we could take "typed filters"
+`filter('field', eq, val)`
+
+---
+
 Each operator? stream? needs to know its last seen version.
 We should ignore data if its version is before our last seen version. E.g., recomputation events.
 

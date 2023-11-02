@@ -19,6 +19,7 @@ import { PersistentTreeView, PrimitiveView } from "../../index.js";
 import { Source } from "../../sources/Source.js";
 import { Msg } from "./Msg.js";
 import { IOperator } from "./ops/Operator.js";
+import { AfterOperator } from "./ops/AfterOperator.js";
 
 /**
  * A difference stream represents a stream of differences.
@@ -113,7 +114,7 @@ export class DifferenceStream<T> {
     if (this.#source) {
       if (this.#source._state === "stateful") {
         // TODO: possible to recompute only down the branch that requested recomputation?
-        this.#source.resendAll();
+        this.#source.resendAll(msg);
       }
     } else {
       for (const [upstream, _] of this.#upstreams) {
@@ -124,6 +125,25 @@ export class DifferenceStream<T> {
         upstream.pull(msg);
       }
     }
+  }
+
+  // only enable `after` for streams streamed off of sorted things?
+  // no, it is fine on any stream.
+  // it is just a matter of the source recognizing what it sends the source on re-pull
+  // or not.
+  after(v: T, comparator: Comparator<T>) {
+    const reader = this.#writer.newReader();
+    return new DifferenceStream<T>([[this, reader]], null, (writer) => {
+      const op = new AfterOperator<T>(reader, writer, v, comparator);
+      reader.setOperator(op);
+      return op;
+    });
+  }
+
+  take<K>(n: number, keyFn: (i: T) => K) {
+    // keeps track of a window of size n
+    // once n is reached, it will stop sending data
+    // unless the item(s) being sent are part of the window
   }
 
   map<O>(f: (value: T) => O): DifferenceStream<O> {

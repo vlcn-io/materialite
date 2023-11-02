@@ -1,3 +1,4 @@
+import { Msg } from "../core/graph/Msg.js";
 import { Entry, Multiset } from "../core/multiset.js";
 import {
   ISourceInternal,
@@ -108,7 +109,7 @@ export class MutableMapSource<K, T>
     return this;
   }
 
-  resendAll(): this {
+  resendAll(msg: Msg): this {
     this.#recomputeAll = true;
     this.#materialite.addDirtySource(this.#internal);
     return this;

@@ -38,7 +38,7 @@ export class Operator<O> implements IOperator {
     return false;
   }
 
-  getMsgForUpstream() {
+  getMsgForUpstream(): OperatorMsg | null {
     return null;
   }
 }

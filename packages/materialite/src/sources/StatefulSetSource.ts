@@ -8,6 +8,7 @@ import {
 } from "../core/types.js";
 import { Entry, Multiset } from "../core/multiset.js";
 import { Comparator } from "immutable";
+import { Msg } from "../core/graph/Msg.js";
 
 export abstract class StatefulSetSource<T>
   implements IStatefulSource<T, ITreap<T>>
@@ -115,7 +116,7 @@ export abstract class StatefulSetSource<T>
     return this;
   }
 
-  resendAll(): this {
+  resendAll(msg: Msg): this {
     this.#recomputeAll = true;
     this.#materialite.addDirtySource(this.#internal);
     return this;
