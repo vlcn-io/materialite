@@ -1,6 +1,6 @@
 import { Version } from "../core/types.js";
 import { comparator as consolidationComparator } from "../core/consolidation.js";
-import { DifferenceStream } from "../core/graph/DifferenceStream.js";
+import { AbstractDifferenceStream } from "../core/graph/AbstractDifferenceStream.js";
 
 export abstract class View<T, CT> {
   readonly #stream;
@@ -15,7 +15,7 @@ export abstract class View<T, CT> {
    * @param comparator How to sort results
    */
   constructor(
-    stream: DifferenceStream<T>,
+    stream: AbstractDifferenceStream<T>,
     comparator: (l: T, r: T) => number = consolidationComparator
   ) {
     this.#stream = stream;

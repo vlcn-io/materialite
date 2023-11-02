@@ -1,11 +1,11 @@
 import { Msg } from "../core/graph/Msg.js";
+import { RootDifferenceStream } from "../core/graph/RootDifferenceStream.js";
 import { Entry, Multiset } from "../core/multiset.js";
 import {
   ISourceInternal,
   MaterialiteForSourceInternal,
   Version,
 } from "../core/types.js";
-import { DifferenceStream } from "../index.js";
 import { IStatefulSource, IUnsortedSource, KeyFn } from "./Source.js";
 
 /**
@@ -21,14 +21,14 @@ export class MutableMapSource<K, T>
   readonly #listeners = new Set<(data: Map<K, T>) => void>();
   readonly keyFn: KeyFn<T, K>;
 
-  #stream: DifferenceStream<T>;
+  #stream: RootDifferenceStream<T>;
   #pending: Entry<T>[] = [];
   #recomputeAll = false;
   #map: Map<K, T>;
 
   constructor(materialite: MaterialiteForSourceInternal, getKey: (t: T) => K) {
     this.#materialite = materialite;
-    this.#stream = new DifferenceStream<T>([], this, null);
+    this.#stream = new RootDifferenceStream<T>(this);
     this.#map = new Map();
     this.keyFn = getKey;
 
@@ -89,7 +89,7 @@ export class MutableMapSource<K, T>
   }
 
   detachPipelines() {
-    this.#stream = new DifferenceStream<T>([], this, null);
+    this.#stream = new RootDifferenceStream<T>(this);
   }
 
   onChange(cb: (data: Map<K, T>) => void) {

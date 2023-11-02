@@ -3,7 +3,7 @@
 // Clean up taps when they get GC'ed?
 // When the sink is removed?
 
-import { DifferenceStream } from "../core/graph/DifferenceStream.js";
+import { RootDifferenceStream } from "../core/graph/RootDifferenceStream.js";
 import { Entry, Multiset } from "../core/multiset.js";
 import {
   ISourceInternal,
@@ -18,7 +18,7 @@ export class SetSource<T>
   readonly _state = "stateless";
   readonly _sort = "unsorted";
   readonly keyFn: KeyFn<T, T> = (v) => v;
-  #stream: DifferenceStream<T>;
+  #stream: RootDifferenceStream<T>;
   readonly #internal: ISourceInternal;
   readonly #materialite: MaterialiteForSourceInternal;
 
@@ -26,7 +26,7 @@ export class SetSource<T>
 
   constructor(materialite: MaterialiteForSourceInternal) {
     this.#materialite = materialite;
-    this.#stream = new DifferenceStream<T>([], this, null);
+    this.#stream = new RootDifferenceStream<T>(this);
     const self = this;
     this.#internal = {
       // add values to queues, add values to the set
@@ -49,7 +49,7 @@ export class SetSource<T>
   }
 
   detachPipelines() {
-    this.#stream = new DifferenceStream<T>([], this, null);
+    this.#stream = new RootDifferenceStream<T>(this);
   }
 
   addAll(values: Iterable<T>): this {

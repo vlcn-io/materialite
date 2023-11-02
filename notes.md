@@ -1,3 +1,26 @@
+
+If an operator receives a recompute all passing through it, it should blow away its state.
+
+
+---
+
+When do we become non-hoistable?
+
+a.after
+^- hoistable
+
+a.after.filter
+^- hoistable but.. if we branch not so much
+
+It is only the recompute all step which faces hoisting problems.
+The recompute all step only ever goes down a single path.
+so we should always be hoistable if we can always identify this path?
+
+is version based filtering enough though? Or should we pass a nonce down that indicates
+what path needs notifying?
+
+---
+
 This whole "message passing from view to source" and accumulating data at each operator is very much like your
 Aphrodite query builder (https://tantaman.com/2022-05-26-query-planning.html).
 

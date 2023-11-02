@@ -2,7 +2,7 @@ import { Version } from "../core/types.js";
 import { Multiset } from "../core/multiset.js";
 import { PersistentTreap } from "@vlcn.io/ds-and-algos/PersistentTreap";
 import { View } from "./View.js";
-import { DifferenceStream } from "../index.js";
+import { AbstractDifferenceStream } from "../core/graph/AbstractDifferenceStream.js";
 
 /**
  * A sink that maintains the list of values in-order.
@@ -16,7 +16,10 @@ import { DifferenceStream } from "../index.js";
 export class PersistentTreeView<T> extends View<T, PersistentTreap<T>> {
   #data: PersistentTreap<T> = new PersistentTreap<T>(this.comparator);
 
-  constructor(stream: DifferenceStream<T>, comparator: (a: T, b: T) => number) {
+  constructor(
+    stream: AbstractDifferenceStream<T>,
+    comparator: (a: T, b: T) => number
+  ) {
     super(stream, comparator);
   }
 

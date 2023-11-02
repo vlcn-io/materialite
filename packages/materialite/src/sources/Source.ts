@@ -1,6 +1,6 @@
 import { Comparator } from "@vlcn.io/ds-and-algos/types";
-import { DifferenceStream } from "../index.js";
 import { Msg } from "../core/graph/Msg.js";
+import { RootDifferenceStream } from "../core/graph/RootDifferenceStream.js";
 
 export type Source<T, K = T, CT = unknown> =
   | (IStatelessSource<T> & ISortedSource<T>)
@@ -12,7 +12,7 @@ export type KeyFn<T, K> = (v: T) => K;
 export interface ISource<T> {
   readonly _state: "stateful" | "stateless";
   readonly _sort: "sorted" | "unsorted";
-  readonly stream: DifferenceStream<T>;
+  readonly stream: RootDifferenceStream<T>;
   /**
    * Detaches all pipelines from this source.
    * This is the nuclear option to clean up all pipelines derived from the same source.

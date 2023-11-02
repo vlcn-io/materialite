@@ -1,6 +1,6 @@
 import { ITreap } from "@vlcn.io/ds-and-algos/types";
 import { IStatefulSource } from "./Source.js";
-import { DifferenceStream, PersistentTreap } from "../index.js";
+import { PersistentTreap } from "../index.js";
 import {
   ISourceInternal,
   MaterialiteForSourceInternal,
@@ -9,6 +9,7 @@ import {
 import { Entry, Multiset } from "../core/multiset.js";
 import { Comparator } from "immutable";
 import { Msg } from "../core/graph/Msg.js";
+import { RootDifferenceStream } from "../core/graph/RootDifferenceStream.js";
 
 export abstract class StatefulSetSource<T>
   implements IStatefulSource<T, ITreap<T>>
@@ -16,7 +17,7 @@ export abstract class StatefulSetSource<T>
   readonly _state = "stateful";
   readonly _sort = "sorted";
 
-  #stream: DifferenceStream<T>;
+  #stream: RootDifferenceStream<T>;
   readonly #internal: ISourceInternal;
   readonly #materialite: MaterialiteForSourceInternal;
   readonly #listeners = new Set<(data: ITreap<T>) => void>();
@@ -31,7 +32,7 @@ export abstract class StatefulSetSource<T>
     treapConstructor: () => ITreap<T>
   ) {
     this.#materialite = materialite;
-    this.#stream = new DifferenceStream<T>([], this, null);
+    this.#stream = new RootDifferenceStream<T>(this);
     this.#tree = treapConstructor();
     this.comparator = comparator;
 
@@ -97,7 +98,7 @@ export abstract class StatefulSetSource<T>
   }
 
   detachPipelines() {
-    this.#stream = new DifferenceStream<T>([], this, null);
+    this.#stream = new RootDifferenceStream<T>(this);
   }
 
   onChange(cb: (data: PersistentTreap<T>) => void) {

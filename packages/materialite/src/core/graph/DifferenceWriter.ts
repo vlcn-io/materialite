@@ -68,6 +68,10 @@ export class DifferenceStreamWriter<T> {
       this.queues.splice(idx, 1);
     }
   }
+
+  removeAllReaders() {
+    this.readers.length = 0;
+  }
 }
 
 export class RootDifferenceStreamWriter<T> extends DifferenceStreamWriter<T> {
