@@ -15,7 +15,7 @@ abstract class AbstractDifferenceStreamWriter<T> {
   protected lastVersionSent: Version = -1;
   readonly queues: [Version, Multiset<T>][][] = [];
   readonly readers: DifferenceStreamReader<T>[] = [];
-  protected operator: IOperator;
+  protected operator: IOperator | null = null;
 
   setOperator(operator: IOperator) {
     if (this.operator != null) {
@@ -89,7 +89,7 @@ abstract class AbstractDifferenceStreamWriter<T> {
 
   destroy() {
     this.readers.length = 0;
-    this.operator.destroy();
+    this.operator?.destroy();
   }
 }
 

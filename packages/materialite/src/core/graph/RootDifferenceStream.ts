@@ -1,5 +1,6 @@
 import { Source } from "../../sources/Source.js";
 import { AbstractDifferenceStream } from "./AbstractDifferenceStream.js";
+import { DifferenceStream } from "./DifferenceStream.js";
 import { RootDifferenceStreamWriter } from "./DifferenceWriter.js";
 import { Msg } from "./Msg.js";
 
@@ -8,12 +9,12 @@ export class RootDifferenceStream<T> extends AbstractDifferenceStream<T> {
     super(new RootDifferenceStreamWriter<T>(source));
   }
 
-  destroy(): void {
-    this.writer.destroy();
-  }
-
   pull(msg: Msg) {
     this.writer.pull(msg);
+  }
+
+  protected newStream<X>(): AbstractDifferenceStream<X> {
+    return new DifferenceStream();
   }
 }
 

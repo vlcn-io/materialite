@@ -1,13 +1,12 @@
-import { ITreap } from "@vlcn.io/ds-and-algos/types";
+import { Comparator, ITreap } from "@vlcn.io/ds-and-algos/types";
 import { IStatefulSource } from "./Source.js";
-import { PersistentTreap } from "../index.js";
+import { PersistentTreap } from "@vlcn.io/ds-and-algos/PersistentTreap";
 import {
   ISourceInternal,
   MaterialiteForSourceInternal,
   Version,
 } from "../core/types.js";
 import { Entry, Multiset } from "../core/multiset.js";
-import { Comparator } from "immutable";
 import { Msg } from "../core/graph/Msg.js";
 import { RootDifferenceStream } from "../core/graph/RootDifferenceStream.js";
 

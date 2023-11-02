@@ -12,43 +12,43 @@ import { DebugOperator } from "./ops/DebugOperator.js";
 import { DifferenceStreamWriter } from "./DifferenceWriter.js";
 import { DifferenceStreamReader } from "./DifferenceReader.js";
 import { Comparator } from "@vlcn.io/ds-and-algos/types";
-import {
-  DifferenceStream,
-  PersistentTreeView,
-  PrimitiveView,
-} from "../../index.js";
 import { Msg } from "./Msg.js";
 import { AfterOperator } from "./ops/AfterOperator.js";
 import { TakeOperator } from "./ops/TakeOperator.js";
+
+import { PersistentTreeView } from "../../views/PersistentTreeView.js";
+import { PrimitiveView } from "../../views/PrimitiveView.js";
 
 export abstract class AbstractDifferenceStream<T> {
   constructor(protected writer: DifferenceStreamWriter<T>) {}
   abstract pull(msg: Msg): void;
 
+  protected abstract newStream<X>(): AbstractDifferenceStream<X>;
+
   // only enable `after` for streams streamed off of sorted things?
   // no, it is fine on any stream.
   // it is just a matter of the source recognizing what it sends the source on re-pull
   // or not.
-  after(v: T, comparator: Comparator<T>): DifferenceStream<T> {
-    const ret = new DifferenceStream<T>();
+  after(v: T, comparator: Comparator<T>): AbstractDifferenceStream<T> {
+    const ret = this.newStream<T>();
     new AfterOperator<T>(this.writer.newReader(), ret.writer, v, comparator);
     return ret;
   }
 
-  take(n: number, comparator: Comparator<T>): DifferenceStream<T> {
-    const ret = new DifferenceStream<T>();
+  take(n: number, comparator: Comparator<T>): AbstractDifferenceStream<T> {
+    const ret = this.newStream<T>();
     new TakeOperator<T>(this.writer.newReader(), ret.writer, n, comparator);
     return ret;
   }
 
-  map<O>(f: (value: T) => O): DifferenceStream<O> {
-    const ret = new DifferenceStream<O>();
+  map<O>(f: (value: T) => O): AbstractDifferenceStream<O> {
+    const ret = this.newStream<O>();
     new MapOperator<T, O>(this.writer.newReader(), ret.writer, f);
     return ret;
   }
 
-  filter(f: (x: T) => boolean): DifferenceStream<T> {
-    const ret = new DifferenceStream<T>();
+  filter(f: (x: T) => boolean): AbstractDifferenceStream<T> {
+    const ret = this.newStream<T>();
     new FilterOperator<T>(this.writer.newReader(), ret.writer, f);
     return ret;
   }
@@ -56,14 +56,16 @@ export abstract class AbstractDifferenceStream<T> {
   // split<K>(f: (x: T) => K): Map<K, DifferenceStream<T>> {
   // }
 
-  negate(): DifferenceStream<T> {
-    const ret = new DifferenceStream<T>();
+  negate(): AbstractDifferenceStream<T> {
+    const ret = this.newStream<T>();
     new NegateOperator<T>(this.writer.newReader(), ret.writer);
     return ret;
   }
 
-  concat<T2>(other: AbstractDifferenceStream<T2>): DifferenceStream<T | T2> {
-    const ret = new DifferenceStream<T | T2>();
+  concat<T2>(
+    other: AbstractDifferenceStream<T2>
+  ): AbstractDifferenceStream<T | T2> {
+    const ret = this.newStream<T | T2>();
     new ConcatOperator<T, T2>(
       this.writer.newReader(),
       other.writer.newReader(),
@@ -76,12 +78,12 @@ export abstract class AbstractDifferenceStream<T> {
     other: AbstractDifferenceStream<R>,
     getKeyThis: (i: T) => K,
     getKeyOther: (i: R) => K
-  ): DifferenceStream<
+  ): AbstractDifferenceStream<
     T extends JoinResultVariadic<[infer T1, ...infer T2]>
       ? JoinResultVariadic<[T1, ...T2, R]>
       : JoinResultVariadic<[T, R]>
   > {
-    const ret = new DifferenceStream<any>();
+    const ret = this.newStream<any>();
     new JoinOperator<K, T, R>(
       this.writer.newReader(),
       other.writer.newReader(),
@@ -95,14 +97,14 @@ export abstract class AbstractDifferenceStream<T> {
   reduce<K, O>(
     fn: (i: Entry<T>[]) => Entry<O>[],
     getKey: (i: T) => K
-  ): DifferenceStream<O> {
-    const ret = new DifferenceStream<O>();
+  ): AbstractDifferenceStream<O> {
+    const ret = this.newStream<O>();
     new ReduceOperator(this.writer.newReader(), ret.writer, getKey, fn);
     return ret;
   }
 
-  count<K>(getKey: (i: T) => K): DifferenceStream<number> {
-    const ret = new DifferenceStream<number>();
+  count<K>(getKey: (i: T) => K): AbstractDifferenceStream<number> {
+    const ret = this.newStream<number>();
     new CountOperator(this.writer.newReader(), ret.writer, getKey);
     return ret;
   }
@@ -113,7 +115,7 @@ export abstract class AbstractDifferenceStream<T> {
    * @returns returns the size of the stream
    */
   size() {
-    const ret = new DifferenceStream<number>();
+    const ret = this.newStream<number>();
     new LinearCountOperator(this.writer.newReader(), ret.writer);
     return ret;
   }
@@ -147,7 +149,7 @@ export abstract class AbstractDifferenceStream<T> {
   }
 
   materializePrimitive<T extends PrimitiveValue>(
-    this: DifferenceStream<T>,
+    this: AbstractDifferenceStream<T>,
     initial: T
   ): PrimitiveView<T> {
     return this.materializeInto((s) => new PrimitiveView(s, initial));
@@ -158,7 +160,7 @@ export abstract class AbstractDifferenceStream<T> {
    * e.g., I/O & logging
    */
   effect(f: (i: Multiset<T>) => void) {
-    const ret = new DifferenceStream<T>();
+    const ret = this.newStream<T>();
     new DebugOperator(this.writer.newReader(), ret.writer, f);
     return ret;
   }
@@ -181,5 +183,9 @@ export abstract class AbstractDifferenceStream<T> {
     options: { autoCleanup?: boolean } = { autoCleanup: true }
   ) {
     this.writer.removeReader(reader, options);
+  }
+
+  destroy() {
+    this.writer.destroy();
   }
 }

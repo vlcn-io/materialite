@@ -7,11 +7,11 @@ export class DifferenceStream<T> extends AbstractDifferenceStream<T> {
     super(new DifferenceStreamWriter<T>());
   }
 
-  destroy() {
-    this.writer.destroy();
-  }
-
   pull(msg: Msg) {
     this.writer.pull(msg);
+  }
+
+  protected newStream<X>(): AbstractDifferenceStream<X> {
+    return new DifferenceStream();
   }
 }

@@ -1,5 +1,5 @@
+import { AbstractDifferenceStream } from "../core/graph/AbstractDifferenceStream.js";
 import { Version } from "../core/types.js";
-import { DifferenceStream } from "../index.js";
 import { View } from "./View.js";
 
 type PrimitiveValue = boolean | string | number | bigint;
@@ -10,7 +10,7 @@ type PrimitiveValue = boolean | string | number | bigint;
 export class PrimitiveView<T extends PrimitiveValue> extends View<T, T> {
   #data: T;
 
-  constructor(stream: DifferenceStream<T>, initial: T) {
+  constructor(stream: AbstractDifferenceStream<T>, initial: T) {
     super(stream);
     this.#data = initial;
   }
