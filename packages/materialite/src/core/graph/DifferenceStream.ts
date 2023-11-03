@@ -1,10 +1,11 @@
+import { Materialite } from "../../materialite.js";
 import { AbstractDifferenceStream } from "./AbstractDifferenceStream.js";
 import { DifferenceStreamWriter } from "./DifferenceWriter.js";
 import { Hoisted } from "./Msg.js";
 
 export class DifferenceStream<T> extends AbstractDifferenceStream<T> {
-  constructor() {
-    super(new DifferenceStreamWriter<T>());
+  constructor(materialite: Materialite) {
+    super(materialite, new DifferenceStreamWriter<T>());
   }
 
   pull(msg: Hoisted) {
@@ -12,6 +13,6 @@ export class DifferenceStream<T> extends AbstractDifferenceStream<T> {
   }
 
   protected newStream<X>(): AbstractDifferenceStream<X> {
-    return new DifferenceStream();
+    return new DifferenceStream(this.materialite);
   }
 }

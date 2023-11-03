@@ -1,9 +1,11 @@
-import { Version } from "../core/types.js";
 import { comparator as consolidationComparator } from "../core/consolidation.js";
 import { AbstractDifferenceStream } from "../core/graph/AbstractDifferenceStream.js";
+import { EventMetadata } from "../core/types.js";
+import { Materialite } from "../materialite.js";
 
 export abstract class View<T, CT> {
   readonly #stream;
+  readonly #materialite: Materialite;
   protected readonly comparator;
   protected readonly reader;
   readonly #listeners: Set<(s: CT) => void> = new Set();
@@ -15,16 +17,18 @@ export abstract class View<T, CT> {
    * @param comparator How to sort results
    */
   constructor(
+    materialite: Materialite,
     stream: AbstractDifferenceStream<T>,
     comparator: (l: T, r: T) => number = consolidationComparator
   ) {
+    this.#materialite = materialite;
     this.#stream = stream;
     this.comparator = comparator;
     this.reader = this.#stream.newReader();
     const self = this;
     this.reader.setOperator({
-      run(version: Version) {
-        self.run(version);
+      run(e: EventMetadata) {
+        self.run(e);
       },
       pull() {
         return null;
@@ -40,8 +44,10 @@ export abstract class View<T, CT> {
   }
 
   pull() {
-    this.#stream.pull({
-      expressions: [],
+    this.#materialite.tx(() => {
+      this.#stream.pull({
+        expressions: [],
+      });
     });
   }
 
@@ -80,5 +86,5 @@ export abstract class View<T, CT> {
     this.#stream.removeReader(this.reader);
   }
 
-  protected abstract run(version: Version): void;
+  protected abstract run(e: EventMetadata): void;
 }

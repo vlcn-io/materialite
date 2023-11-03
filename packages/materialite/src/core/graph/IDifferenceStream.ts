@@ -1,6 +1,4 @@
-import { DestroyOptions, Version } from "../types.js";
 import { Entry, Multiset, PrimitiveValue } from "../multiset.js";
-import { DifferenceStreamReader } from "./DifferenceReader.js";
 import { PersistentTreeView, PrimitiveView } from "../../index.js";
 import { JoinResultVariadic } from "@vlcn.io/ds-and-algos/tuple";
 import { Comparator } from "@vlcn.io/ds-and-algos/types";
@@ -36,14 +34,4 @@ export interface IDifferenceStream<T> {
     this: IDifferenceStream<T>,
     initial: T
   ): PrimitiveView<T>;
-
-  // Internal-ish. Move to `writer`?
-  queueData(data: [Version, Multiset<T>]): void;
-  notify(version: Version): void;
-  newReader(): void;
-  removeReader(
-    reader: DifferenceStreamReader<T>,
-    options: DestroyOptions
-  ): void;
-  destroy(): void;
 }

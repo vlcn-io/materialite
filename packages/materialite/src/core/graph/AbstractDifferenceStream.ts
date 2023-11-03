@@ -1,6 +1,6 @@
 import { JoinResultVariadic } from "@vlcn.io/ds-and-algos/tuple";
 import { Entry, Multiset, PrimitiveValue } from "../multiset.js";
-import { Version } from "../types.js";
+import { EventMetadata, Version } from "../types.js";
 import { MapOperator } from "./ops/MapOperator.js";
 import { FilterOperator } from "./ops/FilterOperator.js";
 import { NegateOperator } from "./ops/NegateOperator.js";
@@ -19,11 +19,15 @@ import { TakeOperator } from "./ops/TakeOperator.js";
 import { PersistentTreeView } from "../../views/PersistentTreeView.js";
 import { PrimitiveView } from "../../views/PrimitiveView.js";
 import { IDifferenceStream } from "./IDifferenceStream.js";
+import { Materialite } from "../../materialite.js";
 
 export abstract class AbstractDifferenceStream<T>
   implements IDifferenceStream<T>
 {
-  constructor(protected writer: DifferenceStreamWriter<T>) {}
+  constructor(
+    protected readonly materialite: Materialite,
+    protected writer: DifferenceStreamWriter<T>
+  ) {}
 
   protected abstract newStream<X>(): AbstractDifferenceStream<X>;
 
@@ -151,14 +155,18 @@ export abstract class AbstractDifferenceStream<T>
    * unlike an array, indexing is O(logn) as we have to traverse the tree.
    */
   materialize(c: Comparator<T>): PersistentTreeView<T> {
-    return this.materializeInto((stream) => new PersistentTreeView(stream, c));
+    return this.materializeInto(
+      (stream) => new PersistentTreeView(this.materialite, stream, c)
+    );
   }
 
   materializePrimitive<T extends PrimitiveValue>(
     this: AbstractDifferenceStream<T>,
     initial: T
   ): PrimitiveView<T> {
-    return this.materializeInto((s) => new PrimitiveView(s, initial));
+    return this.materializeInto(
+      (s) => new PrimitiveView(this.materialite, s, initial)
+    );
   }
 
   /**
@@ -175,9 +183,9 @@ export abstract class AbstractDifferenceStream<T>
     this.writer.queueData(data);
   }
 
-  notify(version: Version) {
+  notify(e: EventMetadata) {
     // tell the writer to notify all readers
-    this.writer.notify(version);
+    this.writer.notify(e);
   }
 
   newReader() {

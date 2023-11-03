@@ -161,7 +161,7 @@ test("db/overtone example - materialize track view", () => {
       ([_, __, track]) => track.id
     );
 
-  const sink = new ArrayView(stream);
+  const sink = new ArrayView(materialite, stream);
   sink.onChange((d) => {
     console.log(d);
   });

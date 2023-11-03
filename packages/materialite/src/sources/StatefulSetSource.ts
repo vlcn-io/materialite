@@ -31,7 +31,7 @@ export abstract class StatefulSetSource<T>
     treapConstructor: (comparator: Comparator<T>) => ITreap<T>
   ) {
     this.#materialite = materialite;
-    this.#stream = new RootDifferenceStream<T>(this);
+    this.#stream = new RootDifferenceStream<T>(materialite.materialite, this);
     this.#tree = treapConstructor(comparator);
     this.comparator = comparator;
 
@@ -63,12 +63,11 @@ export abstract class StatefulSetSource<T>
 
         if (self.#recomputeAll) {
           self.#pending = [];
-          const hoisted = this.#recomputeAll;
-          self.#recomputeAll = null;
           self.#stream.queueData([
             version,
-            // TODO: iterator at `after` position
-            new Multiset(asEntries(self.#tree, self.comparator, hoisted)),
+            new Multiset(
+              asEntries(self.#tree, self.comparator, self.#recomputeAll)
+            ),
           ]);
         } else {
           self.#stream.queueData([version, new Multiset(self.#pending)]);
@@ -77,7 +76,21 @@ export abstract class StatefulSetSource<T>
       },
       // release queues by telling the stream to send data
       onCommitPhase2(version: Version) {
-        self.#stream.notify(version);
+        if (self.#recomputeAll) {
+          self.#recomputeAll = null;
+          self.#stream.notify({
+            cause: "full_recompute",
+            version,
+            comparator,
+          });
+        } else {
+          self.#stream.notify({
+            cause: "difference",
+            version,
+          });
+        }
+
+        // In case we have direct source observers
         const tree = self.#tree;
         for (const l of self.#listeners) {
           l(tree);
@@ -98,7 +111,10 @@ export abstract class StatefulSetSource<T>
   }
 
   detachPipelines() {
-    this.#stream = new RootDifferenceStream<T>(this);
+    this.#stream = new RootDifferenceStream<T>(
+      this.#materialite.materialite,
+      this
+    );
   }
 
   onChange(cb: (data: PersistentTreap<T>) => void) {

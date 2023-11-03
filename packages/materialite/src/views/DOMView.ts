@@ -26,12 +26,12 @@
  * Maybe everything is fine. Just return a node that itself has a differential
  * dataflow stream going on but is sunk to a DOMSink.
  */
-import { Version } from "../core/types.js";
+import { EventMetadata } from "../core/types.js";
 import { DifferenceStream } from "../core/graph/DifferenceStream.js";
 import { Multiset } from "../core/multiset.js";
 import { binarySearch } from "@vlcn.io/ds-and-algos/binarySearch";
 
-export class DOMView<T extends Node, K> {
+export class DOMView<T extends HTMLElement, K> {
   readonly #root;
   readonly #stream;
   readonly #comparator;
@@ -40,7 +40,7 @@ export class DOMView<T extends Node, K> {
   readonly #destructor?: (k: K) => void;
 
   constructor(
-    root: Node,
+    root: HTMLElement,
     stream: DifferenceStream<readonly [K, T]>,
     comparator: (l: readonly [K, T], r: readonly [K, T]) => number,
     destructor?: (k: K) => void
@@ -52,8 +52,8 @@ export class DOMView<T extends Node, K> {
     const self = this;
     this.#destructor = destructor;
     this.#reader.setOperator({
-      run(version: Version) {
-        self.#run(version);
+      run(e: EventMetadata) {
+        self.#run(e);
       },
       pull() {
         return null;
@@ -64,8 +64,12 @@ export class DOMView<T extends Node, K> {
     });
   }
 
-  #run(version: Version) {
-    this.#reader.drain(version).forEach((collection) => {
+  #run(e: EventMetadata) {
+    if (e.cause === "full_recompute") {
+      this.#root.innerHTML = "";
+      this.#nodeMapping.length = 0;
+    }
+    this.#reader.drain(e.version).forEach((collection) => {
       this.#sink(collection);
     });
   }

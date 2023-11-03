@@ -9,11 +9,14 @@ import { DifferenceStream } from "./DifferenceStream.js";
 
 export class HoistableDifferenceStream<T> extends AbstractDifferenceStream<T> {
   protected newStream<X>(): AbstractDifferenceStream<X> {
-    return new DifferenceStream();
+    return new DifferenceStream(this.materialite);
   }
 
   after(v: T, comparator: Comparator<T>): HoistableDifferenceStream<T> {
-    const ret = new HoistableDifferenceStream(new DifferenceStreamWriter<T>());
+    const ret = new HoistableDifferenceStream(
+      this.materialite,
+      new DifferenceStreamWriter<T>()
+    );
     new HoistableAfterOperator<T>(
       this.writer.newReader(),
       ret.writer,

@@ -1,10 +1,11 @@
+import { Materialite } from "../../materialite.js";
 import { Source } from "../../sources/Source.js";
 import { RootDifferenceStreamWriter } from "./DifferenceWriter.js";
 import { HoistableDifferenceStream } from "./HoistableDifferenceStream.js";
 
 export class RootDifferenceStream<T> extends HoistableDifferenceStream<T> {
-  constructor(source: Source<unknown, unknown>) {
-    super(new RootDifferenceStreamWriter<T>(source));
+  constructor(materialite: Materialite, source: Source<unknown, unknown>) {
+    super(materialite, new RootDifferenceStreamWriter<T>(source));
   }
 }
 

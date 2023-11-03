@@ -28,7 +28,7 @@ export class MutableMapSource<K, T>
 
   constructor(materialite: MaterialiteForSourceInternal, getKey: (t: T) => K) {
     this.#materialite = materialite;
-    this.#stream = new RootDifferenceStream<T>(this);
+    this.#stream = new RootDifferenceStream<T>(materialite.materialite, this);
     this.#map = new Map();
     this.keyFn = getKey;
 
@@ -60,7 +60,6 @@ export class MutableMapSource<K, T>
 
         if (self.#recomputeAll) {
           self.#pending = [];
-          self.#recomputeAll = false;
           self.#stream.queueData([version, new Multiset(asEntries(self.#map))]);
         } else {
           self.#stream.queueData([version, new Multiset(self.#pending)]);
@@ -69,7 +68,19 @@ export class MutableMapSource<K, T>
       },
       // release queues by telling the stream to send data
       onCommitPhase2(version: Version) {
-        self.#stream.notify(version);
+        if (self.#recomputeAll) {
+          self.#recomputeAll = false;
+          self.#stream.notify({
+            cause: "full_recompute",
+            version,
+          });
+        } else {
+          self.#stream.notify({
+            cause: "difference",
+            version,
+          });
+        }
+
         for (const l of self.#listeners) {
           l(self.#map);
         }
@@ -89,7 +100,10 @@ export class MutableMapSource<K, T>
   }
 
   detachPipelines() {
-    this.#stream = new RootDifferenceStream<T>(this);
+    this.#stream = new RootDifferenceStream<T>(
+      this.#materialite.materialite,
+      this
+    );
   }
 
   onChange(cb: (data: Map<K, T>) => void) {

@@ -3,7 +3,7 @@ import { BinaryOperator } from "./BinaryOperator.js";
 import { Index } from "../../index.js";
 import { DifferenceStreamReader } from "../DifferenceReader.js";
 import { DifferenceStreamWriter } from "../DifferenceWriter.js";
-import { Version } from "../../types.js";
+import { EventMetadata } from "../../types.js";
 import { Multiset } from "../../multiset.js";
 
 /**
@@ -26,8 +26,8 @@ export class JoinOperator<K, V1, V2> extends BinaryOperator<
     getKeyA: (value: V1) => K,
     getKeyB: (value: V2) => K
   ) {
-    const inner = (version: Version) => {
-      for (const collection of this.inputAMessages(version)) {
+    const inner = (e: EventMetadata) => {
+      for (const collection of this.inputAMessages(e.version)) {
         const deltaA = new Index<K, V1>();
         for (const [value, mult] of collection.entries) {
           deltaA.add(getKeyA(value), [value, mult]);
@@ -35,7 +35,7 @@ export class JoinOperator<K, V1, V2> extends BinaryOperator<
         this.#inputAPending.push(deltaA);
       }
 
-      for (const collection of this.inputBMessages(version)) {
+      for (const collection of this.inputBMessages(e.version)) {
         const deltaB = new Index<K, V2>();
         for (const [value, mult] of collection.entries) {
           deltaB.add(getKeyB(value), [value, mult]);
@@ -55,7 +55,7 @@ export class JoinOperator<K, V1, V2> extends BinaryOperator<
         result._extend(this.#indexA.join(deltaB));
         this.#indexB.extend(deltaB);
 
-        this.output.sendData(version, result.consolidate() as any);
+        this.output.sendData(e.version, result.consolidate() as any);
         this.#indexA.compact();
         this.#indexB.compact();
       }

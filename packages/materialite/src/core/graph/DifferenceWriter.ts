@@ -1,6 +1,6 @@
 import { Source } from "../../sources/Source.js";
 import { Multiset } from "../multiset.js";
-import { DestroyOptions, Version } from "../types.js";
+import { DestroyOptions, EventMetadata, Version } from "../types.js";
 import {
   DifferenceStreamReader,
   DifferenceStreamReaderFromRoot,
@@ -13,7 +13,6 @@ import { IOperator } from "./ops/Operator.js";
  * Write handle
  */
 abstract class AbstractDifferenceStreamWriter<T> {
-  #lastVersionSent: Version = -1;
   readonly queues: Queue<T>[] = [];
   readonly readers: DifferenceStreamReader<T>[] = [];
   protected operator: IOperator | null = null;
@@ -34,32 +33,18 @@ abstract class AbstractDifferenceStreamWriter<T> {
 
   // queues data and notifies readers
   sendData(version: Version, data: Multiset<T>) {
-    if (version <= this.#lastVersionSent) {
-      // If this is an old version we'll ignore it.
-      // The rationale here is that when views are attached later which request
-      // a re-pull, we don't want to re-process every single fork of the stream.
-      // Just the sections of the stream on the path
-      // to the new view.
-      // TODO: Test our join and reduce (or any stateful operator) that is correctly
-      // handles re-computation without requiring `-1` z-set entries to be sent.
-      // TODO `pull` needs to update writer.
-      // Should we do this in writer or reader?
-      // Writer so we never even queue.
-      return;
-    }
-    this.#lastVersionSent = version;
-    // TODO: check the queues. Maybe they should not receive this data
-    // because they are on a fork that didn't pull it.
     this.queueData([version, data]);
-    this.notify(version);
+    this.notify({
+      cause: "difference",
+      version,
+    });
   }
 
   pull(msg: Hoisted) {
-    this.#lastVersionSent = -1;
     this.operator?.pull(msg);
   }
 
-  notify(version: Version) {
+  notify(version: EventMetadata) {
     for (const r of this.readers) {
       r.notify(version);
     }

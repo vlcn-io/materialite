@@ -20,6 +20,7 @@ export class Materialite {
     this.#version = 0;
     const self = this;
     this.#internal = {
+      materialite: this,
       addDirtySource(source) {
         self.#dirtySources.add(source);
         // auto-commit if not in a transaction

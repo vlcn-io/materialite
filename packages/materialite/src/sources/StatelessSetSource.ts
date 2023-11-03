@@ -26,7 +26,7 @@ export class SetSource<T>
 
   constructor(materialite: MaterialiteForSourceInternal) {
     this.#materialite = materialite;
-    this.#stream = new RootDifferenceStream<T>(this);
+    this.#stream = new RootDifferenceStream<T>(materialite.materialite, this);
     const self = this;
     this.#internal = {
       // add values to queues, add values to the set
@@ -36,7 +36,10 @@ export class SetSource<T>
       },
       // release queues by telling the stream to send data
       onCommitPhase2(version: Version) {
-        self.#stream.notify(version);
+        self.#stream.notify({
+          cause: "difference",
+          version,
+        });
       },
       onRollback() {
         self.#pending = [];
@@ -49,7 +52,10 @@ export class SetSource<T>
   }
 
   detachPipelines() {
-    this.#stream = new RootDifferenceStream<T>(this);
+    this.#stream = new RootDifferenceStream<T>(
+      this.#materialite.materialite,
+      this
+    );
   }
 
   addAll(values: Iterable<T>): this {
