@@ -49,11 +49,10 @@ export class Operator<O> implements IOperator {
    * @param msg
    * @returns
    */
-  pull(msg: Msg): OperatorMsg | null {
+  pull(msg: Msg) {
     for (const input of this.inputs) {
       input.pull(msg);
     }
-    return null;
   }
 
   destroy(): void {

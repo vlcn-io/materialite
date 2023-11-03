@@ -24,9 +24,12 @@ export abstract class AbstractDifferenceStream<T>
   implements IDifferenceStream<T>
 {
   constructor(protected writer: DifferenceStreamWriter<T>) {}
-  abstract pull(msg: Msg): void;
 
   protected abstract newStream<X>(): AbstractDifferenceStream<X>;
+
+  pull(msg: Msg): void {
+    this.writer.pull(msg);
+  }
 
   // only enable `after` for streams streamed off of sorted things?
   // no, it is fine on any stream.

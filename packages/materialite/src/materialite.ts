@@ -1,4 +1,3 @@
-import { Comparator } from "immutable";
 import {
   ISourceInternal,
   MaterialiteForSourceInternal,
@@ -8,6 +7,7 @@ import { MutableMapSource } from "./sources/MutableMapSource.js";
 import { SetSource } from "./sources/StatelessSetSource.js";
 import { KeyFn } from "./sources/Source.js";
 import { ImmutableSetSource } from "./sources/ImmutableSetSource.js";
+import { Comparator } from "@vlcn.io/ds-and-algos/types";
 
 export class Materialite {
   #version: Version;

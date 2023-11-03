@@ -6,7 +6,7 @@
 // This would trigger a remove of the thing outside the bound
 // and insert of the new thing.
 
-import { Comparator } from "immutable";
+import { Comparator } from "@vlcn.io/ds-and-algos/types";
 import { Entry, Multiset } from "../../multiset.js";
 import { DifferenceStreamReader } from "../DifferenceReader.js";
 import { DifferenceStreamWriter } from "../DifferenceWriter.js";

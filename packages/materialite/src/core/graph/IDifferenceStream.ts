@@ -1,9 +1,9 @@
-import { Comparator } from "immutable";
 import { DestroyOptions, Version } from "../types.js";
 import { Entry, Multiset, PrimitiveValue } from "../multiset.js";
 import { DifferenceStreamReader } from "./DifferenceReader.js";
 import { PersistentTreeView, PrimitiveView } from "../../index.js";
 import { JoinResultVariadic } from "@vlcn.io/ds-and-algos/tuple";
+import { Comparator } from "@vlcn.io/ds-and-algos/types";
 
 export interface IDifferenceStream<T> {
   after(v: T, comparator: Comparator<T>): IDifferenceStream<T>;
