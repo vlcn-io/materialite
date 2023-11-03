@@ -3,13 +3,13 @@ import { Materialite } from "../materialite.js";
 
 test("cleaning up the only user of a stream cleans up the entire pipeline", () => {
   const materialite = new Materialite();
-  const set = materialite.newSet<number>();
+  const set = materialite.newStatelessSet<number>();
 
   let notifyCount = 0;
   const final = set.stream
-    .debug((_) => notifyCount++)
-    .debug((_) => notifyCount++)
-    .debug((_) => notifyCount++);
+    .effect((_) => notifyCount++)
+    .effect((_) => notifyCount++)
+    .effect((_) => notifyCount++);
 
   set.add(1);
   expect(notifyCount).toBe(3);
@@ -22,12 +22,12 @@ test("cleaning up the only user of a stream cleans up the entire pipeline", () =
 
 test("cleaning up the only user of a stream cleans up the entire pipeline but stops at a used fork", () => {
   const materialite = new Materialite();
-  const set = materialite.newSet<number>();
+  const set = materialite.newStatelessSet<number>();
 
   let notifyCount = 0;
-  const stream1 = set.stream.debug((_) => notifyCount++);
-  const stream2 = stream1.debug((_) => notifyCount++);
-  const stream3 = stream1.debug((_) => notifyCount++);
+  const stream1 = set.stream.effect((_) => notifyCount++);
+  const stream2 = stream1.effect((_) => notifyCount++);
+  const stream3 = stream1.effect((_) => notifyCount++);
   // Forked stream which creates this graph:
   /*
       stream1

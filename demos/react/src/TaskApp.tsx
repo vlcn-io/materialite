@@ -6,7 +6,7 @@ import { createTasks } from "./data/tasks/createTasks.js";
 import { Materialite } from "@vlcn.io/materialite";
 
 const materialite = new Materialite();
-const tasks = materialite.newSet<Task>();
+const tasks = materialite.newStatelessSet<Task>();
 
 export const TaskApp: React.FC = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);

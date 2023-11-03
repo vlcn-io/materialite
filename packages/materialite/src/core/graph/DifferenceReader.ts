@@ -1,46 +1,67 @@
 import { Multiset } from "../multiset.js";
-import { Version } from "../types.js";
+import { EventMetadata, Version } from "../types.js";
+import { DifferenceStreamWriter } from "./DifferenceWriter.js";
+import { Hoisted } from "./Msg.js";
+import { Queue } from "./Queue.js";
 import { IOperator } from "./ops/Operator.js";
 /**
  * A read handle for a dataflow edge that receives data from a writer.
  */
 export class DifferenceStreamReader<T = any> {
   protected readonly queue;
+  readonly #upstream: DifferenceStreamWriter<T>;
   #operator: IOperator;
-  constructor(queue: [Version, Multiset<T>][]) {
+  constructor(upstream: DifferenceStreamWriter<T>, queue: Queue<T>) {
     this.queue = queue;
+    this.#upstream = upstream;
+  }
+
+  destroy() {
+    this.#upstream.removeReader(this);
+    this.queue.clear();
   }
 
   setOperator(operator: IOperator) {
+    if (this.#operator != null) {
+      throw new Error("Operator already set!");
+    }
     this.#operator = operator;
   }
 
-  notify(version: Version) {
-    this.#operator.run(version);
+  notify(e: EventMetadata) {
+    this.#operator.run(e);
   }
 
   drain(version: Version) {
     const ret: Multiset<T>[] = [];
-    while (this.queue.length > 0 && this.queue[0]![0] === version) {
-      ret.push(this.queue.shift()![1]);
+    while (true) {
+      const node = this.queue.peek();
+      if (node == null) {
+        break;
+      }
+      if (node.data[0] > version) {
+        break;
+      }
+      ret.push(node.data[1]);
+      this.queue.dequeue();
     }
     return ret;
   }
 
-  get length() {
-    return this.queue.length;
+  pull(msg: Hoisted) {
+    this.#upstream.pull(msg);
   }
 
   isEmpty() {
-    return this.queue.length === 0;
+    return this.queue.isEmpty();
   }
 }
 
-export class DifferenceStreamRederFromRoot<
+export class DifferenceStreamReaderFromRoot<
   T
 > extends DifferenceStreamReader<T> {
   drain(version: Version) {
-    if (this.queue.length === 0) {
+    if (this.queue.isEmpty()) {
       return [new Multiset<T>([])];
     } else {
       return super.drain(version);

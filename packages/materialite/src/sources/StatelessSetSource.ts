@@ -3,19 +3,22 @@
 // Clean up taps when they get GC'ed?
 // When the sink is removed?
 
-import { DifferenceStream } from "../core/graph/DifferenceStream.js";
+import { RootDifferenceStream } from "../core/graph/RootDifferenceStream.js";
 import { Entry, Multiset } from "../core/multiset.js";
 import {
   ISourceInternal,
   MaterialiteForSourceInternal,
   Version,
 } from "../core/types.js";
-import { IForgetfulSource } from "./Source.js";
+import { IStatelessSource, IUnsortedSource, KeyFn } from "./Source.js";
 
-export class SetSource<T> implements IForgetfulSource<T> {
-  readonly type = "stateless";
-  // TODO: should sources remember?
-  #stream: DifferenceStream<T>;
+export class SetSource<T>
+  implements IStatelessSource<T>, IUnsortedSource<T, T>
+{
+  readonly _state = "stateless";
+  readonly _sort = "unsorted";
+  readonly keyFn: KeyFn<T, T> = (v) => v;
+  #stream: RootDifferenceStream<T>;
   readonly #internal: ISourceInternal;
   readonly #materialite: MaterialiteForSourceInternal;
 
@@ -23,7 +26,7 @@ export class SetSource<T> implements IForgetfulSource<T> {
 
   constructor(materialite: MaterialiteForSourceInternal) {
     this.#materialite = materialite;
-    this.#stream = new DifferenceStream<T>([], this);
+    this.#stream = new RootDifferenceStream<T>(materialite.materialite, this);
     const self = this;
     this.#internal = {
       // add values to queues, add values to the set
@@ -33,7 +36,10 @@ export class SetSource<T> implements IForgetfulSource<T> {
       },
       // release queues by telling the stream to send data
       onCommitPhase2(version: Version) {
-        self.#stream.notify(version);
+        self.#stream.notify({
+          cause: "difference",
+          version,
+        });
       },
       onRollback() {
         self.#pending = [];
@@ -46,7 +52,10 @@ export class SetSource<T> implements IForgetfulSource<T> {
   }
 
   detachPipelines() {
-    this.#stream = new DifferenceStream<T>([], this);
+    this.#stream = new RootDifferenceStream<T>(
+      this.#materialite.materialite,
+      this
+    );
   }
 
   addAll(values: Iterable<T>): this {

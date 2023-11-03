@@ -1,58 +1,110 @@
+import { Source } from "../../sources/Source.js";
 import { Multiset } from "../multiset.js";
-import { Version } from "../types.js";
+import { DestroyOptions, EventMetadata, Version } from "../types.js";
 import {
   DifferenceStreamReader,
-  DifferenceStreamRederFromRoot,
+  DifferenceStreamReaderFromRoot,
 } from "./DifferenceReader.js";
+import { Hoisted } from "./Msg.js";
+import { Queue } from "./Queue.js";
+import { IOperator } from "./ops/Operator.js";
 
 /**
  * Write handle
  */
-export class DifferenceStreamWriter<T> {
-  readonly queues: [Version, Multiset<T>][][] = [];
+abstract class AbstractDifferenceStreamWriter<T> {
+  readonly queues: Queue<T>[] = [];
   readonly readers: DifferenceStreamReader<T>[] = [];
+  protected operator: IOperator | null = null;
+
+  setOperator(operator: IOperator) {
+    if (this.operator != null) {
+      throw new Error("Operator already set!");
+    }
+    this.operator = operator;
+  }
 
   // prepares data but does not yet send it to readers
   queueData(data: [Version, Multiset<T>]) {
     for (const q of this.queues) {
-      q.push(data);
+      q.enqueue(data);
     }
   }
 
   // queues data and notifies readers
   sendData(version: Version, data: Multiset<T>) {
     this.queueData([version, data]);
-    this.notify(version);
+    this.notify({
+      cause: "difference",
+      version,
+    });
   }
 
-  notify(version: Version) {
+  pull(msg: Hoisted) {
+    this.operator?.pull(msg);
+  }
+
+  notify(version: EventMetadata) {
     for (const r of this.readers) {
       r.notify(version);
     }
   }
 
-  newReader() {
-    const queue: [Version, Multiset<T>][] = [];
+  newReader(): DifferenceStreamReader<T> {
+    const queue = new Queue<T>();
     this.queues.push(queue);
-    const reader = new DifferenceStreamReader(queue);
+    const reader = new DifferenceStreamReader(this, queue);
     this.readers.push(reader);
     return reader;
   }
 
-  removeReader(reader: DifferenceStreamReader<T>) {
+  removeReader(
+    reader: DifferenceStreamReader<T>,
+    options: DestroyOptions = { autoCleanup: true }
+  ) {
     const idx = this.readers.indexOf(reader);
     if (idx !== -1) {
       this.readers.splice(idx, 1);
       this.queues.splice(idx, 1);
     }
+    if (this.readers.length === 0 && options.autoCleanup === true) {
+      // no more readers?
+      // then we can destroy the operator
+      this.destroy();
+    }
+  }
+
+  destroy() {
+    this.readers.length = 0;
+    this.operator?.destroy();
   }
 }
 
-export class RootDifferenceStreamWriter<T> extends DifferenceStreamWriter<T> {
+export class DifferenceStreamWriter<
+  T
+> extends AbstractDifferenceStreamWriter<T> {}
+
+export class RootDifferenceStreamWriter<
+  T
+> extends AbstractDifferenceStreamWriter<T> {
+  readonly #source;
+  constructor(source: Source<unknown, unknown>) {
+    super();
+    this.#source = source;
+  }
+
+  pull(msg: Hoisted) {
+    super.pull(msg);
+    if (this.#source._state === "stateful") {
+      this.#source.resendAll(msg);
+    }
+  }
+
   newReader() {
-    const queue: [Version, Multiset<T>][] = [];
+    const queue = new Queue<T>();
     this.queues.push(queue);
-    const reader = new DifferenceStreamRederFromRoot(queue);
+    const reader: DifferenceStreamReader<T> =
+      new DifferenceStreamReaderFromRoot(this, queue);
     this.readers.push(reader);
     return reader;
   }

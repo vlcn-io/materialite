@@ -1,5 +1,5 @@
 import { Multiset } from "../../multiset.js";
-import { Version } from "../../types.js";
+import { EventMetadata, Version } from "../../types.js";
 import { DifferenceStreamReader } from "../DifferenceReader.js";
 import { DifferenceStreamWriter } from "../DifferenceWriter.js";
 import { Operator } from "./Operator.js";
@@ -8,7 +8,7 @@ export class UnaryOperator<I, O> extends Operator<O> {
   constructor(
     input: DifferenceStreamReader<I>,
     output: DifferenceStreamWriter<O>,
-    fn: (version: Version) => void
+    fn: (e: EventMetadata) => void
   ) {
     super([input], output, fn);
   }

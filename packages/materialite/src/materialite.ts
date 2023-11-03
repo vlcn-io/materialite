@@ -1,11 +1,13 @@
-import { Comparator } from "immutable";
 import {
   ISourceInternal,
   MaterialiteForSourceInternal,
   Version,
 } from "./core/types.js";
-import { MutableMapSource, PersistentSetSource } from "./index.js";
-import { SetSource } from "./sources/SetSource.js";
+import { MutableMapSource } from "./sources/MutableMapSource.js";
+import { SetSource } from "./sources/StatelessSetSource.js";
+import { KeyFn } from "./sources/Source.js";
+import { ImmutableSetSource } from "./sources/ImmutableSetSource.js";
+import { Comparator } from "@vlcn.io/ds-and-algos/types";
 
 export class Materialite {
   #version: Version;
@@ -18,6 +20,7 @@ export class Materialite {
     this.#version = 0;
     const self = this;
     this.#internal = {
+      materialite: this,
       addDirtySource(source) {
         self.#dirtySources.add(source);
         // auto-commit if not in a transaction
@@ -29,17 +32,61 @@ export class Materialite {
     };
   }
 
-  newSet<T>() {
+  /**
+   * A source that does not retain and values and
+   * only sends them down the stream.
+   * @returns
+   */
+  newStatelessSet<T>() {
     const ret = new SetSource<T>(this.#internal);
     return ret;
   }
 
-  newPersistentSet<T>(comparator: Comparator<T>) {
-    const ret = new PersistentSetSource<T>(this.#internal, comparator);
+  /**
+   * A source that retains values in a versioned, immutable, and sorted data structure.
+   *
+   * 1. The retaining of values allows for late pipeline additions to receive all data they may have missed.
+   * 2. The versioning allows for late pipeline additions to receive data from a specific point in time.
+   * 3. Being sorted allows cheaper construction of the final materialized view on pipeline modification if the
+   *   order of the view matches the order of the source.
+   *
+   * @param comparator
+   * @returns
+   */
+  newImmutableSortedSet<T>(comparator: Comparator<T>) {
+    const ret = new ImmutableSetSource<T>(this.#internal, comparator);
     return ret;
   }
 
-  newMutableMap<K, V>(getKey: (v: V) => K) {
+  /**
+   * A source that retains values in a mutable, sorted data structure.
+   *
+   * 1. The retaining of values allows for late pipeline additions to receive all data they may have missed.
+   * 2. Being sorted allows cheaper construction of the final materialized view on pipeline modification if the
+   *   order of the view matches the order of the source.
+   */
+  newSortedSet<T>(_comparator: Comparator<T>) {
+    // a treap that is not persistent.
+    // const ret = new
+  }
+
+  /**
+   * A source that retains values in a mutable, unordered data structure.
+   *
+   * 1. The retaining of values allows for late pipeline additions to receive all data they may have missed.
+   *
+   * The fact that the source is unsorted means that we can build it faster than a sorted source. This is
+   * useful where the source and view will not have the same ordering.
+   *
+   * If source and view will have the same order, use a sorted source.
+   *
+   * If many views will be created from the same source but with many different orderings,
+   * use this source.
+   *
+   * @param getKey
+   * @returns
+   */
+  newUnorderedSet<K, V>(getKey: KeyFn<V, K>) {
     const ret = new MutableMapSource<K, V>(this.#internal, getKey);
     return ret;
   }
@@ -102,3 +149,19 @@ export class Materialite {
     }
   }
 }
+
+/*
+import { Comparator } from "@vlcn.io/ds-and-algos/types";
+import { IThirdPartySource } from "./source/Source.js";
+
+export class Materialite {
+  constructor() {}
+
+  // Create a new in-memory source
+  newSource() {}
+
+  // User provided source
+  // If source.comparator matches comparator we can use source directly
+  connect<T>(source: IThirdPartySource<T>, comparator: Comparator<T>) {}
+}
+*/

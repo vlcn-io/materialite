@@ -1,5 +1,6 @@
-import { Version } from "../core/types.js";
-import { DifferenceStream } from "../index.js";
+import { AbstractDifferenceStream } from "../core/graph/AbstractDifferenceStream.js";
+import { EventMetadata } from "../core/types.js";
+import { Materialite } from "../materialite.js";
 import { View } from "./View.js";
 
 type PrimitiveValue = boolean | string | number | bigint;
@@ -9,18 +10,27 @@ type PrimitiveValue = boolean | string | number | bigint;
  */
 export class PrimitiveView<T extends PrimitiveValue> extends View<T, T> {
   #data: T;
+  readonly #initial: T;
 
-  constructor(stream: DifferenceStream<T>, initial: T) {
-    super(stream);
+  constructor(
+    materialite: Materialite,
+    stream: AbstractDifferenceStream<T>,
+    initial: T
+  ) {
+    super(materialite, stream);
     this.#data = initial;
+    this.#initial = initial;
   }
 
   get data() {
     return this.#data;
   }
 
-  protected run(version: Version) {
-    const collections = this.reader.drain(version);
+  protected run(e: EventMetadata) {
+    const collections = this.reader.drain(e.version);
+    if (e.cause === "full_recompute") {
+      this.#data = this.#initial;
+    }
     if (collections.length === 0) {
       this.notify(this.#data);
       return;

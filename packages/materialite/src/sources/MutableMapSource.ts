@@ -1,29 +1,36 @@
+import { Hoisted } from "../core/graph/Msg.js";
+import { RootDifferenceStream } from "../core/graph/RootDifferenceStream.js";
 import { Entry, Multiset } from "../core/multiset.js";
 import {
   ISourceInternal,
   MaterialiteForSourceInternal,
   Version,
 } from "../core/types.js";
-import { DifferenceStream } from "../index.js";
-import { IMemorableSource } from "./Source.js";
+import { IStatefulSource, IUnsortedSource, KeyFn } from "./Source.js";
 
 /**
  * A MapSource which retains values in a mutable structure.
  */
-export class MutableMapSource<K, T> implements IMemorableSource<T, Map<K, T>> {
-  readonly type = "stateful";
-  #stream: DifferenceStream<T>;
+export class MutableMapSource<K, T>
+  implements IStatefulSource<T, Map<K, T>>, IUnsortedSource<T, K>
+{
+  readonly _state = "stateful";
+  readonly _sort = "unsorted";
   readonly #internal: ISourceInternal;
   readonly #materialite: MaterialiteForSourceInternal;
   readonly #listeners = new Set<(data: Map<K, T>) => void>();
+  readonly keyFn: KeyFn<T, K>;
+
+  #stream: RootDifferenceStream<T>;
   #pending: Entry<T>[] = [];
   #recomputeAll = false;
   #map: Map<K, T>;
 
   constructor(materialite: MaterialiteForSourceInternal, getKey: (t: T) => K) {
     this.#materialite = materialite;
-    this.#stream = new DifferenceStream<T>([], this);
+    this.#stream = new RootDifferenceStream<T>(materialite.materialite, this);
     this.#map = new Map();
+    this.keyFn = getKey;
 
     const self = this;
     this.#internal = {
@@ -53,7 +60,6 @@ export class MutableMapSource<K, T> implements IMemorableSource<T, Map<K, T>> {
 
         if (self.#recomputeAll) {
           self.#pending = [];
-          self.#recomputeAll = false;
           self.#stream.queueData([version, new Multiset(asEntries(self.#map))]);
         } else {
           self.#stream.queueData([version, new Multiset(self.#pending)]);
@@ -62,7 +68,19 @@ export class MutableMapSource<K, T> implements IMemorableSource<T, Map<K, T>> {
       },
       // release queues by telling the stream to send data
       onCommitPhase2(version: Version) {
-        self.#stream.notify(version);
+        if (self.#recomputeAll) {
+          self.#recomputeAll = false;
+          self.#stream.notify({
+            cause: "full_recompute",
+            version,
+          });
+        } else {
+          self.#stream.notify({
+            cause: "difference",
+            version,
+          });
+        }
+
         for (const l of self.#listeners) {
           l(self.#map);
         }
@@ -82,7 +100,10 @@ export class MutableMapSource<K, T> implements IMemorableSource<T, Map<K, T>> {
   }
 
   detachPipelines() {
-    this.#stream = new DifferenceStream<T>([], this);
+    this.#stream = new RootDifferenceStream<T>(
+      this.#materialite.materialite,
+      this
+    );
   }
 
   onChange(cb: (data: Map<K, T>) => void) {
@@ -102,7 +123,7 @@ export class MutableMapSource<K, T> implements IMemorableSource<T, Map<K, T>> {
     return this;
   }
 
-  recomputeAll(): this {
+  resendAll(_msg: Hoisted): this {
     this.#recomputeAll = true;
     this.#materialite.addDirtySource(this.#internal);
     return this;

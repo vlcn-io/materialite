@@ -3,18 +3,7 @@
 import { ITreap, Node } from "../types.js";
 type Comparator<T> = (a: T, b: T) => number;
 
-/**
- * A perstitent binary search tree.
- * It stays balanced by using random priorities.
- * On add/remove, the highest priority node is rotated upwards.
- *
- * On average, O(log(n)) height. Has a much smaller constant factor
- * that other trees given the simplicity of balancing.
- *
- * Also stores `size` in each node so we can index it like an array.
- * Important for virtualized table views.
- */
-export class PersistentTreap<T> implements ITreap<T> {
+export class Treap<T> implements ITreap<T> {
   private comparator: Comparator<T>;
   private root: Node<T> | null = null;
 
@@ -23,7 +12,7 @@ export class PersistentTreap<T> implements ITreap<T> {
   }
 
   static empty<T>() {
-    return empty as PersistentTreap<T>;
+    return empty as Treap<T>;
   }
 
   get size() {
@@ -38,23 +27,23 @@ export class PersistentTreap<T> implements ITreap<T> {
     throw new Error("unimplmented");
   }
 
-  add(value: T): PersistentTreap<T> {
+  add(value: T): Treap<T> {
     const priority = Math.random(); // Random priority
     const root = this._insert(this.root, value, priority);
-    const ret = new PersistentTreap(this.comparator);
+    const ret = new Treap(this.comparator);
     ret.root = root;
     return ret;
   }
 
-  delete(value: T): PersistentTreap<T> {
+  delete(value: T): Treap<T> {
     const root = this._remove(this.root, value);
-    const ret = new PersistentTreap(this.comparator);
+    const ret = new Treap(this.comparator);
     ret.root = root;
     return ret;
   }
 
-  clear(): PersistentTreap<T> {
-    const ret = new PersistentTreap(this.comparator);
+  clear(): Treap<T> {
+    const ret = new Treap(this.comparator);
     ret.root = null;
     return ret;
   }
@@ -188,7 +177,7 @@ export class PersistentTreap<T> implements ITreap<T> {
     }
 
     const cmp = this.comparator(value, node.value);
-    const newNode = new Node(node.value, node.priority);
+    const newNode = node;
     newNode.left = node.left;
     newNode.right = node.right;
     newNode.size = node.size + 1; // Increment the size since we're inserting.
@@ -208,7 +197,7 @@ export class PersistentTreap<T> implements ITreap<T> {
   _remove(node: Node<T> | null, value: T): Node<T> | null {
     if (!node) return null;
 
-    let newNode = new Node(node.value, node.priority, node.left, node.right);
+    let newNode = node;
 
     const cmp = this.comparator(value, newNode.value);
     if (cmp < 0) {
@@ -233,7 +222,7 @@ export class PersistentTreap<T> implements ITreap<T> {
 
   _removeMin(node: Node<T>): Node<T> | null {
     if (!node.left) return node.right;
-    const newNode = new Node(node.value, node.priority);
+    const newNode = node;
     newNode.size = node.size - 1;
     newNode.left = this._removeMin(node.left);
     newNode.right = node.right;
@@ -307,4 +296,4 @@ function* inOrderTraversal<T>(node: Node<T> | null): Generator<T> {
   }
 }
 
-const empty = new PersistentTreap<any>((_l, _r) => 0);
+const empty = new Treap<any>((_l, _r) => 0);
