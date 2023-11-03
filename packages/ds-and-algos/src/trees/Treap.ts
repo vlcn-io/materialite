@@ -23,6 +23,10 @@ export class Treap<T> implements ITreap<T> {
     return this.root;
   }
 
+  iteratorAfter(value: T): Iterator<T, any, undefined> {
+    throw new Error("unimplmented");
+  }
+
   add(value: T): Treap<T> {
     const priority = Math.random(); // Random priority
     const root = this._insert(this.root, value, priority);

@@ -27,5 +27,8 @@ export interface ITreap<T> {
   toArray(): T[];
   at(index: number): T | null;
   get(value: T): T | null;
+  getMin(): T | null;
+  getMax(): T | null;
+  iteratorAfter(value: T): Iterator<T>;
   [Symbol.iterator](): Generator<T>;
 }

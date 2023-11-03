@@ -34,6 +34,10 @@ export class PersistentTreap<T> implements ITreap<T> {
     return this.root;
   }
 
+  iteratorAfter(value: T): Iterator<T, any, undefined> {
+    throw new Error("unimplmented");
+  }
+
   add(value: T): PersistentTreap<T> {
     const priority = Math.random(); // Random priority
     const root = this._insert(this.root, value, priority);
@@ -134,6 +138,20 @@ export class PersistentTreap<T> implements ITreap<T> {
     }
 
     return null;
+  }
+
+  getMin(): T | null {
+    if (!this.root) return null;
+    return this._findMin(this.root).value;
+  }
+
+  getMax(): T | null {
+    if (!this.root) return null;
+    let currentNode = this.root;
+    while (currentNode.right) {
+      currentNode = currentNode.right;
+    }
+    return currentNode.value;
   }
 
   private _getByIndex(node: Node<T> | null, index: number): T | null {
