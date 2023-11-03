@@ -60,10 +60,14 @@ export class MutableMapSource<K, T>
 
         if (self.#recomputeAll) {
           self.#pending = [];
-          // TODO: event on multiset
-          self.#stream.queueData([version, new Multiset(asEntries(self.#map))]);
+          self.#stream.queueData([
+            version,
+            new Multiset(asEntries(self.#map), {
+              cause: "full_recompute",
+            }),
+          ]);
         } else {
-          self.#stream.queueData([version, new Multiset(self.#pending)]);
+          self.#stream.queueData([version, new Multiset(self.#pending, null)]);
           self.#pending = [];
         }
       },

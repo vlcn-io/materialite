@@ -14,11 +14,12 @@ export class ArrayView<T> extends View<T, T[]> {
 
   protected run(version: Version) {
     let changed = false;
-    // if (e.cause === "full_recompute") {
-    //   changed = this.data.length > 0;
-    //   this.data.length = 0;
-    // }
+
     this.reader.drain(version).forEach((collection) => {
+      if (collection.eventMetadata?.cause === "full_recompute") {
+        changed = this.data.length > 0;
+        this.data.length = 0;
+      }
       // now we incrementally update our sink.
       changed =
         materializeMutableArray(collection, this.data, this.comparator) ||

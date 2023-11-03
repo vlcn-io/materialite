@@ -30,10 +30,14 @@ export class LinearCountOperator<V> extends LinearUnaryOperator<V, number> {
     output: DifferenceStreamWriter<number>
   ) {
     const inner = (collection: Multiset<V>) => {
+      if (collection.eventMetadata?.cause === "full_recompute") {
+        this.#state = 0;
+      }
+
       for (const e of collection.entries) {
         this.#state += e[1];
       }
-      return new Multiset([[this.#state, 1]]);
+      return new Multiset([[this.#state, 1]], collection.eventMetadata);
     };
     super(input, output, inner);
   }

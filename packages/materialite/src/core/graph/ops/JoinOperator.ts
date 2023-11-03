@@ -26,6 +26,8 @@ export class JoinOperator<K, V1, V2> extends BinaryOperator<
     getKeyA: (value: V1) => K,
     getKeyB: (value: V2) => K
   ) {
+    // TODO: how to deal with full re-compute messages
+    // and to forward down a full-recompute changeset
     const inner = (version: Version) => {
       for (const collection of this.inputAMessages(version)) {
         const deltaA = new Index<K, V1>();
@@ -46,7 +48,7 @@ export class JoinOperator<K, V1, V2> extends BinaryOperator<
       // TODO: join should still be able to operate even if one of the inputs is empty...
       // right?
       while (this.#inputAPending.length > 0 && this.#inputBPending.length > 0) {
-        const result = new Multiset<JoinResultVariadic<[V1, V2]>>([]);
+        const result = new Multiset<JoinResultVariadic<[V1, V2]>>([], null);
         const deltaA = this.#inputAPending.shift()!;
         const deltaB = this.#inputBPending.shift()!;
 

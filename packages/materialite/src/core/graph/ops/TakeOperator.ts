@@ -61,6 +61,9 @@ export class TakeOperator<I> extends LinearUnaryOperator<I, I> {
     input: DifferenceStreamReader<I>,
     output: DifferenceStreamWriter<I>,
     n: number,
+    // TODO: we should implement an unordered take as well.
+    // TODO: take needs to notify upstream if things drop out of its window and it needs more data.
+    // ask the source to push data... this works for sorted sources. How can this work for unsorted sources?
     comparator: Comparator<I>
   ) {
     super(input, output, (c: Multiset<I>) => this.#inner(c));
@@ -71,7 +74,7 @@ export class TakeOperator<I> extends LinearUnaryOperator<I, I> {
 
   #inner(collection: Multiset<I>): Multiset<I> {
     if (this.#limit === 0) {
-      return new Multiset([]);
+      return new Multiset([], collection.eventMetadata);
     }
 
     const ret: Entry<I>[] = [];
@@ -79,13 +82,22 @@ export class TakeOperator<I> extends LinearUnaryOperator<I, I> {
       if (mult === 0) {
         continue;
       }
+      if (this.#size >= this.#limit) {
+        if (collection.eventMetadata?.cause === "full_recompute") {
+          // we can stop pulling
+          // TODO: test this that we actually do stop pulling and don't visit every member of a collecton
+          // even if we are proceeded by maps and filters.
+          // Unfortunately I believe filter and map will visit the full source?
+          return new Multiset(ret, collection.eventMetadata);
+        }
+      }
       if (mult < 0) {
         this.#processRemove(val, mult, ret);
       } else {
         this.#processAdd(val, mult, ret);
       }
     }
-    return new Multiset(ret);
+    return new Multiset(ret, collection.eventMetadata);
   }
 
   #processRemove(val: I, mult: number, ret: Entry<I>[]) {

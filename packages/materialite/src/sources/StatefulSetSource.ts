@@ -67,12 +67,16 @@ export abstract class StatefulSetSource<T>
             version,
             // TODO: add event to multiset
             new Multiset(
-              asEntries(self.#tree, self.comparator, self.#recomputeAll)
+              asEntries(self.#tree, self.comparator, self.#recomputeAll),
+              {
+                cause: "full_recompute",
+                comparator,
+              }
             ),
           ]);
           self.#recomputeAll = null;
         } else {
-          self.#stream.queueData([version, new Multiset(self.#pending)]);
+          self.#stream.queueData([version, new Multiset(self.#pending, null)]);
           self.#pending = [];
         }
       },

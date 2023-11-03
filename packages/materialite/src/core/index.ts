@@ -56,7 +56,7 @@ export class Index<K, V> {
         }
       }
     }
-    return new Multiset(ret);
+    return new Multiset(ret, null);
   }
 
   // TODO: test compaction.

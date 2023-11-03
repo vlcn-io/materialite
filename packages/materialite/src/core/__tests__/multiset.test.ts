@@ -15,11 +15,14 @@ import { Multiset } from "../multiset.js";
  */
 
 test("map then difference, full change", () => {
-  const s = new Multiset<number>([
-    [1, 1],
-    [2, 1],
-    [3, 1],
-  ]);
+  const s = new Multiset<number>(
+    [
+      [1, 1],
+      [2, 1],
+      [3, 1],
+    ],
+    null
+  );
   const difference = s.map((v) => v + 1).difference(s);
   expect(difference.entries).toEqual([
     [2, 1],
@@ -37,11 +40,14 @@ test("map then difference, full change", () => {
 });
 
 test("map then difference, minor change", () => {
-  const s = new Multiset<number>([
-    [1, 1],
-    [2, 1],
-    [3, 1],
-  ]);
+  const s = new Multiset<number>(
+    [
+      [1, 1],
+      [2, 1],
+      [3, 1],
+    ],
+    null
+  );
   const difference = s.map((v) => (v == 3 ? 4 : v)).difference(s);
   const consolidatedDifference = difference.consolidate();
   console.log(consolidatedDifference);

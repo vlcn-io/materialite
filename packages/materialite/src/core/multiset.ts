@@ -1,6 +1,7 @@
 // Copyright (c) 2023 One Law LLC
 
 import { TuplableMap } from "@vlcn.io/ds-and-algos/TuplableMap";
+import { EventMetadata } from "./types.js";
 
 export type Entry<T> = readonly [T, Multiplicity];
 export type Multiplicity = number;
@@ -12,9 +13,15 @@ export type JoinableValue<K, V> = readonly [K, V];
  * I.e., no optimization is going on here.
  */
 export class Multiset<T> {
+  readonly eventMetadata: EventMetadata | null;
+
   #entries: Iterable<Entry<T>>;
-  constructor(entries: Iterable<Entry<T>>) {
+  constructor(
+    entries: Iterable<Entry<T>>,
+    eventMetadata: EventMetadata | null
+  ) {
     this.#entries = entries;
+    this.eventMetadata = eventMetadata;
   }
 
   get entries() {
@@ -22,7 +29,10 @@ export class Multiset<T> {
   }
 
   difference(b: Multiset<T>): Multiset<T> {
-    return new Multiset([...this.entries, ...b.negate().entries]);
+    return new Multiset(
+      [...this.entries, ...b.negate().entries],
+      this.eventMetadata
+    );
   }
 
   differenceAndConsolidate(b: Multiset<T>): Multiset<T> {
@@ -30,28 +40,36 @@ export class Multiset<T> {
   }
 
   concat<O>(b: Multiset<O>): Multiset<T | O> {
-    return new Multiset<T | O>([...this.entries, ...b.entries]);
+    return new Multiset<T | O>(
+      [...this.entries, ...b.entries],
+      this.eventMetadata
+    );
   }
 
   negate(): Multiset<T> {
     return new Multiset(
-      genMap(this.entries, ([value, multiplicity]) => [value, -multiplicity])
+      genMap(this.entries, ([value, multiplicity]) => [value, -multiplicity]),
+      this.eventMetadata
     );
   }
 
   // aka normalize
   consolidate(): Multiset<T> {
-    return new Multiset([...this.#toNormalizedMap()]);
+    return new Multiset([...this.#toNormalizedMap()], this.eventMetadata);
   }
 
   map<R>(f: (value: T) => R): Multiset<R> {
     return new Multiset(
-      genMap(this.entries, ([value, multiplicity]) => [f(value), multiplicity])
+      genMap(this.entries, ([value, multiplicity]) => [f(value), multiplicity]),
+      this.eventMetadata
     );
   }
 
   filter(f: (value: T) => boolean): Multiset<T> {
-    return new Multiset(genFilter(this.entries, ([value, _]) => f(value)));
+    return new Multiset(
+      genFilter(this.entries, ([value, _]) => f(value)),
+      this.eventMetadata
+    );
   }
 
   iterate(f: (values: Multiset<T>) => Multiset<T>) {

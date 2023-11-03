@@ -20,15 +20,13 @@ export class CopyOnWriteArrayView<T> extends View<T, readonly T[]> {
 
     let newData: T[];
     let changed = false;
-    // if (e.cause === "full_recompute") {
-    //   changed = this.#data.length > 0;
-    //   newData = [];
-    // } else {
     newData = [...this.#data];
-    // }
-
     collections.forEach((collection) => {
       // now we incrementally update our sink.
+      if (collection.eventMetadata?.cause === "full_recompute") {
+        changed = this.#data.length > 0;
+        newData = [];
+      }
       changed =
         materializeMutableArray(collection, newData, this.comparator) ||
         changed;

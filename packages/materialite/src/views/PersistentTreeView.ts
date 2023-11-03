@@ -33,13 +33,13 @@ export class PersistentTreeView<T> extends View<T, PersistentTreap<T>> {
   protected run(version: Version) {
     const collections = this.reader.drain(version);
     let changed = false;
-    // if (e.cause === "full_recompute") {
-    //   this.#data = new PersistentTreap<T>(this.comparator);
-    //   changed = true;
-    // }
 
     let newData = this.#data;
     for (const c of collections) {
+      if (c.eventMetadata?.cause === "full_recompute") {
+        newData = new PersistentTreap<T>(this.comparator);
+        changed = true;
+      }
       [changed, newData] = this.#sink(c, newData) || changed;
     }
     this.#data = newData;

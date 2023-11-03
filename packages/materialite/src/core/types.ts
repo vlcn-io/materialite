@@ -15,12 +15,11 @@ export type MaterialiteForSourceInternal = {
 };
 export type DestroyOptions = { autoCleanup?: boolean };
 
-export type EventMetadata = (
+export type EventMetadata =
   | {
       cause: "full_recompute";
       comparator?: Comparator<unknown>;
     }
   | {
       cause: "difference";
-    }
-) & { version: Version };
+    };

@@ -62,7 +62,7 @@ export class DifferenceStreamReaderFromRoot<
 > extends DifferenceStreamReader<T> {
   drain(version: Version) {
     if (this.queue.isEmpty()) {
-      return [new Multiset<T>([])];
+      return [new Multiset<T>([], null)];
     } else {
       return super.drain(version);
     }

@@ -16,6 +16,7 @@ export class ReduceOperator<K, V, O = V> extends UnaryOperator<V, O> {
     getKey: (value: V) => K,
     f: (input: Entry<V>[]) => Entry<O>[]
   ) {
+    // TODO: deal with full recompute messages
     const subtractValues = (first: Entry<O>[], second: Entry<O>[]) => {
       const result = new TuplableMap<O, number>();
       for (const [v1, m1] of first) {
@@ -56,7 +57,7 @@ export class ReduceOperator<K, V, O = V> extends UnaryOperator<V, O> {
             this.#indexOut.add(key, [value, mult]);
           }
         }
-        this.output.sendData(version, new Multiset(result));
+        this.output.sendData(version, new Multiset(result, null));
         const keys = [...keysTodo.values()];
         this.#index.compact(keys);
         this.#indexOut.compact(keys);

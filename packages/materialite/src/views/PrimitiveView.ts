@@ -10,7 +10,6 @@ type PrimitiveValue = boolean | string | number | bigint;
  */
 export class PrimitiveView<T extends PrimitiveValue> extends View<T, T> {
   #data: T;
-  // readonly #initial: T;
 
   constructor(
     materialite: Materialite,
@@ -19,7 +18,6 @@ export class PrimitiveView<T extends PrimitiveValue> extends View<T, T> {
   ) {
     super(materialite, stream);
     this.#data = initial;
-    // this.#initial = initial;
   }
 
   get data() {
@@ -28,9 +26,6 @@ export class PrimitiveView<T extends PrimitiveValue> extends View<T, T> {
 
   protected run(version: Version) {
     const collections = this.reader.drain(version);
-    // if (e.cause === "full_recompute") {
-    //   this.#data = this.#initial;
-    // }
     if (collections.length === 0) {
       this.notify(this.#data);
       return;
