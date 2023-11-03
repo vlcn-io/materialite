@@ -3,7 +3,7 @@ import { Multiset } from "../../multiset.js";
 import { DifferenceStreamReader } from "../DifferenceReader.js";
 import { DifferenceStreamWriter } from "../DifferenceWriter.js";
 import { LinearUnaryOperator } from "./LinearUnaryOperator.js";
-import { AfterMsg, Msg } from "../Msg.js";
+import { AfterExpression, Hoisted } from "../Msg.js";
 
 // Could be implemented as `filter` but `after` is able to push the operation down to the `source`.
 export class AfterOperator<T> extends LinearUnaryOperator<T, T> {

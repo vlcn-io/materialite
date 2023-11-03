@@ -1,5 +1,5 @@
 import { Comparator } from "@vlcn.io/ds-and-algos/types";
-import { Msg } from "../core/graph/Msg.js";
+import { Hoisted } from "../core/graph/Msg.js";
 import { RootDifferenceStream } from "../core/graph/RootDifferenceStream.js";
 
 export type Source<T, K = T, CT = unknown> =
@@ -48,7 +48,7 @@ export interface IStatelessSource<T> extends ISource<T> {
 export interface IStatefulSource<T, CT> extends ISource<T> {
   readonly _state: "stateful";
   readonly data: CT;
-  resendAll(msg: Msg): this;
+  resendAll(msg: Hoisted): this;
 }
 
 // TODO: we need to understand if the ordering by which

@@ -41,8 +41,7 @@ export abstract class View<T, CT> {
 
   pull() {
     this.#stream.pull({
-      _tag: "pull",
-      operatorMessages: [],
+      expressions: [],
     });
   }
 

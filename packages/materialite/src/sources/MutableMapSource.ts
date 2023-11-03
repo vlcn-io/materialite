@@ -1,4 +1,4 @@
-import { Msg } from "../core/graph/Msg.js";
+import { Hoisted } from "../core/graph/Msg.js";
 import { RootDifferenceStream } from "../core/graph/RootDifferenceStream.js";
 import { Entry, Multiset } from "../core/multiset.js";
 import {
@@ -109,7 +109,7 @@ export class MutableMapSource<K, T>
     return this;
   }
 
-  resendAll(_msg: Msg): this {
+  resendAll(_msg: Hoisted): this {
     this.#recomputeAll = true;
     this.#materialite.addDirtySource(this.#internal);
     return this;

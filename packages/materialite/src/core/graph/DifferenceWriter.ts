@@ -5,7 +5,7 @@ import {
   DifferenceStreamReader,
   DifferenceStreamReaderFromRoot,
 } from "./DifferenceReader.js";
-import { Msg } from "./Msg.js";
+import { Hoisted } from "./Msg.js";
 import { Queue } from "./Queue.js";
 import { IOperator } from "./ops/Operator.js";
 
@@ -54,7 +54,7 @@ abstract class AbstractDifferenceStreamWriter<T> {
     this.notify(version);
   }
 
-  pull(msg: Msg) {
+  pull(msg: Hoisted) {
     this.#lastVersionSent = -1;
     this.operator?.pull(msg);
   }
@@ -108,7 +108,7 @@ export class RootDifferenceStreamWriter<
     this.#source = source;
   }
 
-  pull(msg: Msg) {
+  pull(msg: Hoisted) {
     super.pull(msg);
     if (this.#source._state === "stateful") {
       this.#source.resendAll(msg);

@@ -1,11 +1,11 @@
 import { Version } from "../../types.js";
 import { DifferenceStreamReader } from "../DifferenceReader.js";
 import { DifferenceStreamWriter } from "../DifferenceWriter.js";
-import { Msg, OperatorMsg } from "../Msg.js";
+import { Hoisted, OperatorExpression } from "../Msg.js";
 
 export interface IOperator {
   run(version: Version): void;
-  pull(msg: Msg): void;
+  pull(msg: Hoisted): void;
   destroy(): void;
 }
 /**
@@ -49,7 +49,7 @@ export class Operator<O> implements IOperator {
    * @param msg
    * @returns
    */
-  pull(msg: Msg) {
+  pull(msg: Hoisted) {
     for (const input of this.inputs) {
       input.pull(msg);
     }

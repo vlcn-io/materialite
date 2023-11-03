@@ -9,21 +9,19 @@
  *
  * See: https://tantaman.com/2022-05-26-query-planning.html
  */
-export type OperatorMsg = AfterMsg<unknown>;
+export type OperatorExpression = AfterExpression<unknown>;
 
-export type AfterMsg<T> = {
+export type AfterExpression<T> = {
   readonly _tag: "after";
   readonly cursor: T;
   readonly comparator: (a: T, b: T) => number;
 };
 
-export type TakMsg = {
-  readonly _tag: "take";
+export type TakeMsg = {
   readonly count: number;
 };
 
-export type Msg = {
-  readonly _tag: "pull";
+export type Hoisted = {
   // readonly version: number;
-  readonly operatorMessages: OperatorMsg[];
+  readonly expressions: OperatorExpression[];
 };

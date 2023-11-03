@@ -1,7 +1,7 @@
 import { Multiset } from "../multiset.js";
 import { Version } from "../types.js";
 import { DifferenceStreamWriter } from "./DifferenceWriter.js";
-import { Msg } from "./Msg.js";
+import { Hoisted } from "./Msg.js";
 import { Queue } from "./Queue.js";
 import { IOperator } from "./ops/Operator.js";
 /**
@@ -48,7 +48,7 @@ export class DifferenceStreamReader<T = any> {
     return ret;
   }
 
-  pull(msg: Msg) {
+  pull(msg: Hoisted) {
     // TODO: reset queue?
     this.queue.resetVersion();
     this.#upstream.pull(msg);

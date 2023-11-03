@@ -7,7 +7,7 @@ import {
   Version,
 } from "../core/types.js";
 import { Entry, Multiset } from "../core/multiset.js";
-import { Msg } from "../core/graph/Msg.js";
+import { Hoisted } from "../core/graph/Msg.js";
 import { RootDifferenceStream } from "../core/graph/RootDifferenceStream.js";
 
 export abstract class StatefulSetSource<T>
@@ -21,7 +21,7 @@ export abstract class StatefulSetSource<T>
   readonly #materialite: MaterialiteForSourceInternal;
   readonly #listeners = new Set<(data: ITreap<T>) => void>();
   #pending: Entry<T>[] = [];
-  #recomputeAll: Msg | null = null;
+  #recomputeAll: Hoisted | null = null;
   #tree: ITreap<T>;
   readonly comparator: Comparator<T>;
 
@@ -63,11 +63,12 @@ export abstract class StatefulSetSource<T>
 
         if (self.#recomputeAll) {
           self.#pending = [];
+          const hoisted = this.#recomputeAll;
           self.#recomputeAll = null;
           self.#stream.queueData([
             version,
             // TODO: iterator at `after` position
-            new Multiset(asEntries(self.#tree)),
+            new Multiset(asEntries(self.#tree, hoisted)),
           ]);
         } else {
           self.#stream.queueData([version, new Multiset(self.#pending)]);
@@ -117,14 +118,14 @@ export abstract class StatefulSetSource<T>
     return this;
   }
 
-  resendAll(msg: Msg): this {
+  resendAll(msg: Hoisted): this {
     this.#recomputeAll = msg;
     this.#materialite.addDirtySource(this.#internal);
     return this;
   }
 }
 
-function* asEntries<T>(m: ITreap<T>) {
+function* asEntries<T>(m: ITreap<T>, hoisted: Hoisted) {
   function* gen() {
     for (const v of m) {
       yield [v, 1] as const;

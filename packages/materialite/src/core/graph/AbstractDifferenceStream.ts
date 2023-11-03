@@ -12,7 +12,7 @@ import { DebugOperator } from "./ops/DebugOperator.js";
 import { DifferenceStreamWriter } from "./DifferenceWriter.js";
 import { DifferenceStreamReader } from "./DifferenceReader.js";
 import { Comparator } from "@vlcn.io/ds-and-algos/types";
-import { Msg } from "./Msg.js";
+import { Hoisted } from "./Msg.js";
 import { AfterOperator } from "./ops/AfterOperator.js";
 import { TakeOperator } from "./ops/TakeOperator.js";
 
@@ -27,7 +27,7 @@ export abstract class AbstractDifferenceStream<T>
 
   protected abstract newStream<X>(): AbstractDifferenceStream<X>;
 
-  pull(msg: Msg): void {
+  pull(msg: Hoisted): void {
     this.writer.pull(msg);
   }
 
