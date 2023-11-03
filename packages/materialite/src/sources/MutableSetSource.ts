@@ -8,6 +8,6 @@ export class MutableSetSource<T> extends StatefulSetSource<T> {
     materialite: MaterialiteForSourceInternal,
     comparator: Comparator<T>
   ) {
-    super(materialite, comparator, () => new Treap(comparator));
+    super(materialite, comparator, (comparator) => new Treap(comparator));
   }
 }

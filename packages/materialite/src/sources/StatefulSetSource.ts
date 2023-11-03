@@ -28,11 +28,11 @@ export abstract class StatefulSetSource<T>
   constructor(
     materialite: MaterialiteForSourceInternal,
     comparator: Comparator<T>,
-    treapConstructor: () => ITreap<T>
+    treapConstructor: (comparator: Comparator<T>) => ITreap<T>
   ) {
     this.#materialite = materialite;
     this.#stream = new RootDifferenceStream<T>(this);
-    this.#tree = treapConstructor();
+    this.#tree = treapConstructor(comparator);
     this.comparator = comparator;
 
     const self = this;
@@ -68,7 +68,7 @@ export abstract class StatefulSetSource<T>
           self.#stream.queueData([
             version,
             // TODO: iterator at `after` position
-            new Multiset(asEntries(self.#tree, hoisted)),
+            new Multiset(asEntries(self.#tree, self.comparator, hoisted)),
           ]);
         } else {
           self.#stream.queueData([version, new Multiset(self.#pending)]);
@@ -125,15 +125,24 @@ export abstract class StatefulSetSource<T>
   }
 }
 
-function* asEntries<T>(m: ITreap<T>, hoisted: Hoisted) {
-  function* gen() {
-    for (const v of m) {
-      yield [v, 1] as const;
-    }
+function* asEntries<T>(
+  m: ITreap<T>,
+  comparator: Comparator<T>,
+  hoisted: Hoisted
+) {
+  const after = hoisted.expressions.filter((e) => e._tag === "after")[0];
+  if (after && after.comparator === comparator) {
+    // TODO: iterator at `after` position
   }
   return {
     *[Symbol.iterator]() {
-      yield* gen();
+      yield* gen(m);
     },
   };
+}
+
+function* gen<T>(m: ITreap<T>) {
+  for (const v of m) {
+    yield [v, 1] as const;
+  }
 }

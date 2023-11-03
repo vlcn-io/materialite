@@ -1,7 +1,7 @@
 import { Version } from "../../types.js";
 import { DifferenceStreamReader } from "../DifferenceReader.js";
 import { DifferenceStreamWriter } from "../DifferenceWriter.js";
-import { Hoisted, OperatorExpression } from "../Msg.js";
+import { Hoisted } from "../Msg.js";
 
 export interface IOperator {
   run(version: Version): void;

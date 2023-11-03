@@ -11,6 +11,10 @@ export class ImmutableSetSource<T> extends StatefulSetSource<T> {
     materialite: MaterialiteForSourceInternal,
     comparator: Comparator<T>
   ) {
-    super(materialite, comparator, () => new PersistentTreap(comparator));
+    super(
+      materialite,
+      comparator,
+      (comparator) => new PersistentTreap(comparator)
+    );
   }
 }

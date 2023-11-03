@@ -36,6 +36,17 @@ import { Treap } from "@vlcn.io/ds-and-algos/Treap";
  * fixes our lower bound to 5.
  *
  * We could also implement an unordered take...
+ *
+ * TODO: how can we hoist the take or make the take
+ * not take everything on a recompute all if the source
+ * is sorted...
+ *
+ * We should stop taking at some point.
+ *
+ * If we know the source is sorted we can stop taking.
+ *
+ * But that is only on initial pull...
+ * Which is different from streaming events.
  */
 export class TakeOperator<I> extends LinearUnaryOperator<I, I> {
   readonly #tree;
