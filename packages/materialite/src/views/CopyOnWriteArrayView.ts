@@ -1,4 +1,4 @@
-import { EventMetadata } from "../core/types.js";
+import { Version } from "../core/types.js";
 import { materializeMutableArray } from "./updateMutableArray.js";
 import { View } from "./View.js";
 
@@ -12,20 +12,20 @@ export class CopyOnWriteArrayView<T> extends View<T, readonly T[]> {
     return this.#data;
   }
 
-  protected run(e: EventMetadata) {
-    const collections = this.reader.drain(e.version);
+  protected run(version: Version) {
+    const collections = this.reader.drain(version);
     if (collections.length === 0) {
       return;
     }
 
     let newData: T[];
     let changed = false;
-    if (e.cause === "full_recompute") {
-      changed = this.#data.length > 0;
-      newData = [];
-    } else {
-      newData = [...this.#data];
-    }
+    // if (e.cause === "full_recompute") {
+    //   changed = this.#data.length > 0;
+    //   newData = [];
+    // } else {
+    newData = [...this.#data];
+    // }
 
     collections.forEach((collection) => {
       // now we incrementally update our sink.

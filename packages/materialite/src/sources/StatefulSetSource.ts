@@ -65,10 +65,12 @@ export abstract class StatefulSetSource<T>
           self.#pending = [];
           self.#stream.queueData([
             version,
+            // TODO: add event to multiset
             new Multiset(
               asEntries(self.#tree, self.comparator, self.#recomputeAll)
             ),
           ]);
+          self.#recomputeAll = null;
         } else {
           self.#stream.queueData([version, new Multiset(self.#pending)]);
           self.#pending = [];
@@ -76,19 +78,7 @@ export abstract class StatefulSetSource<T>
       },
       // release queues by telling the stream to send data
       onCommitPhase2(version: Version) {
-        if (self.#recomputeAll) {
-          self.#recomputeAll = null;
-          self.#stream.notify({
-            cause: "full_recompute",
-            version,
-            comparator,
-          });
-        } else {
-          self.#stream.notify({
-            cause: "difference",
-            version,
-          });
-        }
+        self.#stream.notify(version);
 
         // In case we have direct source observers
         const tree = self.#tree;

@@ -1,10 +1,10 @@
-import { EventMetadata } from "../../types.js";
+import { Version } from "../../types.js";
 import { DifferenceStreamReader } from "../DifferenceReader.js";
 import { DifferenceStreamWriter } from "../DifferenceWriter.js";
 import { Hoisted } from "../Msg.js";
 
 export interface IOperator {
-  run(version: EventMetadata): void;
+  run(version: Version): void;
   pull(msg: Hoisted): void;
   destroy(): void;
 }
@@ -18,7 +18,7 @@ export class Operator<O> implements IOperator {
   constructor(
     protected readonly inputs: DifferenceStreamReader[],
     protected readonly output: DifferenceStreamWriter<O>,
-    fn: (e: EventMetadata) => void
+    fn: (v: Version) => void
   ) {
     this.#fn = fn;
     for (const input of inputs) {
@@ -27,8 +27,8 @@ export class Operator<O> implements IOperator {
     this.output.setOperator(this);
   }
 
-  run(e: EventMetadata) {
-    this.#fn(e);
+  run(v: Version) {
+    this.#fn(v);
   }
 
   pendingWork() {

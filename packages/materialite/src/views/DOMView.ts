@@ -26,7 +26,7 @@
  * Maybe everything is fine. Just return a node that itself has a differential
  * dataflow stream going on but is sunk to a DOMSink.
  */
-import { EventMetadata } from "../core/types.js";
+import { Version } from "../core/types.js";
 import { DifferenceStream } from "../core/graph/DifferenceStream.js";
 import { Multiset } from "../core/multiset.js";
 import { binarySearch } from "@vlcn.io/ds-and-algos/binarySearch";
@@ -52,8 +52,8 @@ export class DOMView<T extends HTMLElement, K> {
     const self = this;
     this.#destructor = destructor;
     this.#reader.setOperator({
-      run(e: EventMetadata) {
-        self.#run(e);
+      run(v: Version) {
+        self.#run(v);
       },
       pull() {
         return null;
@@ -64,12 +64,8 @@ export class DOMView<T extends HTMLElement, K> {
     });
   }
 
-  #run(e: EventMetadata) {
-    if (e.cause === "full_recompute") {
-      this.#root.innerHTML = "";
-      this.#nodeMapping.length = 0;
-    }
-    this.#reader.drain(e.version).forEach((collection) => {
+  #run(v: Version) {
+    this.#reader.drain(v).forEach((collection) => {
       this.#sink(collection);
     });
   }

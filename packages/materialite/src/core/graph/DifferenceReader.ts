@@ -1,5 +1,5 @@
 import { Multiset } from "../multiset.js";
-import { EventMetadata, Version } from "../types.js";
+import { Version } from "../types.js";
 import { DifferenceStreamWriter } from "./DifferenceWriter.js";
 import { Hoisted } from "./Msg.js";
 import { Queue } from "./Queue.js";
@@ -28,8 +28,8 @@ export class DifferenceStreamReader<T = any> {
     this.#operator = operator;
   }
 
-  notify(e: EventMetadata) {
-    this.#operator.run(e);
+  notify(v: Version) {
+    this.#operator.run(v);
   }
 
   drain(version: Version) {

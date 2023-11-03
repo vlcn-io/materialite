@@ -1,6 +1,6 @@
 import { Source } from "../../sources/Source.js";
 import { Multiset } from "../multiset.js";
-import { DestroyOptions, EventMetadata, Version } from "../types.js";
+import { DestroyOptions, Version } from "../types.js";
 import {
   DifferenceStreamReader,
   DifferenceStreamReaderFromRoot,
@@ -34,17 +34,14 @@ abstract class AbstractDifferenceStreamWriter<T> {
   // queues data and notifies readers
   sendData(version: Version, data: Multiset<T>) {
     this.queueData([version, data]);
-    this.notify({
-      cause: "difference",
-      version,
-    });
+    this.notify(version);
   }
 
   pull(msg: Hoisted) {
     this.operator?.pull(msg);
   }
 
-  notify(version: EventMetadata) {
+  notify(version: Version) {
     for (const r of this.readers) {
       r.notify(version);
     }

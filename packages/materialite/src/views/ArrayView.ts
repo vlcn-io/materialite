@@ -1,4 +1,4 @@
-import { EventMetadata } from "../core/types.js";
+import { Version } from "../core/types.js";
 import { materializeMutableArray } from "./updateMutableArray.js";
 import { View as View } from "./View.js";
 
@@ -12,13 +12,13 @@ import { View as View } from "./View.js";
 export class ArrayView<T> extends View<T, T[]> {
   readonly data: T[] = [];
 
-  protected run(e: EventMetadata) {
+  protected run(version: Version) {
     let changed = false;
-    if (e.cause === "full_recompute") {
-      changed = this.data.length > 0;
-      this.data.length = 0;
-    }
-    this.reader.drain(e.version).forEach((collection) => {
+    // if (e.cause === "full_recompute") {
+    //   changed = this.data.length > 0;
+    //   this.data.length = 0;
+    // }
+    this.reader.drain(version).forEach((collection) => {
       // now we incrementally update our sink.
       changed =
         materializeMutableArray(collection, this.data, this.comparator) ||

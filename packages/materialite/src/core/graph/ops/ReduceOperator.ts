@@ -3,7 +3,7 @@ import { Entry, Multiset } from "../../multiset.js";
 import { DifferenceStreamReader } from "../DifferenceReader.js";
 import { DifferenceStreamWriter } from "../DifferenceWriter.js";
 import { UnaryOperator } from "./UnaryOperator.js";
-import { EventMetadata } from "../../types.js";
+import { Version } from "../../types.js";
 import { TuplableMap } from "@vlcn.io/ds-and-algos/TuplableMap";
 
 export class ReduceOperator<K, V, O = V> extends UnaryOperator<V, O> {
@@ -37,8 +37,8 @@ export class ReduceOperator<K, V, O = V> extends UnaryOperator<V, O> {
 
       return result.entries();
     };
-    const inner = (e: EventMetadata) => {
-      for (const collection of this.inputMessages(e.version)) {
+    const inner = (version: Version) => {
+      for (const collection of this.inputMessages(version)) {
         const keysTodo = new Set<K>();
         const result: [O, number][] = [];
         for (const [value, mult] of collection.entries) {
@@ -56,7 +56,7 @@ export class ReduceOperator<K, V, O = V> extends UnaryOperator<V, O> {
             this.#indexOut.add(key, [value, mult]);
           }
         }
-        this.output.sendData(e.version, new Multiset(result));
+        this.output.sendData(version, new Multiset(result));
         const keys = [...keysTodo.values()];
         this.#index.compact(keys);
         this.#indexOut.compact(keys);

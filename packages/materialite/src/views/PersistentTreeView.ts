@@ -1,4 +1,4 @@
-import { EventMetadata } from "../core/types.js";
+import { Version } from "../core/types.js";
 import { Multiset } from "../core/multiset.js";
 import { PersistentTreap } from "@vlcn.io/ds-and-algos/PersistentTreap";
 import { View } from "./View.js";
@@ -30,13 +30,13 @@ export class PersistentTreeView<T> extends View<T, PersistentTreap<T>> {
   }
 
   // TODO: notify on empty?
-  protected run(e: EventMetadata) {
-    const collections = this.reader.drain(e.version);
+  protected run(version: Version) {
+    const collections = this.reader.drain(version);
     let changed = false;
-    if (e.cause === "full_recompute") {
-      this.#data = new PersistentTreap<T>(this.comparator);
-      changed = true;
-    }
+    // if (e.cause === "full_recompute") {
+    //   this.#data = new PersistentTreap<T>(this.comparator);
+    //   changed = true;
+    // }
 
     let newData = this.#data;
     for (const c of collections) {

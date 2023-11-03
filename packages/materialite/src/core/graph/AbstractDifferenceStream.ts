@@ -1,6 +1,6 @@
 import { JoinResultVariadic } from "@vlcn.io/ds-and-algos/tuple";
 import { Entry, Multiset, PrimitiveValue } from "../multiset.js";
-import { EventMetadata, Version } from "../types.js";
+import { Version } from "../types.js";
 import { MapOperator } from "./ops/MapOperator.js";
 import { FilterOperator } from "./ops/FilterOperator.js";
 import { NegateOperator } from "./ops/NegateOperator.js";
@@ -183,9 +183,9 @@ export abstract class AbstractDifferenceStream<T>
     this.writer.queueData(data);
   }
 
-  notify(e: EventMetadata) {
+  notify(v: Version) {
     // tell the writer to notify all readers
-    this.writer.notify(e);
+    this.writer.notify(v);
   }
 
   newReader() {

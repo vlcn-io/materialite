@@ -1,6 +1,6 @@
 import { comparator as consolidationComparator } from "../core/consolidation.js";
 import { AbstractDifferenceStream } from "../core/graph/AbstractDifferenceStream.js";
-import { EventMetadata } from "../core/types.js";
+import { Version } from "../core/types.js";
 import { Materialite } from "../materialite.js";
 
 export abstract class View<T, CT> {
@@ -27,8 +27,8 @@ export abstract class View<T, CT> {
     this.reader = this.#stream.newReader();
     const self = this;
     this.reader.setOperator({
-      run(e: EventMetadata) {
-        self.run(e);
+      run(v: Version) {
+        self.run(v);
       },
       pull() {
         return null;
@@ -86,5 +86,5 @@ export abstract class View<T, CT> {
     this.#stream.removeReader(this.reader);
   }
 
-  protected abstract run(e: EventMetadata): void;
+  protected abstract run(v: Version): void;
 }

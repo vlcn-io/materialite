@@ -36,10 +36,7 @@ export class SetSource<T>
       },
       // release queues by telling the stream to send data
       onCommitPhase2(version: Version) {
-        self.#stream.notify({
-          cause: "difference",
-          version,
-        });
+        self.#stream.notify(version);
       },
       onRollback() {
         self.#pending = [];

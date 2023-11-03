@@ -60,6 +60,7 @@ export class MutableMapSource<K, T>
 
         if (self.#recomputeAll) {
           self.#pending = [];
+          // TODO: event on multiset
           self.#stream.queueData([version, new Multiset(asEntries(self.#map))]);
         } else {
           self.#stream.queueData([version, new Multiset(self.#pending)]);
@@ -70,15 +71,9 @@ export class MutableMapSource<K, T>
       onCommitPhase2(version: Version) {
         if (self.#recomputeAll) {
           self.#recomputeAll = false;
-          self.#stream.notify({
-            cause: "full_recompute",
-            version,
-          });
+          self.#stream.notify(version);
         } else {
-          self.#stream.notify({
-            cause: "difference",
-            version,
-          });
+          self.#stream.notify(version);
         }
 
         for (const l of self.#listeners) {
