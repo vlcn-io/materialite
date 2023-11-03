@@ -6,14 +6,15 @@ import {
   DifferenceStreamReaderFromRoot,
 } from "./DifferenceReader.js";
 import { Msg } from "./Msg.js";
+import { Queue } from "./Queue.js";
 import { IOperator } from "./ops/Operator.js";
 
 /**
  * Write handle
  */
 abstract class AbstractDifferenceStreamWriter<T> {
-  protected lastVersionSent: Version = -1;
-  readonly queues: [Version, Multiset<T>][][] = [];
+  #lastVersionSent: Version = -1;
+  readonly queues: Queue<T>[] = [];
   readonly readers: DifferenceStreamReader<T>[] = [];
   protected operator: IOperator | null = null;
 
@@ -27,13 +28,13 @@ abstract class AbstractDifferenceStreamWriter<T> {
   // prepares data but does not yet send it to readers
   queueData(data: [Version, Multiset<T>]) {
     for (const q of this.queues) {
-      q.push(data);
+      q.enqueue(data);
     }
   }
 
   // queues data and notifies readers
   sendData(version: Version, data: Multiset<T>) {
-    if (version <= this.lastVersionSent) {
+    if (version <= this.#lastVersionSent) {
       // If this is an old version we'll ignore it.
       // The rationale here is that when views are attached later which request
       // a re-pull, we don't want to re-process every single fork of the stream.
@@ -46,6 +47,7 @@ abstract class AbstractDifferenceStreamWriter<T> {
       // Writer so we never even queue.
       return;
     }
+    this.#lastVersionSent = version;
     // TODO: check the queues. Maybe they should not receive this data
     // because they are on a fork that didn't pull it.
     this.queueData([version, data]);
@@ -53,10 +55,7 @@ abstract class AbstractDifferenceStreamWriter<T> {
   }
 
   pull(msg: Msg) {
-    if (msg._tag != "pull") {
-      return;
-    }
-    this.lastVersionSent = -1;
+    this.#lastVersionSent = -1;
     this.operator?.pull(msg);
   }
 
@@ -67,7 +66,7 @@ abstract class AbstractDifferenceStreamWriter<T> {
   }
 
   newReader(): DifferenceStreamReader<T> {
-    const queue: [Version, Multiset<T>][] = [];
+    const queue = new Queue<T>();
     this.queues.push(queue);
     const reader = new DifferenceStreamReader(this, queue);
     this.readers.push(reader);
@@ -117,7 +116,7 @@ export class RootDifferenceStreamWriter<
   }
 
   newReader() {
-    const queue: [Version, Multiset<T>][] = [];
+    const queue = new Queue<T>();
     this.queues.push(queue);
     const reader: DifferenceStreamReader<T> =
       new DifferenceStreamReaderFromRoot(this, queue);

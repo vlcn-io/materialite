@@ -13,12 +13,12 @@ type Node<T> = {
   next: Node<T> | null;
 };
 
-export class Queue {
+export class Queue<T> {
   #lastSeenVersion = -1;
-  #head: Node<any> | null = null;
-  #tail: Node<any> | null = null;
+  #head: Node<T> | null = null;
+  #tail: Node<T> | null = null;
 
-  enqueue(data: [number, Multiset<any>]) {
+  enqueue(data: [number, Multiset<T>]) {
     if (data[0] <= this.#lastSeenVersion) {
       // throw an error?
       console.warn("enqueueing old data");
@@ -32,6 +32,14 @@ export class Queue {
       this.#tail!.next = node;
     }
     this.#tail = node;
+  }
+
+  resetVersion() {
+    this.#lastSeenVersion = -1;
+  }
+
+  peek() {
+    return this.#head;
   }
 
   dequeue() {
@@ -48,5 +56,10 @@ export class Queue {
 
   isEmpty() {
     return this.#head == null;
+  }
+
+  clear() {
+    this.#head = null;
+    this.#tail = null;
   }
 }
