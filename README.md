@@ -1,7 +1,7 @@
 # materialite
 ----
 
-This project is not ready for public consumption. All APIs are currently being overhauled to better support integration with existing databases: https://github.com/vlcn-io/materialite/pull/1
+**This project is not ready for public consumption**. All APIs are currently being overhauled to better support integration with existing databases. Join and Reduce are naively implemented at the moment.
 
 ----
 
