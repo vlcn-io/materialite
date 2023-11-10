@@ -8,6 +8,7 @@ import { SetSource } from "./sources/StatelessSetSource.js";
 import { KeyFn } from "./sources/Source.js";
 import { ImmutableSetSource } from "./sources/ImmutableSetSource.js";
 import { Comparator } from "@vlcn.io/ds-and-algos/types";
+import { MutableSetSource } from "./sources/MutableSetSource.js";
 
 export class Materialite {
   #version: Version;
@@ -65,9 +66,9 @@ export class Materialite {
    * 2. Being sorted allows cheaper construction of the final materialized view on pipeline modification if the
    *   order of the view matches the order of the source.
    */
-  newSortedSet<T>(_comparator: Comparator<T>) {
-    // a treap that is not persistent.
-    // const ret = new
+  newSortedSet<T>(comparator: Comparator<T>) {
+    const ret = new MutableSetSource<T>(this.#internal, comparator);
+    return ret;
   }
 
   /**

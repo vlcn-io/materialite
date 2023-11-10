@@ -7,3 +7,6 @@ test("after on a stateful source. After is pushed to the source.", () => {
   // against the source.
   expect(true).toBe(true);
 });
+
+// test hoisting .. that after isn't hoisted too deeply down the query path. if it is it can break branches that
+// did not request after

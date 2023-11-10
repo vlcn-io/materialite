@@ -20,6 +20,8 @@ import { PersistentTreeView } from "../../views/PersistentTreeView.js";
 import { PrimitiveView } from "../../views/PrimitiveView.js";
 import { IDifferenceStream } from "./IDifferenceStream.js";
 import { Materialite } from "../../materialite.js";
+import { ArrayView } from "../../views/ArrayView.js";
+import { CopyOnWriteArrayView } from "../../views/CopyOnWriteArrayView.js";
 
 export abstract class AbstractDifferenceStream<T>
   implements IDifferenceStream<T>
@@ -157,6 +159,18 @@ export abstract class AbstractDifferenceStream<T>
   materialize(c: Comparator<T>): PersistentTreeView<T> {
     return this.materializeInto(
       (stream) => new PersistentTreeView(this.materialite, stream, c)
+    );
+  }
+
+  materializeArray(c: Comparator<T>): ArrayView<T> {
+    return this.materializeInto(
+      (stream) => new ArrayView(this.materialite, stream, c)
+    );
+  }
+
+  materializeCopyOnWriteArray(c: Comparator<T>): CopyOnWriteArrayView<T> {
+    return this.materializeInto(
+      (stream) => new CopyOnWriteArrayView(this.materialite, stream, c)
     );
   }
 
