@@ -1,14 +1,21 @@
 // Copyright (c) 2023 One Law LLC
 
-import { ITreap, Node } from "../types.js";
+import { INode, ITree, Node } from "../types.js";
+import { TreeIterator } from "./TreeIterator.js";
 type Comparator<T> = (a: T, b: T) => number;
 
-export class Treap<T> implements ITreap<T> {
+export class Treap<T> implements ITree<T> {
   private comparator: Comparator<T>;
   private root: Node<T> | null = null;
+  private _version;
+
+  get version() {
+    return this._version;
+  }
 
   constructor(comparator: Comparator<T>) {
     this.comparator = comparator;
+    this._version = 0;
   }
 
   static empty<T>() {
@@ -23,29 +30,61 @@ export class Treap<T> implements ITreap<T> {
     return this.root;
   }
 
-  iteratorAfter(value: T): Iterator<T, any, undefined> {
-    throw new Error("unimplmented");
+  iteratorAfter(data: T) {
+    const iter = this.lowerBound(data);
+
+    while (iter.data !== null && this.comparator(iter.data, data) === 0) {
+      iter.next();
+    }
+
+    return iter;
+  }
+
+  lowerBound(data: T): TreeIterator<T> {
+    let cur: INode<T> | null = this.root;
+    const iter = new TreeIterator(this);
+
+    while (cur !== null) {
+      const c = this.comparator(data, cur.value);
+      if (c === 0) {
+        iter.cursor = cur;
+        return iter;
+      }
+      iter.ancestors.push(cur);
+      cur = cur.getChild(c > 0);
+    }
+
+    for (let i = iter.ancestors.length - 1; i >= 0; --i) {
+      cur = iter.ancestors[i]!;
+      if (this.comparator(data, cur.value) < 0) {
+        iter.cursor = cur;
+        iter.ancestors.length = i;
+        return iter;
+      }
+    }
+
+    iter.ancestors.length = 0;
+    return iter;
   }
 
   add(value: T): Treap<T> {
+    this._version++;
     const priority = Math.random(); // Random priority
-    const root = this._insert(this.root, value, priority);
-    const ret = new Treap(this.comparator);
-    ret.root = root;
-    return ret;
+    this.root = this._insert(this.root, value, priority);
+
+    return this;
   }
 
   delete(value: T): Treap<T> {
-    const root = this._remove(this.root, value);
-    const ret = new Treap(this.comparator);
-    ret.root = root;
-    return ret;
+    this._remove(this.root, value);
+    this._version++;
+    return this;
   }
 
   clear(): Treap<T> {
-    const ret = new Treap(this.comparator);
-    ret.root = null;
-    return ret;
+    this.root = null;
+    this._version++;
+    return this;
   }
 
   map<U>(callback: (value: T) => U): U[] {
@@ -68,19 +107,6 @@ export class Treap<T> implements ITreap<T> {
     }
 
     return result;
-  }
-
-  findIndex(pred: (x: T) => boolean): number {
-    let index = 0;
-
-    for (const value of inOrderTraversal(this.root)) {
-      if (pred(value)) {
-        return index;
-      }
-      index += 1;
-    }
-
-    return -1;
   }
 
   reduce<U>(callback: (accumulator: U, value: T) => U, initialValue: U): U {

@@ -1,6 +1,6 @@
 // Copyright (c) 2023 One Law LLC
 
-import { ITreap, Node } from "../types.js";
+import { ITree, Node } from "../types.js";
 type Comparator<T> = (a: T, b: T) => number;
 
 /**
@@ -14,7 +14,7 @@ type Comparator<T> = (a: T, b: T) => number;
  * Also stores `size` in each node so we can index it like an array.
  * Important for virtualized table views.
  */
-export class PersistentTreap<T> implements ITreap<T> {
+export class PersistentTreap<T> implements ITree<T> {
   private comparator: Comparator<T>;
   private root: Node<T> | null = null;
 
@@ -34,7 +34,7 @@ export class PersistentTreap<T> implements ITreap<T> {
     return this.root;
   }
 
-  iteratorAfter(value: T): Iterator<T, any, undefined> {
+  iteratorAfter(value: T): IterableIterator<T> {
     throw new Error("unimplmented");
   }
 
@@ -79,19 +79,6 @@ export class PersistentTreap<T> implements ITreap<T> {
     }
 
     return result;
-  }
-
-  findIndex(pred: (x: T) => boolean): number {
-    let index = 0;
-
-    for (const value of inOrderTraversal(this.root)) {
-      if (pred(value)) {
-        return index;
-      }
-      index += 1;
-    }
-
-    return -1;
   }
 
   reduce<U>(callback: (accumulator: U, value: T) => U, initialValue: U): U {
@@ -178,8 +165,8 @@ export class PersistentTreap<T> implements ITreap<T> {
     return this._contains(node.right, value);
   }
 
-  *[Symbol.iterator](): Generator<T> {
-    yield* inOrderTraversal(this.root);
+  [Symbol.iterator](): Generator<T> {
+    return inOrderTraversal(this.root);
   }
 
   private _insert(node: Node<T> | null, value: T, priority: number): Node<T> {

@@ -70,7 +70,7 @@ export abstract class TreeBase<V> {
     return new TreeIterator(this);
   }
 
-  // Returns an iterator to the tree node at or immediately after the item
+  // Returns an iterator to the tree node at or immediately before the item
   lowerBound(data: V) {
     let cur = this._root;
     const iter = this.iterator();

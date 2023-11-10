@@ -1,4 +1,4 @@
-import { Comparator, ITreap } from "@vlcn.io/ds-and-algos/types";
+import { Comparator, ITree } from "@vlcn.io/ds-and-algos/types";
 import { IStatefulSource } from "./Source.js";
 import { PersistentTreap } from "@vlcn.io/ds-and-algos/PersistentTreap";
 import {
@@ -11,7 +11,7 @@ import { Hoisted } from "../core/graph/Msg.js";
 import { RootDifferenceStream } from "../core/graph/RootDifferenceStream.js";
 
 export abstract class StatefulSetSource<T>
-  implements IStatefulSource<T, ITreap<T>>
+  implements IStatefulSource<T, ITree<T>>
 {
   readonly _state = "stateful";
   readonly _sort = "sorted";
@@ -19,16 +19,16 @@ export abstract class StatefulSetSource<T>
   #stream: RootDifferenceStream<T>;
   readonly #internal: ISourceInternal;
   readonly #materialite: MaterialiteForSourceInternal;
-  readonly #listeners = new Set<(data: ITreap<T>) => void>();
+  readonly #listeners = new Set<(data: ITree<T>) => void>();
   #pending: Entry<T>[] = [];
   #recomputeAll: Hoisted | null = null;
-  #tree: ITreap<T>;
+  #tree: ITree<T>;
   readonly comparator: Comparator<T>;
 
   constructor(
     materialite: MaterialiteForSourceInternal,
     comparator: Comparator<T>,
-    treapConstructor: (comparator: Comparator<T>) => ITreap<T>
+    treapConstructor: (comparator: Comparator<T>) => ITree<T>
   ) {
     this.#materialite = materialite;
     this.#stream = new RootDifferenceStream<T>(materialite.materialite, this);
@@ -135,23 +135,27 @@ export abstract class StatefulSetSource<T>
   }
 }
 
-function* asEntries<T>(
-  m: ITreap<T>,
-  comparator: Comparator<T>,
-  hoisted: Hoisted
-) {
-  const after = hoisted.expressions.filter((e) => e._tag === "after")[0];
-  if (after && after.comparator === comparator) {
-    // TODO: iterator at `after` position
-  }
+function asEntries<T>(
+  m: ITree<T>,
+  _comparator: Comparator<T>,
+  _hoisted: Hoisted
+): Iterable<Entry<T>> {
+  // const _after = hoisted.expressions.filter((e) => e._tag === "after")[0];
+  // if (after && after.comparator === comparator) {
+  //   return {
+  //     [Symbol.iterator]() {
+  //       return m.iteratorAfter(after.cursor as any);
+  //     },
+  //   };
+  // }
   return {
-    *[Symbol.iterator]() {
-      yield* gen(m);
+    [Symbol.iterator]() {
+      return gen(m);
     },
   };
 }
 
-function* gen<T>(m: ITreap<T>) {
+function* gen<T>(m: ITree<T>) {
   for (const v of m) {
     yield [v, 1] as const;
   }
