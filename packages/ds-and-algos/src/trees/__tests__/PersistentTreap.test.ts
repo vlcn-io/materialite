@@ -143,3 +143,16 @@ test("adding and removing does not break array indexing", () => {
     }
   }
 });
+
+test("getting an iterator", () => {
+  let t = new PersistentTreap<number>((a, b) => a - b);
+  t = t.add(10);
+  t = t.add(5);
+  t = t.add(15);
+  t = t.add(2);
+  expect([...t]).toEqual([2, 5, 10, 15]);
+  const iter = t.iteratorAfter(6);
+  expect(iter.next().value).toBe(10);
+  expect(iter.next().value).toBe(15);
+  expect(iter.next().value).toBe(null);
+});

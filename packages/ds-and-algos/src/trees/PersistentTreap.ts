@@ -1,6 +1,7 @@
 // Copyright (c) 2023 One Law LLC
 
-import { ITree, Node } from "../types.js";
+import { INode, ITree, Node } from "../types.js";
+import { TreeIterator } from "./TreeIterator.js";
 type Comparator<T> = (a: T, b: T) => number;
 
 /**
@@ -36,8 +37,41 @@ export class PersistentTreap<T> implements ITree<T> {
     return this.root;
   }
 
-  iteratorAfter(value: T): IterableIterator<T> {
-    throw new Error("unimplmented");
+  iteratorAfter(data: T) {
+    const iter = this.lowerBound(data);
+
+    while (iter.data !== null && this.comparator(iter.data, data) === 0) {
+      iter.next();
+    }
+
+    return iter;
+  }
+
+  lowerBound(data: T): TreeIterator<T> {
+    let cur: INode<T> | null = this.root;
+    const iter = new TreeIterator(this);
+
+    while (cur !== null) {
+      const c = this.comparator(data, cur.value);
+      if (c === 0) {
+        iter.cursor = cur;
+        return iter;
+      }
+      iter.ancestors.push(cur);
+      cur = cur.getChild(c > 0);
+    }
+
+    for (let i = iter.ancestors.length - 1; i >= 0; --i) {
+      cur = iter.ancestors[i]!;
+      if (this.comparator(data, cur.value) < 0) {
+        iter.cursor = cur;
+        iter.ancestors.length = i;
+        return iter;
+      }
+    }
+
+    iter.ancestors.length = 0;
+    return iter;
   }
 
   add(value: T): PersistentTreap<T> {
