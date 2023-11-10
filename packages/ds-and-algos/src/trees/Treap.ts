@@ -76,7 +76,7 @@ export class Treap<T> implements ITree<T> {
   }
 
   delete(value: T): Treap<T> {
-    this._remove(this.root, value);
+    this.root = this._remove(this.root, value);
     this._version++;
     return this;
   }

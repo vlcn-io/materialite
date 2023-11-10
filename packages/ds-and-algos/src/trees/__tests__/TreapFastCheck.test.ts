@@ -2,7 +2,8 @@ import { assert, property } from "fast-check";
 import fc from "fast-check";
 import { PersistentTreap } from "../PersistentTreap.js";
 import { expect, test } from "vitest";
-import { Node } from "../../types.js";
+import { ITree, Node } from "../../types.js";
+import { Treap } from "../Treap.js";
 
 // Assuming your treap class is imported as:
 // import { PersistentTreap } from './path_to_treap';
@@ -18,13 +19,27 @@ test("PersistentTreap Property-based Tests (large)", () => {
     property(
       // Arbitrarily generate a list of operations
       script(100),
-      checkTreap
+      checkPersistentTreap
     )
   );
 });
 
 test("PersistentTreap Property-based Tests (small)", () => {
-  assert(property(script(0), checkTreap));
+  assert(property(script(0), checkPersistentTreap));
+});
+
+test("Treap Property-based Tests (large)", () => {
+  assert(
+    property(
+      // Arbitrarily generate a list of operations
+      script(100),
+      checkMutableTreap
+    )
+  );
+});
+
+test("Treap Property-based Tests (small)", () => {
+  assert(property(script(0), checkMutableTreap));
 });
 
 function script(size: number) {
@@ -43,8 +58,20 @@ function script(size: number) {
   );
 }
 
-function checkTreap(operations: [string, number][]) {
-  let treap = new PersistentTreap<number>((l, r) => l - r);
+function checkMutableTreap(operations: [string, number][]) {
+  checkTreap(operations, () => new Treap<number>((l, r) => l - r), true);
+}
+
+function checkPersistentTreap(operations: [string, number][]) {
+  checkTreap(operations, () => new PersistentTreap<number>((l, r) => l - r));
+}
+
+function checkTreap(
+  operations: [string, number][],
+  ctor: () => ITree<number>,
+  mutable = false
+) {
+  let treap = ctor();
   const set = new Set<number>();
 
   for (const [operation, value] of operations) {
@@ -72,8 +99,10 @@ function checkTreap(operations: [string, number][]) {
     }
     const oldTreapValuesPostModification = [...oldTreap];
 
-    // Treap should not be modified in place.
-    expect(oldTreapValues).toEqual(oldTreapValuesPostModification);
+    // immutable Treap should not be modified in place.
+    if (!mutable) {
+      expect(oldTreapValues).toEqual(oldTreapValuesPostModification);
+    }
   }
 
   // 1. The treap has all items that are in the set.

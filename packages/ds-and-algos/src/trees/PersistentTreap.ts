@@ -17,9 +17,11 @@ type Comparator<T> = (a: T, b: T) => number;
 export class PersistentTreap<T> implements ITree<T> {
   private comparator: Comparator<T>;
   private root: Node<T> | null = null;
+  public readonly version;
 
-  constructor(comparator: Comparator<T>) {
+  constructor(comparator: Comparator<T>, version = 0) {
     this.comparator = comparator;
+    this.version = version;
   }
 
   static empty<T>() {
@@ -41,20 +43,20 @@ export class PersistentTreap<T> implements ITree<T> {
   add(value: T): PersistentTreap<T> {
     const priority = Math.random(); // Random priority
     const root = this._insert(this.root, value, priority);
-    const ret = new PersistentTreap(this.comparator);
+    const ret = new PersistentTreap(this.comparator, this.version + 1);
     ret.root = root;
     return ret;
   }
 
   delete(value: T): PersistentTreap<T> {
     const root = this._remove(this.root, value);
-    const ret = new PersistentTreap(this.comparator);
+    const ret = new PersistentTreap(this.comparator, this.version + 1);
     ret.root = root;
     return ret;
   }
 
   clear(): PersistentTreap<T> {
-    const ret = new PersistentTreap(this.comparator);
+    const ret = new PersistentTreap(this.comparator, this.version + 1);
     ret.root = null;
     return ret;
   }

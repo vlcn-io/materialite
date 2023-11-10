@@ -1,28 +1,27 @@
 import { expect, test } from "vitest";
 import { Treap } from "../Treap.js";
 
+// See TreapFastCheck for more intensive tests
+
 test("getting an iterator", () => {
   const t = new Treap<number>((a, b) => a - b);
   t.add(10);
   t.add(5);
   t.add(15);
   t.add(2);
-  console.log([...t]);
+  expect([...t]).toEqual([2, 5, 10, 15]);
   const iter = t.iteratorAfter(6);
-  console.log(iter.data);
-  console.log([...iter]);
-  console.log([...iter]);
-  // expect(iter.next()).toBe(10);
-  // expect(iter.next()).toBe(15);
-  // expect(iter.next()).toBe(null);
+  expect(iter.next().value).toBe(10);
+  expect(iter.next().value).toBe(15);
+  expect(iter.next().value).toBe(null);
 });
 
-test("balance", () => {});
+test("delete", () => {
+  const t = new Treap<number>((a, b) => a - b);
+  t.add(0);
+  t.add(0);
+  t.delete(0);
 
-test("is sorted", () => {
-  // adds
-  // removes
-  // replaces
+  console.log([...t]);
+  expect(t.size).toBe(0);
 });
-
-test("replaces", () => {});

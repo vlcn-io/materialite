@@ -1,8 +1,6 @@
 import { test, expect } from "vitest";
 // import { Materialite } from "../materialite.js";
 
-test("take decimates us to a window", () => {
+test("we can jump around sorted sources", () => {
   expect(true).toBe(true);
 });
-
-// take re-fills the window if something drops out
