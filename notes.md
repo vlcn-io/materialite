@@ -1,3 +1,10 @@
+todo:
+allow for incremental streams to be taken off of views? I.e., can treat a view as a source itself.
+Can also treat a view as an atom for signals.
+
+
+---
+
 Check pull implementation.
 Ensure readers are impacted by `pull` too so writers do not send to readers that did not pull.
 

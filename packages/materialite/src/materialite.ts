@@ -9,6 +9,7 @@ import { KeyFn } from "./sources/Source.js";
 import { ImmutableSetSource } from "./sources/ImmutableSetSource.js";
 import { Comparator } from "@vlcn.io/ds-and-algos/types";
 import { MutableSetSource } from "./sources/MutableSetSource.js";
+import { ISignal } from "./signal/ISignal.js";
 
 export class Materialite {
   #version: Version;
@@ -91,6 +92,18 @@ export class Materialite {
     const ret = new MutableMapSource<K, V>(this.#internal, getKey);
     return ret;
   }
+
+  /**
+   *
+   * @param f
+   * @param signals
+   */
+  // compute<TRet, TSignals extends ISignal<unknown>[]>(
+  //   f: (...args: TSignals) => TRet,
+  //   ...signals: TSignals
+  // ) {
+  //   return new Thunk(f, signals);
+  // }
 
   /**
    * Run the provided lambda in a transaciton.
