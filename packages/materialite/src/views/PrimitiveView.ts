@@ -25,7 +25,6 @@ export class ValueView<T> extends View<T, T> {
   protected run(version: Version) {
     const collections = this.reader.drain(version);
     if (collections.length === 0) {
-      this.notify(this.#data);
       return;
     }
 
@@ -44,7 +43,9 @@ export class ValueView<T> extends View<T, T> {
     const newData = lastValue as T;
     if (newData !== this.#data) {
       this.#data = newData;
-      this.notify(newData);
+      this.notify(newData, version);
+    } else {
+      this.notifiedListenersVersion = version;
     }
   }
 }

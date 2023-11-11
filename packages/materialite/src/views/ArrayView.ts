@@ -27,7 +27,7 @@ export class ArrayView<T> extends View<T, T[]> {
     });
     // TODO: why is the sink called so damn often?
     if (changed) {
-      this.notify(this.data);
+      this.notify(this.data, version);
     }
   }
 }

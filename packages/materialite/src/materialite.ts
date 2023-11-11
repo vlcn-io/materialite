@@ -162,6 +162,9 @@ export class Materialite {
     for (const source of this.#dirtySources) {
       source.onCommitPhase2(this.#version);
     }
+    for (const source of this.#dirtySources) {
+      source.onCommitted(this.#version);
+    }
   }
 }
 

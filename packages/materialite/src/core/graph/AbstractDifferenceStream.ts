@@ -235,6 +235,9 @@ export abstract class AbstractDifferenceStream<T>
     // tell the writer to notify all readers
     this.writer.notify(v);
   }
+  notifyCommitted(v: Version) {
+    this.writer.notifyCommitted(v);
+  }
 
   newReader() {
     return this.writer.newReader();

@@ -1,17 +1,19 @@
 import { Version } from "../core/types.js";
-import { ISignal } from "./ISignal.js";
+import { IDerivation, ISignal } from "./ISignal.js";
 
 export class Thunk<T extends any[], TRet> implements ISignal<TRet> {
   private readonly signals;
   private readonly listeners = new Set<
     (value: TRet, version: Version) => void
   >();
+  private readonly derivations = new Set<IDerivation<TRet>>();
   private lastValue: TRet | undefined = undefined;
 
   #lastVersion = -1;
   #pendingInputs: any[];
   #pendingInputsCount = 0;
   #pendingInputsVersion = -1;
+  #notifiedListenersVersion = -1;
   readonly #unlisten: (() => void)[];
 
   constructor(
@@ -20,11 +22,17 @@ export class Thunk<T extends any[], TRet> implements ISignal<TRet> {
   ) {
     this.signals = s;
     this.#pendingInputs;
+    const self = this;
     for (let i = 0; i < s.length; i++) {
       const signal = s[i]!;
       this.#unlisten.push(
-        signal.on((v, version) => {
-          this.#onSignalChange(i, v, version);
+        signal._derive({
+          onSignalChanged(v, version) {
+            self.#onSignalChange(i, v, version);
+          },
+          onCommitted(v, version) {
+            self.#notifyCommitted(v, version);
+          },
         })
       );
     }
@@ -52,17 +60,47 @@ export class Thunk<T extends any[], TRet> implements ISignal<TRet> {
     if (this.#pendingInputsCount === this.signals.length) {
       this.#lastVersion = version;
       this.#pendingInputsCount = 0;
-      this.lastValue = this.f(...(this.#pendingInputs as any));
-      this.#notify(this.lastValue, version);
+      const newValue = this.f(...(this.#pendingInputs as any));
+      if (newValue !== this.lastValue) {
+        this.lastValue = newValue;
+        this.#notify(newValue, version);
+      } else {
+        // if the values did not change, we don't need to notify
+        // either downstream computations or commit listeners.
+        this.#notifiedListenersVersion = version;
+      }
     }
   }
 
   #notify(d: TRet, version: Version) {
-    for (const listener of this.listeners) {
-      // do not call `data` here. Only want to compute once
-      // rather than for each listener
-      listener(d, version);
+    for (const derivation of this.derivations) {
+      derivation.onSignalChanged(d, version);
     }
+  }
+
+  #notifyCommitted(_: any, version: Version) {
+    // TODO: test that we only notify once per committed tx
+    if (version === this.#notifiedListenersVersion) {
+      return;
+    }
+    this.#notifiedListenersVersion = version;
+    for (const listener of this.listeners) {
+      listener(this.data, version);
+    }
+    for (const derivation of this.derivations) {
+      derivation.onCommitted(this.data, version);
+    }
+    // have to notify derivations too.
+    // that's the only way they get the commit notification is if it is passed down
+    // the graph.
+  }
+
+  _derive(d: IDerivation<TRet>): () => void {
+    this.derivations.add(d);
+    return () => {
+      this.derivations.delete(d);
+      this.#maybeCleanup(true);
+    };
   }
 
   on(fn: (value: TRet, version: Version) => void): () => void {
@@ -84,14 +122,22 @@ export class Thunk<T extends any[], TRet> implements ISignal<TRet> {
     options: { autoCleanup?: boolean } = { autoCleanup: true }
   ): void {
     this.listeners.delete(fn);
-    if (options.autoCleanup && this.listeners.size === 0) {
-      this.destroy();
-    }
+    this.#maybeCleanup(options.autoCleanup || false);
   }
 
   destroy() {
     for (const u of this.#unlisten) {
       u();
+    }
+  }
+
+  #maybeCleanup(autoCleanup: boolean) {
+    if (
+      autoCleanup &&
+      this.listeners.size === 0 &&
+      this.derivations.size === 0
+    ) {
+      this.destroy();
     }
   }
 }

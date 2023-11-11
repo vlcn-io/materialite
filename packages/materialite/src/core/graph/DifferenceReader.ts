@@ -32,6 +32,10 @@ export class DifferenceStreamReader<T = any> {
     this.#operator.run(v);
   }
 
+  notifyCommitted(v: Version) {
+    this.#operator.notifyCommitted(v);
+  }
+
   drain(version: Version) {
     const ret: Multiset<T>[] = [];
     while (true) {

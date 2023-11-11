@@ -41,7 +41,9 @@ export class SetSource<T>
       // notify effects / listeners
       // this is done once the entire reactive graph has finished computing
       // itself
-      onCommitPhase3() {},
+      onCommitted(v: Version) {
+        self.#stream.notifyCommitted(v);
+      },
       onRollback() {
         self.#pending = [];
       },

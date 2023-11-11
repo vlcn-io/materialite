@@ -83,12 +83,14 @@ export abstract class StatefulSetSource<T>
       // release queues by telling the stream to send data
       onCommitPhase2(version: Version) {
         self.#stream.notify(version);
-
+      },
+      onCommitted(version: Version) {
         // In case we have direct source observers
         const tree = self.#tree;
         for (const l of self.#listeners) {
           l(tree);
         }
+        self.#stream.notifyCommitted(version);
       },
       onRollback() {
         self.#pending = [];

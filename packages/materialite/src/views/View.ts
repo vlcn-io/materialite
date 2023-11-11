@@ -2,15 +2,16 @@ import { comparator as consolidationComparator } from "../core/consolidation.js"
 import { AbstractDifferenceStream } from "../core/graph/AbstractDifferenceStream.js";
 import { Version } from "../core/types.js";
 import { Materialite } from "../materialite.js";
-import { ISignal } from "../signal/ISignal.js";
+import { IDerivation, ISignal } from "../signal/ISignal.js";
 
 export abstract class View<T, CT> implements ISignal<CT> {
   readonly #stream;
   readonly #materialite: Materialite;
   protected readonly comparator;
   protected readonly reader;
+  protected notifiedListenersVersion = -1;
   readonly #listeners: Set<(s: CT, v: Version) => void> = new Set();
-  #currentVersion = -1;
+  readonly #derivations = new Set<IDerivation<CT>>();
 
   abstract get data(): CT;
 
@@ -30,11 +31,13 @@ export abstract class View<T, CT> implements ISignal<CT> {
     const self = this;
     this.reader.setOperator({
       run(v: Version) {
-        self.#currentVersion = v;
         self.run(v);
       },
       pull() {
         return null;
+      },
+      notifyCommitted(v: Version) {
+        self.notifyCommitted(self.data, v);
       },
       destroy() {
         self.#stream.removeReader(self.reader);
@@ -54,10 +57,30 @@ export abstract class View<T, CT> implements ISignal<CT> {
     });
   }
 
-  protected notify(d: CT) {
-    for (const listener of this.#listeners) {
-      listener(d, this.#currentVersion);
+  protected notify(d: CT, v: Version) {
+    for (const derivation of this.#derivations) {
+      derivation.onSignalChanged(d, v);
     }
+  }
+
+  protected notifyCommitted(d: CT, v: Version) {
+    if (this.notifiedListenersVersion === v) {
+      return;
+    }
+    this.notifiedListenersVersion = v;
+    for (const listener of this.#listeners) {
+      listener(d, v);
+    }
+    // TODO: we have to notify our derivations too.
+  }
+
+  // TODO: make a signal mixin to mix this into Thunk and View and whomever else.
+  _derive(d: IDerivation<CT>) {
+    this.#derivations.add(d);
+    return () => {
+      this.#derivations.delete(d);
+      this.#maybeCleanup(true);
+    };
   }
 
   on(listener: (s: CT, v: Version) => void) {
@@ -79,13 +102,22 @@ export abstract class View<T, CT> implements ISignal<CT> {
     options: { autoCleanup?: boolean } = { autoCleanup: true }
   ) {
     this.#listeners.delete(listener);
-    if (this.#listeners.size === 0 && options.autoCleanup === true) {
+    this.#maybeCleanup(options.autoCleanup || false);
+  }
+
+  #maybeCleanup(autoCleanup: boolean) {
+    if (
+      autoCleanup &&
+      this.#listeners.size === 0 &&
+      this.#derivations.size === 0
+    ) {
       this.destroy();
     }
   }
 
   destroy() {
     this.#listeners.clear();
+    this.#derivations.clear();
     this.#stream.removeReader(this.reader);
   }
 
