@@ -1,5 +1,5 @@
 import { JoinResultVariadic } from "@vlcn.io/ds-and-algos/tuple";
-import { Entry, Multiset, PrimitiveValue } from "../multiset.js";
+import { Entry, Multiset } from "../multiset.js";
 import { Version } from "../types.js";
 import { MapOperator } from "./ops/MapOperator.js";
 import { FilterOperator } from "./ops/FilterOperator.js";
@@ -8,7 +8,7 @@ import { ConcatOperator } from "./ops/ConcatOperator.js";
 import { JoinOperator } from "./ops/JoinOperator.js";
 import { ReduceOperator } from "./ops/ReduceOperator.js";
 import { CountOperator, LinearCountOperator } from "./ops/CountOperator.js";
-import { DebugOperator } from "./ops/DebugOperator.js";
+import { EffectOperator } from "./ops/DebugOperator.js";
 import { DifferenceStreamWriter } from "./DifferenceWriter.js";
 import { DifferenceStreamReader } from "./DifferenceReader.js";
 import { Comparator } from "@vlcn.io/ds-and-algos/types";
@@ -17,11 +17,16 @@ import { AfterOperator } from "./ops/AfterOperator.js";
 import { TakeOperator } from "./ops/TakeOperator.js";
 
 import { PersistentTreeView } from "../../views/PersistentTreeView.js";
-import { PrimitiveView } from "../../views/PrimitiveView.js";
-import { IDifferenceStream } from "./IDifferenceStream.js";
+import { ValueView } from "../../views/PrimitiveView.js";
+import {
+  EffectOptions,
+  IDifferenceStream,
+  MaterializeOptions,
+} from "./IDifferenceStream.js";
 import { Materialite } from "../../materialite.js";
 import { ArrayView } from "../../views/ArrayView.js";
 import { CopyOnWriteArrayView } from "../../views/CopyOnWriteArrayView.js";
+import { View } from "../../views/View.js";
 
 export abstract class AbstractDifferenceStream<T>
   implements IDifferenceStream<T>
@@ -132,8 +137,15 @@ export abstract class AbstractDifferenceStream<T>
     return ret;
   }
 
-  materializeInto<T>(ctor: (stream: this) => T): T {
-    return ctor(this);
+  materializeInto<T extends View<V, VC>, V, VC>(
+    ctor: (stream: this) => T,
+    options: MaterializeOptions = { wantInitialData: true }
+  ): T {
+    const view = ctor(this);
+    if (options.wantInitialData) {
+      view.pull();
+    }
+    return view;
   }
 
   /**
@@ -156,30 +168,44 @@ export abstract class AbstractDifferenceStream<T>
    * The tree can also be indexed as if it were an array. Note that
    * unlike an array, indexing is O(logn) as we have to traverse the tree.
    */
-  materialize(c: Comparator<T>): PersistentTreeView<T> {
+  materialize(
+    c: Comparator<T>,
+    options: MaterializeOptions = { wantInitialData: true }
+  ): PersistentTreeView<T> {
     return this.materializeInto(
-      (stream) => new PersistentTreeView(this.materialite, stream, c)
+      (stream) => new PersistentTreeView(this.materialite, stream, c),
+      options
     );
   }
 
-  materializeArray(c: Comparator<T>): ArrayView<T> {
+  materializeArray(
+    c: Comparator<T>,
+    options: MaterializeOptions = { wantInitialData: true }
+  ): ArrayView<T> {
     return this.materializeInto(
-      (stream) => new ArrayView(this.materialite, stream, c)
+      (stream) => new ArrayView(this.materialite, stream, c),
+      options
     );
   }
 
-  materializeCopyOnWriteArray(c: Comparator<T>): CopyOnWriteArrayView<T> {
+  materializeCopyOnWriteArray(
+    c: Comparator<T>,
+    options: MaterializeOptions = { wantInitialData: true }
+  ): CopyOnWriteArrayView<T> {
     return this.materializeInto(
-      (stream) => new CopyOnWriteArrayView(this.materialite, stream, c)
+      (stream) => new CopyOnWriteArrayView(this.materialite, stream, c),
+      options
     );
   }
 
-  materializePrimitive<T extends PrimitiveValue>(
+  materializeValue<T extends any>(
     this: AbstractDifferenceStream<T>,
-    initial: T
-  ): PrimitiveView<T> {
+    initial: T,
+    options: MaterializeOptions = { wantInitialData: true }
+  ): ValueView<T> {
     return this.materializeInto(
-      (s) => new PrimitiveView(this.materialite, s, initial)
+      (s) => new ValueView(this.materialite, s, initial),
+      options
     );
   }
 
@@ -187,9 +213,17 @@ export abstract class AbstractDifferenceStream<T>
    * Run some sort of side-effect against values in the stream.
    * e.g., I/O & logging
    */
-  effect(f: (i: Multiset<T>) => void) {
+  effect(
+    f: (i: Multiset<T>) => void,
+    options: EffectOptions = { wantInitialData: true }
+  ) {
     const ret = this.newStream<T>();
-    new DebugOperator(this.writer.newReader(), ret.writer, f);
+    new EffectOperator(this.writer.newReader(), ret.writer, f);
+    if (options.wantInitialData) {
+      ret.pull({
+        expressions: [],
+      });
+    }
     return ret;
   }
 

@@ -12,7 +12,7 @@ export type {
 } from "./sources/Source.js";
 
 // Views
-export { PrimitiveView } from "./views/PrimitiveView.js";
+export { ValueView as PrimitiveView } from "./views/PrimitiveView.js";
 export { PersistentTreeView } from "./views/PersistentTreeView.js";
 
 // Re-Exports

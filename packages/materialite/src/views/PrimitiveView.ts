@@ -3,12 +3,10 @@ import { Version } from "../core/types.js";
 import { Materialite } from "../materialite.js";
 import { View } from "./View.js";
 
-type PrimitiveValue = boolean | string | number | bigint;
-
 /**
  * Represents the most recent value from a stream of primitives.
  */
-export class PrimitiveView<T extends PrimitiveValue> extends View<T, T> {
+export class ValueView<T> extends View<T, T> {
   #data: T;
 
   constructor(

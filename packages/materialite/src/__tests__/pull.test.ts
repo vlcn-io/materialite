@@ -27,22 +27,30 @@ test("late arrivals signal a pull to get old data.", () => {
 
     const timesTwo = source.stream
       .map((v) => v * 2)
-      .effect((_) => {
-        timesTwoCount++;
-      });
+      .effect(
+        (_) => {
+          timesTwoCount++;
+        },
+        { wantInitialData: false }
+      );
     const timesFour = timesTwo
       .map((v) => v * 2)
-      .effect((_) => {
-        timesFourCount++;
-      });
+      .effect(
+        (_) => {
+          timesFourCount++;
+        },
+        { wantInitialData: false }
+      );
     const timesSix = timesTwo
       .map((v) => v * 3)
-      .effect((_) => {
-        timesSixCount++;
-      });
+      .effect(
+        (_) => {
+          timesSixCount++;
+        },
+        { wantInitialData: false }
+      );
 
     const timesFourMaterialized = timesFour.materialize(compareNums);
-    timesFourMaterialized.pull();
     expect([...timesFourMaterialized.data]).toEqual([4]);
     expect(timesFourCount).toBe(1);
     expect(timesTwoCount).toBe(1);
@@ -53,7 +61,6 @@ test("late arrivals signal a pull to get old data.", () => {
     // Times size should pull its branch and not the 4 branch
     // the 4 branch has already seen all old data
     const timesSixMaterialized = timesSix.materialize(compareNums);
-    timesSixMaterialized.pull();
     expect(timesFourCount).toBe(1);
     expect(timesTwoCount).toBe(2);
     expect(timesSixCount).toBe(1);

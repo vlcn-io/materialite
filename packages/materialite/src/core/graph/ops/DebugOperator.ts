@@ -4,7 +4,7 @@ import { DifferenceStreamReader } from "../DifferenceReader.js";
 import { DifferenceStreamWriter } from "../DifferenceWriter.js";
 import { UnaryOperator } from "./UnaryOperator.js";
 
-export class DebugOperator extends UnaryOperator<any, any> {
+export class EffectOperator extends UnaryOperator<any, any> {
   constructor(
     input: DifferenceStreamReader<any>,
     output: DifferenceStreamWriter<any>,

@@ -1,7 +1,16 @@
-import { Entry, Multiset, PrimitiveValue } from "../multiset.js";
-import { PersistentTreeView, PrimitiveView } from "../../index.js";
+import { Entry, Multiset } from "../multiset.js";
 import { JoinResultVariadic } from "@vlcn.io/ds-and-algos/tuple";
 import { Comparator } from "@vlcn.io/ds-and-algos/types";
+import { ValueView } from "../../views/PrimitiveView.js";
+import { PersistentTreeView } from "../../views/PersistentTreeView.js";
+import { View } from "../../views/View.js";
+import { CopyOnWriteArrayView } from "../../views/CopyOnWriteArrayView.js";
+import { ArrayView } from "../../views/ArrayView.js";
+
+export type MaterializeOptions = {
+  wantInitialData?: boolean;
+};
+export type EffectOptions = MaterializeOptions;
 
 export interface IDifferenceStream<T> {
   after(v: T, comparator: Comparator<T>): IDifferenceStream<T>;
@@ -26,12 +35,27 @@ export interface IDifferenceStream<T> {
   ): IDifferenceStream<O>;
   count<K>(getKey: (i: T) => K): IDifferenceStream<number>;
   size(): IDifferenceStream<number>;
-  effect(f: (i: Multiset<T>) => void): IDifferenceStream<T>;
+  effect(
+    f: (i: Multiset<T>) => void,
+    options: EffectOptions
+  ): IDifferenceStream<T>;
 
-  materializeInto<T>(ctor: (stream: this) => T): T;
-  materialize(c: Comparator<T>): PersistentTreeView<T>;
-  materializePrimitive<T extends PrimitiveValue>(
+  materializeInto<T extends View<V, VC>, V, VC>(
+    ctor: (stream: this) => T,
+    options: MaterializeOptions
+  ): T;
+  materialize(
+    c: Comparator<T>,
+    options: MaterializeOptions
+  ): PersistentTreeView<T>;
+  materializeValue<T>(
     this: IDifferenceStream<T>,
-    initial: T
-  ): PrimitiveView<T>;
+    initial: T,
+    options: MaterializeOptions
+  ): ValueView<T>;
+  materializeCopyOnWriteArray(
+    c: Comparator<T>,
+    options: MaterializeOptions
+  ): CopyOnWriteArrayView<T>;
+  materializeArray(c: Comparator<T>, options: MaterializeOptions): ArrayView<T>;
 }
