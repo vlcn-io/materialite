@@ -10,6 +10,7 @@ import { ImmutableSetSource } from "./sources/ImmutableSetSource.js";
 import { Comparator } from "@vlcn.io/ds-and-algos/types";
 import { MutableSetSource } from "./sources/MutableSetSource.js";
 import { ISignal } from "./signal/ISignal.js";
+import { Thunk } from "./signal/Thunk.js";
 
 export class Materialite {
   #version: Version;
@@ -98,12 +99,12 @@ export class Materialite {
    * @param f
    * @param signals
    */
-  // compute<TRet, TSignals extends ISignal<unknown>[]>(
-  //   f: (...args: TSignals) => TRet,
-  //   ...signals: TSignals
-  // ) {
-  //   return new Thunk(f, signals);
-  // }
+  compute<T extends any[], TRet>(
+    f: (...args: { [K in keyof T]: T[K] }) => TRet,
+    ...s: { [K in keyof T]: ISignal<T[K]> }
+  ) {
+    return new Thunk(f, ...s);
+  }
 
   /**
    * Run the provided lambda in a transaciton.
