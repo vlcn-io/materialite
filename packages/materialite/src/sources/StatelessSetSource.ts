@@ -38,6 +38,10 @@ export class SetSource<T>
       onCommitPhase2(version: Version) {
         self.#stream.notify(version);
       },
+      // notify effects / listeners
+      // this is done once the entire reactive graph has finished computing
+      // itself
+      onCommitPhase3() {},
       onRollback() {
         self.#pending = [];
       },

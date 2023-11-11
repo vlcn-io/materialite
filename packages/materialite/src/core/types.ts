@@ -5,8 +5,12 @@ import { Materialite } from "../materialite.js";
 
 export type Version = number;
 export interface ISourceInternal {
+  // Add values to queues
   onCommitPhase1(version: Version): void;
+  // Drain queues and run the reactive graph
   onCommitPhase2(version: Version): void;
+  // Now that the graph has computed itself, notify effects / listeners
+  onCommitPhase3(version: Version): void;
   onRollback(): void;
 }
 export type MaterialiteForSourceInternal = {

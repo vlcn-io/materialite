@@ -1,3 +1,5 @@
+We shouldn't notify "regular listeners" until the entire reactive graph has computed itself?
+
 todo:
 allow for incremental streams to be taken off of views? I.e., can treat a view as a source itself.
 Can also treat a view as an atom for signals.

@@ -6,6 +6,7 @@ export class Thunk<T extends any[], TRet> implements ISignal<TRet> {
   private readonly listeners = new Set<
     (value: TRet, version: Version) => void
   >();
+  private lastValue: TRet | undefined = undefined;
 
   #lastVersion = -1;
   #pendingInputs: any[];
@@ -29,6 +30,10 @@ export class Thunk<T extends any[], TRet> implements ISignal<TRet> {
     }
   }
 
+  get data() {
+    return this.lastValue!;
+  }
+
   #onSignalChange(i: number, value: any, version: number) {
     if (version <= this.#lastVersion) {
       console.warn("received stale data");
@@ -47,7 +52,8 @@ export class Thunk<T extends any[], TRet> implements ISignal<TRet> {
     if (this.#pendingInputsCount === this.signals.length) {
       this.#lastVersion = version;
       this.#pendingInputsCount = 0;
-      this.#notify(this.f(...(this.#pendingInputs as any)), version);
+      this.lastValue = this.f(...(this.#pendingInputs as any));
+      this.#notify(this.lastValue, version);
     }
   }
 
