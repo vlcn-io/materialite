@@ -8,7 +8,7 @@ import { ConcatOperator } from "./ops/ConcatOperator.js";
 import { JoinOperator } from "./ops/JoinOperator.js";
 import { ReduceOperator } from "./ops/ReduceOperator.js";
 import { CountOperator, LinearCountOperator } from "./ops/CountOperator.js";
-import { EffectOperator } from "./ops/DebugOperator.js";
+import { EffectOperator } from "./ops/EffectOperator.js";
 import { DifferenceStreamWriter } from "./DifferenceWriter.js";
 import { DifferenceStreamReader } from "./DifferenceReader.js";
 import { Comparator } from "@vlcn.io/ds-and-algos/types";
