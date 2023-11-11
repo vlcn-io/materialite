@@ -1,4 +1,7 @@
 export interface ISignal<T> {
+  // TODO: move these to an internal interface
+  _derive(derivation: IDerivation<T>): () => void;
+
   on(fn: (value: T, version: number) => void): () => void;
   /**
    * If there are 0 listeners left after removing the given listener,
@@ -12,4 +15,9 @@ export interface ISignal<T> {
     options?: { autoCleanup?: boolean }
   ): void;
   get data(): T;
+}
+
+export interface IDerivation<T> {
+  onSignalChanged(value: T, version: number): void;
+  onCommitted(value: T, version: number): void;
 }

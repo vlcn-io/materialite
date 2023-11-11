@@ -7,6 +7,7 @@ export interface IOperator {
   run(version: Version): void;
   pull(msg: Hoisted): void;
   destroy(): void;
+  notifyCommitted(v: Version): void;
 }
 /**
  * A dataflow operator (node) that has many incoming edges (read handles) and one outgoing edge (write handle).
@@ -29,6 +30,10 @@ export class Operator<O> implements IOperator {
 
   run(v: Version) {
     this.#fn(v);
+  }
+
+  notifyCommitted(v: Version) {
+    this.output.notifyCommitted(v);
   }
 
   pendingWork() {

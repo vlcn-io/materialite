@@ -47,6 +47,12 @@ abstract class AbstractDifferenceStreamWriter<T> {
     }
   }
 
+  notifyCommitted(v: Version) {
+    for (const r of this.readers) {
+      r.notifyCommitted(v);
+    }
+  }
+
   newReader(): DifferenceStreamReader<T> {
     const queue = new Queue<T>();
     this.queues.push(queue);
