@@ -47,3 +47,5 @@ test("cleaning up the only user of a stream cleans up the entire pipeline but st
   // so no more notifications.
   expect(notifyCount).toBe(5);
 });
+
+// test cleanup when listeners / effects are attached
