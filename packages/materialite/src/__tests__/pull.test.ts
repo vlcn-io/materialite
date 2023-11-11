@@ -3,6 +3,7 @@ import { Materialite } from "../materialite.js";
 import { ISource } from "../sources/Source.js";
 
 const compareNums = (l: number, r: number) => l - r;
+// TODO: test this for _computation branching not re-running_ and _notification branching not re-running_
 test("late arrivals signal a pull to get old data.", () => {
   const m = new Materialite();
 

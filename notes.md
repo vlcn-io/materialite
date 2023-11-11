@@ -1,3 +1,5 @@
+better lazyness / pulling from multisets
+
 We shouldn't notify "regular listeners" until the entire reactive graph has computed itself?
 
 todo:

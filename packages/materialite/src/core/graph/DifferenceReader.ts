@@ -11,6 +11,7 @@ export class DifferenceStreamReader<T = any> {
   protected readonly queue;
   readonly #upstream: DifferenceStreamWriter<T>;
   #operator: IOperator;
+  #lastSeenVersion: Version = -1;
   constructor(upstream: DifferenceStreamWriter<T>, queue: Queue<T>) {
     this.queue = queue;
     this.#upstream = upstream;
@@ -29,10 +30,16 @@ export class DifferenceStreamReader<T = any> {
   }
 
   notify(v: Version) {
+    this.#lastSeenVersion = v;
     this.#operator.run(v);
   }
 
   notifyCommitted(v: Version) {
+    // If we did not process this version in this oeprator
+    // then we should not pass notifications down this path.
+    if (v !== this.#lastSeenVersion) {
+      return;
+    }
     this.#operator.notifyCommitted(v);
   }
 

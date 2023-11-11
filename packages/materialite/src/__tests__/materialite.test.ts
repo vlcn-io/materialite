@@ -1,4 +1,4 @@
-import { test } from "vitest";
+import { expect, test } from "vitest";
 import { Materialite } from "../materialite.js";
 import util from "util";
 import { ArrayView } from "../views/ArrayView.js";
@@ -162,14 +162,105 @@ test("db/overtone example - materialize track view", () => {
     );
 
   const sink = new ArrayView(materialite, stream);
+
+  let result: any[] = [];
+  let callCount = 0;
   sink.on((d) => {
-    console.log(d);
+    result = d;
+    callCount += 1;
+    console.log(result);
   });
 
-  playlistSource.addAll(playlists);
-  trackSource.addAll(tracks);
-  albumSource.addAll(albums);
-  playlistTrackSource.addAll(playlistsTracks);
-  trackArtistSource.addAll(trackArtists);
-  artistSource.addAll(artists);
+  materialite.tx(() => {
+    playlistSource.addAll(playlists);
+    trackSource.addAll(tracks);
+    albumSource.addAll(albums);
+    playlistTrackSource.addAll(playlistsTracks);
+    trackArtistSource.addAll(trackArtists);
+    artistSource.addAll(artists);
+  });
+
+  expect(callCount).toBe(1);
+  expect(result).toEqual([
+    {
+      id: 19,
+      name: "Track 19",
+      album_name: "Album 1",
+      artists: ["Artist 9"],
+      length: 19000,
+      playlist: "Playlist 1",
+    },
+    {
+      id: 18,
+      name: "Track 18",
+      album_name: "Album 1",
+      artists: ["Artist 8"],
+      length: 18000,
+      playlist: "Playlist 1",
+    },
+    {
+      id: 17,
+      name: "Track 17",
+      album_name: "Album 1",
+      artists: ["Artist 7"],
+      length: 17000,
+      playlist: "Playlist 1",
+    },
+    {
+      id: 16,
+      name: "Track 16",
+      album_name: "Album 1",
+      artists: ["Artist 6"],
+      length: 16000,
+      playlist: "Playlist 1",
+    },
+    {
+      id: 15,
+      name: "Track 15",
+      album_name: "Album 1",
+      artists: ["Artist 5"],
+      length: 15000,
+      playlist: "Playlist 1",
+    },
+    {
+      id: 14,
+      name: "Track 14",
+      album_name: "Album 1",
+      artists: ["Artist 4"],
+      length: 14000,
+      playlist: "Playlist 1",
+    },
+    {
+      id: 13,
+      name: "Track 13",
+      album_name: "Album 1",
+      artists: ["Artist 3"],
+      length: 13000,
+      playlist: "Playlist 1",
+    },
+    {
+      id: 12,
+      name: "Track 12",
+      album_name: "Album 1",
+      artists: ["Artist 2"],
+      length: 12000,
+      playlist: "Playlist 1",
+    },
+    {
+      id: 11,
+      name: "Track 11",
+      album_name: "Album 1",
+      artists: ["Artist 1"],
+      length: 11000,
+      playlist: "Playlist 1",
+    },
+    {
+      id: 10,
+      name: "Track 10",
+      album_name: "Album 1",
+      artists: ["Artist 0"],
+      length: 10000,
+      playlist: "Playlist 1",
+    },
+  ]);
 });
