@@ -25,7 +25,7 @@ export class PersistentTreeView<T> extends View<T, PersistentTreap<T>> {
     super(materialite, stream, comparator);
   }
 
-  get data() {
+  get value() {
     return this.#data;
   }
 
@@ -44,7 +44,7 @@ export class PersistentTreeView<T> extends View<T, PersistentTreap<T>> {
     }
     this.#data = newData;
     if (changed) {
-      this.notify(newData);
+      this.notify(newData, version);
     }
   }
 

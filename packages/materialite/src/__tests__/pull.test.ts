@@ -52,7 +52,7 @@ test("late arrivals signal a pull to get old data.", () => {
       );
 
     const timesFourMaterialized = timesFour.materialize(compareNums);
-    expect([...timesFourMaterialized.data]).toEqual([4]);
+    expect([...timesFourMaterialized.value]).toEqual([4]);
     expect(timesFourCount).toBe(1);
     expect(timesTwoCount).toBe(1);
     // hmm.. maybe should be called? idk. it has an effect attached so those should also cause calling
@@ -65,8 +65,8 @@ test("late arrivals signal a pull to get old data.", () => {
     expect(timesFourCount).toBe(1);
     expect(timesTwoCount).toBe(2);
     expect(timesSixCount).toBe(1);
-    expect([...timesFourMaterialized.data]).toEqual([4]);
-    expect([...timesSixMaterialized.data]).toEqual([6]);
+    expect([...timesFourMaterialized.value]).toEqual([4]);
+    expect([...timesSixMaterialized.value]).toEqual([6]);
   }
 });
 

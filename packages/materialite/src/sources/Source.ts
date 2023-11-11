@@ -47,7 +47,7 @@ export interface IStatelessSource<T> extends ISource<T> {
 
 export interface IStatefulSource<T, CT> extends ISource<T> {
   readonly _state: "stateful";
-  readonly data: CT;
+  readonly value: CT;
   resendAll(msg: Hoisted): this;
 }
 

@@ -10,11 +10,11 @@ export class Thunk<T extends any[], TRet> implements ISignal<TRet> {
   private lastValue: TRet | undefined = undefined;
 
   #lastVersion = -1;
-  #pendingInputs: any[];
+  #pendingInputs: any[] = [];
   #pendingInputsCount = 0;
   #pendingInputsVersion = -1;
   #notifiedListenersVersion = -1;
-  readonly #unlisten: (() => void)[];
+  readonly #unlisten: (() => void)[] = [];
 
   constructor(
     private readonly f: (...args: { [K in keyof T]: T[K] }) => TRet,
@@ -36,9 +36,11 @@ export class Thunk<T extends any[], TRet> implements ISignal<TRet> {
         })
       );
     }
+
+    this.lastValue = this.f(...(s.map((s) => s.value) as any));
   }
 
-  get data() {
+  get value() {
     return this.lastValue!;
   }
 
@@ -85,10 +87,10 @@ export class Thunk<T extends any[], TRet> implements ISignal<TRet> {
     }
     this.#notifiedListenersVersion = version;
     for (const listener of this.listeners) {
-      listener(this.data, version);
+      listener(this.value, version);
     }
     for (const derivation of this.derivations) {
-      derivation.onCommitted(this.data, version);
+      derivation.onCommitted(this.value, version);
     }
     // have to notify derivations too.
     // that's the only way they get the commit notification is if it is passed down

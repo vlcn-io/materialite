@@ -14,7 +14,7 @@ export interface ISignal<T> {
     fn: (value: T, version: number) => void,
     options?: { autoCleanup?: boolean }
   ): void;
-  get data(): T;
+  get value(): T;
 }
 
 export interface IDerivation<T> {
