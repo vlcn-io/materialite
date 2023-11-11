@@ -11,6 +11,7 @@ import { Comparator } from "@vlcn.io/ds-and-algos/types";
 import { MutableSetSource } from "./sources/MutableSetSource.js";
 import { ISignal } from "./signal/ISignal.js";
 import { Thunk } from "./signal/Thunk.js";
+import { Atom } from "./signal/Atom.js";
 
 export class Materialite {
   #version: Version;
@@ -42,6 +43,11 @@ export class Materialite {
    */
   newStatelessSet<T>() {
     const ret = new SetSource<T>(this.#internal);
+    return ret;
+  }
+
+  newAtom<T>(v: T) {
+    const ret = new Atom<T>(this.#internal, v);
     return ret;
   }
 

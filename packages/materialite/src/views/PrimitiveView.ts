@@ -18,7 +18,7 @@ export class ValueView<T> extends View<T, T> {
     this.#data = initial;
   }
 
-  get data() {
+  get value() {
     return this.#data;
   }
 

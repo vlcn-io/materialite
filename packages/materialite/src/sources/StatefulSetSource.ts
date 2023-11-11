@@ -102,7 +102,7 @@ export abstract class StatefulSetSource<T>
     return this.#stream;
   }
 
-  get data() {
+  get value() {
     return this.#tree;
   }
 

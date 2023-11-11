@@ -8,7 +8,7 @@ import { View } from "./View.js";
 export class CopyOnWriteArrayView<T> extends View<T, readonly T[]> {
   #data: readonly T[] = [];
 
-  get data() {
+  get value() {
     return this.#data;
   }
 
@@ -33,7 +33,7 @@ export class CopyOnWriteArrayView<T> extends View<T, readonly T[]> {
     });
     this.#data = newData;
     if (changed) {
-      this.notify(newData);
+      this.notify(newData, version);
     }
   }
 }

@@ -13,7 +13,7 @@ export abstract class View<T, CT> implements ISignal<CT> {
   readonly #listeners: Set<(s: CT, v: Version) => void> = new Set();
   readonly #derivations = new Set<IDerivation<CT>>();
 
-  abstract get data(): CT;
+  abstract get value(): CT;
 
   /**
    * @param stream The stream of differences that should be materialized into this sink
@@ -37,7 +37,7 @@ export abstract class View<T, CT> implements ISignal<CT> {
         return null;
       },
       notifyCommitted(v: Version) {
-        self.notifyCommitted(self.data, v);
+        self.notifyCommitted(self.value, v);
       },
       destroy() {
         self.#stream.removeReader(self.reader);

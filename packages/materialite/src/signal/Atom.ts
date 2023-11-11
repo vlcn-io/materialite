@@ -68,11 +68,11 @@ export class Atom<T> implements ISignal<T> {
     this.#derivations.clear();
   }
 
-  get data() {
+  get value() {
     return this.#value;
   }
 
-  set data(v: T) {
+  set value(v: T) {
     if (v === this.#value) {
       return;
     }

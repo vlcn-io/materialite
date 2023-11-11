@@ -10,24 +10,24 @@ import { View as View } from "./View.js";
  * - PersistentTreeSink
  */
 export class ArrayView<T> extends View<T, T[]> {
-  readonly data: T[] = [];
+  readonly value: T[] = [];
 
   protected run(version: Version) {
     let changed = false;
 
     this.reader.drain(version).forEach((collection) => {
       if (collection.eventMetadata?.cause === "full_recompute") {
-        changed = this.data.length > 0;
-        this.data.length = 0;
+        changed = this.value.length > 0;
+        this.value.length = 0;
       }
       // now we incrementally update our sink.
       changed =
-        materializeMutableArray(collection, this.data, this.comparator) ||
+        materializeMutableArray(collection, this.value, this.comparator) ||
         changed;
     });
     // TODO: why is the sink called so damn often?
     if (changed) {
-      this.notify(this.data, version);
+      this.notify(this.value, version);
     }
   }
 }
