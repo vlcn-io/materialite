@@ -66,8 +66,21 @@ export class Thunk<T extends any[], TRet> implements ISignal<TRet> {
     };
   }
 
-  off(fn: (value: TRet, version: Version) => void): void {
+  /**
+   * If there are 0 listeners left after removing the given listener,
+   * the signal is destroyed.
+   *
+   * To opt out of this behavior, pass `autoCleanup: false`
+   * @param listener
+   */
+  off(
+    fn: (value: TRet, version: Version) => void,
+    options: { autoCleanup?: boolean } = { autoCleanup: true }
+  ): void {
     this.listeners.delete(fn);
+    if (options.autoCleanup && this.listeners.size === 0) {
+      this.destroy();
+    }
   }
 
   destroy() {

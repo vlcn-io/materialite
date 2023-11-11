@@ -2,13 +2,15 @@ import { comparator as consolidationComparator } from "../core/consolidation.js"
 import { AbstractDifferenceStream } from "../core/graph/AbstractDifferenceStream.js";
 import { Version } from "../core/types.js";
 import { Materialite } from "../materialite.js";
+import { ISignal } from "../signal/ISignal.js";
 
-export abstract class View<T, CT> {
+export abstract class View<T, CT> implements ISignal<CT> {
   readonly #stream;
   readonly #materialite: Materialite;
   protected readonly comparator;
   protected readonly reader;
-  readonly #listeners: Set<(s: CT) => void> = new Set();
+  readonly #listeners: Set<(s: CT, v: Version) => void> = new Set();
+  #currentVersion = -1;
 
   abstract get data(): CT;
 
@@ -28,6 +30,7 @@ export abstract class View<T, CT> {
     const self = this;
     this.reader.setOperator({
       run(v: Version) {
+        self.#currentVersion = v;
         self.run(v);
       },
       pull() {
@@ -53,14 +56,14 @@ export abstract class View<T, CT> {
 
   protected notify(d: CT) {
     for (const listener of this.#listeners) {
-      listener(d);
+      listener(d, this.#currentVersion);
     }
   }
 
-  onChange(listener: (s: CT) => void) {
+  on(listener: (s: CT, v: Version) => void) {
     this.#listeners.add(listener);
     return () => {
-      this.removeListener(listener);
+      this.off(listener);
     };
   }
 
@@ -71,8 +74,8 @@ export abstract class View<T, CT> {
    * To opt out of this behavior, pass `autoCleanup: false`
    * @param listener
    */
-  removeListener(
-    listener: (s: CT) => void,
+  off(
+    listener: (s: CT, v: Version) => void,
     options: { autoCleanup?: boolean } = { autoCleanup: true }
   ) {
     this.#listeners.delete(listener);

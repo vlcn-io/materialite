@@ -3,6 +3,8 @@ allow for incremental streams to be taken off of views? I.e., can treat a view a
 Can also treat a view as an atom for signals.
 
 
+Change operators to queue pending input instead of pulling when it is missing?
+
 ---
 
 Check pull implementation.
