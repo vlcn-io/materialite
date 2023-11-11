@@ -49,6 +49,7 @@ export class DifferenceStreamReader<T = any> {
   }
 
   pull(msg: Hoisted) {
+    this.queue.prepareForRecompute();
     this.#upstream.pull(msg);
   }
 

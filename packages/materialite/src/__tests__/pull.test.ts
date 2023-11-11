@@ -2,7 +2,7 @@ import { test, expect } from "vitest";
 import { Materialite } from "../materialite.js";
 import { ISource } from "../sources/Source.js";
 
-const compareNums = (l, r) => l - r;
+const compareNums = (l: number, r: number) => l - r;
 test("late arrivals signal a pull to get old data.", () => {
   const m = new Materialite();
 
@@ -47,17 +47,21 @@ test("late arrivals signal a pull to get old data.", () => {
     expect(timesFourCount).toBe(1);
     expect(timesTwoCount).toBe(1);
     // hmm.. maybe should be called? idk. it has an effect attached so those should also cause calling
-    expect(timesSixCount).toBe(1);
+    // yea, effects should pull
+    expect(timesSixCount).toBe(0);
 
     // Times size should pull its branch and not the 4 branch
     // the 4 branch has already seen all old data
-    timesSix.materialize(compareNums).pull();
+    const timesSixMaterialized = timesSix.materialize(compareNums);
+    timesSixMaterialized.pull();
     expect(timesFourCount).toBe(1);
     expect(timesTwoCount).toBe(2);
-    expect(timesSixCount).toBe(2);
+    expect(timesSixCount).toBe(1);
+    expect([...timesFourMaterialized.data]).toEqual([4]);
+    expect([...timesSixMaterialized.data]).toEqual([6]);
   }
 });
 
-test("late arrivals do not push new data down forks that do not want it", () => {});
+// test("late arrivals do not push new data down forks that do not want it", () => {});
 
-test("linear count", () => {});
+// test("linear count", () => {});

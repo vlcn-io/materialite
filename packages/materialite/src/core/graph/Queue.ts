@@ -15,6 +15,7 @@ type Node<T> = {
 
 export class Queue<T> {
   #lastSeenVersion = -1;
+  #awaitingRecompute = false;
   #head: Node<T> | null = null;
   #tail: Node<T> | null = null;
 
@@ -23,6 +24,14 @@ export class Queue<T> {
       // throw an error?
       console.warn("enqueueing old data");
       return;
+    }
+    if (data[1].eventMetadata?.cause === "full_recompute") {
+      if (this.#awaitingRecompute) {
+        this.#awaitingRecompute = false;
+      } else {
+        // this channel didn't pull for old data
+        return;
+      }
     }
     this.#lastSeenVersion = data[0];
     const node = { data, next: null };
@@ -34,8 +43,8 @@ export class Queue<T> {
     this.#tail = node;
   }
 
-  resetVersion() {
-    this.#lastSeenVersion = -1;
+  prepareForRecompute() {
+    this.#awaitingRecompute = true;
   }
 
   peek() {

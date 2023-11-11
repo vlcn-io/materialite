@@ -45,7 +45,7 @@ export abstract class View<T, CT> {
 
   pull() {
     this.#materialite.tx(() => {
-      this.#stream.pull({
+      this.reader.pull({
         expressions: [],
       });
     });
