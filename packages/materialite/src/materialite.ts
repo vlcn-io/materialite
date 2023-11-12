@@ -108,8 +108,8 @@ export class Materialite {
   compute<T extends any[], TRet>(
     f: (...args: { [K in keyof T]: T[K] }) => TRet,
     ...s: { [K in keyof T]: ISignal<T[K]> }
-  ) {
-    return new Thunk(f, ...s);
+  ): Thunk<T, TRet> {
+    return new Thunk(f, ...s) as any;
   }
 
   /**

@@ -49,6 +49,10 @@ export abstract class View<T, CT> implements ISignal<CT> {
     return this.#stream;
   }
 
+  pipe<R>(f: (v: CT) => R): ISignal<R> {
+    return this.#materialite.compute(f, this);
+  }
+
   pull() {
     this.#materialite.tx(() => {
       this.reader.pull({
