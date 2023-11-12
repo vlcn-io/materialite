@@ -1,6 +1,8 @@
 // Top level APIs
 export { Materialite } from "./materialite.js";
 export { AbstractDifferenceStream as DifferenceStream } from "./core/graph/AbstractDifferenceStream.js";
+export { ISignal } from "./signal/ISignal.js";
+export { IDifferenceStream } from "./core/graph/IDifferenceStream.js";
 
 // Sources
 export { SetSource } from "./sources/StatelessSetSource.js";

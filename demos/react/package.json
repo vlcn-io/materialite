@@ -12,6 +12,7 @@
   "dependencies": {
     "@vlcn.io/ds-and-algos": "workspace:*",
     "@vlcn.io/materialite": "workspace:*",
+    "@vlcn.io/materialite-react": "workspace:*",
     "immutable": "5.0.0-beta.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
