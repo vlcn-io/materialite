@@ -1,4 +1,4 @@
-import { Entry, Multiset } from "../multiset.js";
+import { Entry } from "../multiset.js";
 import { JoinResultVariadic } from "@vlcn.io/ds-and-algos/tuple";
 import { Comparator } from "@vlcn.io/ds-and-algos/types";
 import { ValueView } from "../../views/PrimitiveView.js";
@@ -35,10 +35,7 @@ export interface IDifferenceStream<T> {
   ): IDifferenceStream<O>;
   count<K>(getKey: (i: T) => K): IDifferenceStream<number>;
   size(): IDifferenceStream<number>;
-  effect(
-    f: (i: Multiset<T>) => void,
-    options: EffectOptions
-  ): IDifferenceStream<T>;
+  effect(f: (i: T) => void, options: EffectOptions): IDifferenceStream<T>;
 
   materializeInto<T extends View<V, VC>, V, VC>(
     ctor: (stream: this) => T,

@@ -214,7 +214,7 @@ export abstract class AbstractDifferenceStream<T>
    * e.g., I/O & logging
    */
   effect(
-    f: (i: Multiset<T>) => void,
+    f: (i: T) => void,
     options: EffectOptions = { wantInitialData: true }
   ) {
     const ret = this.newStream<T>();
