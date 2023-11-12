@@ -55,7 +55,7 @@ export class DOMView<T extends HTMLElement, K> {
       run(v: Version) {
         self.#run(v);
       },
-      notifyCommitted(v) {
+      notifyCommitted(_v) {
         // TODO
       },
       pull() {

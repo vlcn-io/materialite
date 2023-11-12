@@ -84,6 +84,9 @@ export class MutableMapSource<K, T>
           l(self.#map);
         }
       },
+      onCommitted(v: Version) {
+        self.#stream.notifyCommitted(v);
+      },
       onRollback() {
         self.#pending = [];
       },
@@ -94,7 +97,7 @@ export class MutableMapSource<K, T>
     return this.#stream;
   }
 
-  get data() {
+  get value() {
     return this.#map;
   }
 
