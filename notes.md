@@ -1,3 +1,11 @@
+Demos:
+
+1. Computation playground?
+
+Array -> Array materialization? Sort by received array index.
+
+---
+
 better lazyness / pulling from multisets
 
 We shouldn't notify "regular listeners" until the entire reactive graph has computed itself?
