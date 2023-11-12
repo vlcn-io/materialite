@@ -18,8 +18,8 @@ export const TaskTable: React.FC<TaskTableProps> = (props) => {
   useEffect(() => {
     console.log("CREATE SINK");
     const sink = props.tasks.materialize((l, r) => l.id - r.id);
-    setTasksList(sink.data);
-    sink.onChange((list) => {
+    setTasksList(sink.value);
+    sink.on((list) => {
       setTasksList(list);
     });
     return () => {
