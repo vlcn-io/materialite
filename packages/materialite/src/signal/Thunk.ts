@@ -44,6 +44,10 @@ export class Thunk<T extends any[], TRet> implements ISignal<TRet> {
     return this.lastValue!;
   }
 
+  pipe<R>(f: (v: TRet) => R): ISignal<R> {
+    return new Thunk((v) => f(v), this);
+  }
+
   #onSignalChange(i: number, value: any, version: number) {
     if (version <= this.#lastVersion) {
       console.warn("received stale data");

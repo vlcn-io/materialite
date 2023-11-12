@@ -15,6 +15,8 @@ export interface ISignal<T> {
     options?: { autoCleanup?: boolean }
   ): void;
   get value(): T;
+
+  pipe<R>(f: (v: T) => R): ISignal<R>;
 }
 
 export interface IDerivation<T> {

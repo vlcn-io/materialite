@@ -58,6 +58,53 @@ test("Thunk can take many inputs", () => {
   expect(value).toBe(9);
   expect(count).toBe(1);
 });
+
+test("no notifications if values do not change", () => {
+  const m = new Materialite();
+  const a = m.newAtom(1);
+
+  let count = 0;
+  let value = a.value;
+  a.on((v) => {
+    count++;
+    value = v;
+  });
+
+  a.value = 1;
+  expect(count).toBe(0);
+  expect(value).toBe(1);
+});
+
+test("eager cleanup", () => {
+  const m = new Materialite();
+  const a = m.newAtom(1);
+
+  let count = 0;
+  const fn = (v: number) => {
+    ++count;
+    return v + 1;
+  };
+  const final = a.pipe(fn).pipe(fn).pipe(fn);
+  const off = final.on(() => {});
+
+  expect(final.value).toBe(4);
+  expect(count).toBe(3);
+
+  // TODO: off should take options about eager cleanup
+  off();
+
+  // TODO: If we don't eager cleanup how do we clean the graph? :|
+  // Finalization registries?
+  // Weak refs to things in theh graph? hmm.. middle nodes won't be held.
+  // No clean unless explicit destroy called?
+  a.value = 2;
+  expect(count).toBe(3);
+
+  m.compute;
+});
+
+test("eager cleanup doesn't prune used branaches", () => {});
+
 // test thunks / composition of many signals into a single computed value
 // test materialized views as signals
 // test de-materialization?

@@ -45,6 +45,10 @@ export class Atom<T> implements ISignal<T> {
     };
   }
 
+  pipe<R>(f: (v: T) => R): ISignal<R> {
+    return this.#materialite.materialite.compute(f, this);
+  }
+
   _derive(derivation: IDerivation<T>): () => void {
     this.#derivations.add(derivation);
     return () => {
