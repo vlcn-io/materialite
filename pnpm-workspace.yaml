@@ -3,3 +3,4 @@ packages:
   - "packages/ds-and-algos"
   - "buildall"
   - "demos/react"
+  - "demos/react2"
