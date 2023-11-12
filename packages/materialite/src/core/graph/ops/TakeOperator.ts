@@ -47,6 +47,9 @@ import { Treap } from "@vlcn.io/ds-and-algos/Treap";
  *
  * But that is only on initial pull...
  * Which is different from streaming events.
+ *
+ * Take needs to be able to pass messages up the graph for more data if
+ * something falls out the window.
  */
 export class TakeOperator<I> extends LinearUnaryOperator<I, I> {
   readonly #tree;

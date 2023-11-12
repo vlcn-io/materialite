@@ -41,6 +41,6 @@ export interface ITree<T> {
   get(value: T): T | null;
   getMin(): T | null;
   getMax(): T | null;
-  iteratorAfter(value: T): Iterator<T>;
+  iteratorAfter(value: T): IterableIterator<T>;
   [Symbol.iterator](): Generator<T>;
 }

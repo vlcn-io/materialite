@@ -139,17 +139,17 @@ export abstract class StatefulSetSource<T>
 
 function asEntries<T>(
   m: ITree<T>,
-  _comparator: Comparator<T>,
-  _hoisted: Hoisted
+  comparator: Comparator<T>,
+  hoisted: Hoisted
 ): Iterable<Entry<T>> {
-  // const _after = hoisted.expressions.filter((e) => e._tag === "after")[0];
-  // if (after && after.comparator === comparator) {
-  //   return {
-  //     [Symbol.iterator]() {
-  //       return m.iteratorAfter(after.cursor as any);
-  //     },
-  //   };
-  // }
+  const after = hoisted.expressions.filter((e) => e._tag === "after")[0];
+  if (after && after.comparator === comparator) {
+    return {
+      [Symbol.iterator]() {
+        return gen(m.iteratorAfter(after.cursor as any));
+      },
+    };
+  }
   return {
     [Symbol.iterator]() {
       return gen(m);
@@ -157,7 +157,7 @@ function asEntries<T>(
   };
 }
 
-function* gen<T>(m: ITree<T>) {
+function* gen<T>(m: Iterable<T>) {
   for (const v of m) {
     yield [v, 1] as const;
   }
