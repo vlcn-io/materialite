@@ -1,3 +1,8 @@
+Infinite paginate yourself?
+View value should be returned as read only.
+
+---
+
 Demos:
 
 1. Computation playground?

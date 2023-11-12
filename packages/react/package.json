@@ -1,6 +1,6 @@
 {
-  "name": "@vlcn.io/materialite",
-  "version": "2.0.0",
+  "name": "@vlcn.io/materialite-react",
+  "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
   "type": "module",
@@ -19,6 +19,6 @@
     "vitest": "^0.34.6"
   },
   "dependencies": {
-    "@vlcn.io/ds-and-algos": "workspace:*"
+    "@vlcn.io/materialite": "workspace:*"
   }
 }

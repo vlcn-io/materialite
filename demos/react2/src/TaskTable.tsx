@@ -33,9 +33,6 @@ export default function TaskTable() {
         accessorKey: "title",
       },
       {
-        accessorKey: "description",
-      },
-      {
         accessorKey: "dueDate",
         cell: (info) => info.getValue<Date>().toLocaleString(),
         header: "Due Date",
@@ -113,7 +110,8 @@ export default function TaskTable() {
     // onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    debugTable: true,
+    manualPagination: true,
+    pageCount: -1,
   });
 
   const { rows } = table.getRowModel();
