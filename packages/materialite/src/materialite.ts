@@ -12,6 +12,7 @@ import { MutableSetSource } from "./sources/MutableSetSource.js";
 import { ISignal } from "./signal/ISignal.js";
 import { Thunk } from "./signal/Thunk.js";
 import { Atom } from "./signal/Atom.js";
+import { MutableArraySource } from "./sources/MutableArraySource.js";
 
 export class Materialite {
   #version: Version;
@@ -97,6 +98,11 @@ export class Materialite {
    */
   newUnorderedSet<K, V>(getKey: KeyFn<V, K>) {
     const ret = new MutableMapSource<K, V>(this.#internal, getKey);
+    return ret;
+  }
+
+  newArraySource<T>() {
+    const ret = new MutableArraySource<T>(this.#internal);
     return ret;
   }
 

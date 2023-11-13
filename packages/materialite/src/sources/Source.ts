@@ -37,7 +37,6 @@ export interface ISortedSource<T> extends ISource<T> {
 }
 
 export interface IUnsortedSource<T, K> extends ISource<T> {
-  readonly keyFn: KeyFn<T, K>;
   readonly _sort: "unsorted";
 }
 

@@ -1,6 +1,14 @@
 Source as signal?
 ISignal vs IDifferenceSignal?
 
+Allow dupes in your set sources??
+
+Add something to notebook that compares results from both approaches.
+
+Just add an array source.....
+And materialize it w/o order?
+We can pass indices... And sort by those. Source indices are unique so we can replace by then.
+
 ---
 
 Infinite paginate yourself?
