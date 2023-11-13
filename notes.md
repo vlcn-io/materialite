@@ -1,3 +1,8 @@
+Source as signal?
+ISignal vs IDifferenceSignal?
+
+---
+
 Infinite paginate yourself?
 View value should be returned as read only.
 

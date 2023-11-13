@@ -1,5 +1,27 @@
-import { ISignal } from "@vlcn.io/materialite";
+import { ISignal, ISource } from "@vlcn.io/materialite";
 import { useEffect, useState } from "react";
+
+export function useNewSource<T>(fn: () => ISource<T>, deps: any[]) {
+  const [source, setSource] = useState<ISource<T>>(() => {
+    return fn();
+  });
+  useEffect(() => {
+    const source = fn();
+    setSource(source);
+    return () => {
+      source.detachPipelines();
+    };
+  }, deps);
+  return source;
+}
+
+export function useView<T>(signal: ISignal<T>) {
+  return useSignal(signal);
+}
+
+export function useNewView<T>(fn: () => ISignal<T>, deps: any[]) {
+  return useNewSignal(fn, deps);
+}
 
 export function useSignal<T>(signal: ISignal<T>) {
   const [value, setValue] = useState<T>(signal.value);
@@ -29,5 +51,5 @@ export function useNewSignal<T>(fn: () => ISignal<T>, deps: any[]) {
     });
   }, deps);
 
-  return [signal, value];
+  return [signal, value] as const;
 }

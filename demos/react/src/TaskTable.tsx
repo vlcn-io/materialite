@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Task } from "./data/tasks/schema.js";
 import { ListChildComponentProps } from "react-window";
 import { VirtualTable } from "./virtualized/VirtualTable.js";
 import { DifferenceStream } from "@vlcn.io/materialite";
 import { PersistentTreap } from "@vlcn.io/ds-and-algos/PersistentTreap";
+import { useNewView } from "@vlcn.io/materialite-react";
 
 type TaskTableProps = {
   tasks: DifferenceStream<Task>;
@@ -12,20 +13,10 @@ type TaskTableProps = {
 };
 
 export const TaskTable: React.FC<TaskTableProps> = (props) => {
-  const [tasksList, setTasksList] = useState<PersistentTreap<Task> | null>(
-    null
+  const [, tasksList] = useNewView(
+    () => props.tasks.materialize((l, r) => l.id - r.id),
+    [props.tasks]
   );
-  useEffect(() => {
-    console.log("CREATE SINK");
-    const sink = props.tasks.materialize((l, r) => l.id - r.id);
-    setTasksList(sink.value);
-    sink.on((list) => {
-      setTasksList(list);
-    });
-    return () => {
-      sink.destroy();
-    };
-  }, [props.tasks]);
 
   return (
     <div className="bg-gray-100 p-6 overflow-y-auto">

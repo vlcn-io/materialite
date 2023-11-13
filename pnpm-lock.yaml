@@ -30,6 +30,9 @@ importers:
       '@vlcn.io/materialite':
         specifier: workspace:*
         version: link:../../packages/materialite
+      '@vlcn.io/materialite-react':
+        specifier: workspace:*
+        version: link:../../packages/react
       immutable:
         specifier: 5.0.0-beta.4
         version: 5.0.0-beta.4
