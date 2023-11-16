@@ -8,10 +8,7 @@ export { IDifferenceStream } from "./core/graph/IDifferenceStream.js";
 export { SetSource } from "./sources/StatelessSetSource.js";
 export { ImmutableSetSource as PersistentSetSource } from "./sources/ImmutableSetSource.js";
 export { MutableMapSource } from "./sources/MutableMapSource.js";
-export type {
-  IStatefulSource as IMemorableSource,
-  ISource,
-} from "./sources/Source.js";
+export type { IStatefulSource, ISource } from "./sources/Source.js";
 
 // Views
 export { ValueView as PrimitiveView } from "./views/PrimitiveView.js";

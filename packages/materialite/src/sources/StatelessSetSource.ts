@@ -61,6 +61,10 @@ export class SetSource<T>
     );
   }
 
+  destroy(): void {
+    this.detachPipelines();
+  }
+
   addAll(values: Iterable<T>): this {
     // TODO (mlaw): start a materialite transaction
     for (const v of values) {

@@ -108,6 +108,11 @@ export class MutableMapSource<K, T>
     );
   }
 
+  destroy(): void {
+    this.detachPipelines();
+    this.#listeners.clear();
+  }
+
   onChange(cb: (data: Map<K, T>) => void) {
     this.#listeners.add(cb);
     return () => this.#listeners.delete(cb);

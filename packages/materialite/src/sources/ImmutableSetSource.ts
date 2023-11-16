@@ -17,4 +17,14 @@ export class ImmutableSetSource<T> extends StatefulSetSource<T> {
       (comparator) => new PersistentTreap(comparator)
     );
   }
+
+  withNewOrdering(comp: Comparator<T>): this {
+    const ret = new ImmutableSetSource<T>(this.materialite, comp);
+    this.materialite.materialite.tx(() => {
+      for (const v of this.value) {
+        ret.add(v);
+      }
+    });
+    return ret as any;
+  }
 }

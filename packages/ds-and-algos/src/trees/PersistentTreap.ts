@@ -117,6 +117,20 @@ export class PersistentTreap<T> implements ITree<T> {
     return result;
   }
 
+  // TODO: we can do better here. We can `findIndex` based on a provided value in O(logn)
+  findIndex(pred: (x: T) => boolean): number {
+    let index = 0;
+
+    for (const value of inOrderTraversal(this.root)) {
+      if (pred(value)) {
+        return index;
+      }
+      index += 1;
+    }
+
+    return -1;
+  }
+
   reduce<U>(callback: (accumulator: U, value: T) => U, initialValue: U): U {
     let accumulator = initialValue;
 

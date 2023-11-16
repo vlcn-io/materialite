@@ -48,6 +48,13 @@ export class Thunk<T extends any[], TRet> implements ISignal<TRet> {
     return new Thunk((v) => f(v), this);
   }
 
+  combine<To extends any[], R>(
+    f: (a: TRet, ...args: { [K in keyof To]: To[K] }) => R,
+    ...s: { [K in keyof To]: ISignal<To[K]> }
+  ) {
+    return new Thunk(f, this, ...s);
+  }
+
   #onSignalChange(i: number, value: any, version: number) {
     if (version <= this.#lastVersion) {
       console.warn("received stale data");

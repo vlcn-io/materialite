@@ -18,7 +18,7 @@ export abstract class StatefulSetSource<T>
 
   #stream: RootDifferenceStream<T>;
   readonly #internal: ISourceInternal;
-  readonly #materialite: MaterialiteForSourceInternal;
+  protected readonly materialite: MaterialiteForSourceInternal;
   readonly #listeners = new Set<(data: ITree<T>) => void>();
   #pending: Entry<T>[] = [];
   #recomputeAll: Hoisted | null = null;
@@ -30,7 +30,7 @@ export abstract class StatefulSetSource<T>
     comparator: Comparator<T>,
     treapConstructor: (comparator: Comparator<T>) => ITree<T>
   ) {
-    this.#materialite = materialite;
+    this.materialite = materialite;
     this.#stream = new RootDifferenceStream<T>(materialite.materialite, this);
     this.#tree = treapConstructor(comparator);
     this.comparator = comparator;
@@ -98,6 +98,8 @@ export abstract class StatefulSetSource<T>
     };
   }
 
+  abstract withNewOrdering(comp: Comparator<T>): this;
+
   get stream() {
     return this.#stream;
   }
@@ -108,9 +110,14 @@ export abstract class StatefulSetSource<T>
 
   detachPipelines() {
     this.#stream = new RootDifferenceStream<T>(
-      this.#materialite.materialite,
+      this.materialite.materialite,
       this
     );
+  }
+
+  destroy(): void {
+    this.detachPipelines();
+    this.#listeners.clear();
   }
 
   onChange(cb: (data: PersistentTreap<T>) => void) {
@@ -120,19 +127,19 @@ export abstract class StatefulSetSource<T>
 
   add(v: T): this {
     this.#pending.push([v, 1]);
-    this.#materialite.addDirtySource(this.#internal);
+    this.materialite.addDirtySource(this.#internal);
     return this;
   }
 
   delete(v: T): this {
     this.#pending.push([v, -1]);
-    this.#materialite.addDirtySource(this.#internal);
+    this.materialite.addDirtySource(this.#internal);
     return this;
   }
 
   resendAll(msg: Hoisted): this {
     this.#recomputeAll = msg;
-    this.#materialite.addDirtySource(this.#internal);
+    this.materialite.addDirtySource(this.#internal);
     return this;
   }
 }
