@@ -1,8 +1,8 @@
 import React, { useCallback } from "react";
 import { Task } from "./data/tasks/schema.js";
 import { DifferenceStream } from "@vlcn.io/materialite";
-import { Page } from "./virtualized/VirtualTable2.js";
 import VirtualTable2 from "./virtualized/VirtualTable2.js";
+import { taskComparator } from "./TaskApp.js";
 
 type TaskTableProps = {
   tasks: DifferenceStream<Task>;
@@ -10,16 +10,9 @@ type TaskTableProps = {
   selectedTask?: number;
 };
 
-const page: Page<Task> = {
-  hasNext: true,
-  hasPrev: false,
-};
 export const TaskTable2: React.FC<TaskTableProps> = ({ tasks }) => {
-  const onLoadNext = useCallback(() => {
-    console.log("loading next");
-  }, []);
   const rowRenderer = useCallback(
-    (row: Task) => <Row row={row} onClick={() => {}} />,
+    (row: Task) => <Row key={row.id} row={row} onClick={() => {}} />,
     []
   );
 
@@ -29,13 +22,11 @@ export const TaskTable2: React.FC<TaskTableProps> = ({ tasks }) => {
       style={{ marginTop: 160, paddingTop: 0, paddingLeft: 30 }}
     >
       <VirtualTable2
-        page={page}
         className="bg-white rounded-xl"
         width="calc(100% - 30px)"
         height={window.innerHeight - 160}
-        loading={false}
         dataStream={tasks}
-        onLoadNext={onLoadNext}
+        comparator={taskComparator}
         header={
           <thead>
             <tr>

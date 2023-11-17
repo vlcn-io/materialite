@@ -7,7 +7,7 @@ import { Filter, TaskFilter } from "./TaskFilter.js";
 import { TaskTable2 } from "./TaskTable2.js";
 
 const materialite = new Materialite();
-const taskComparator = (l: Task, r: Task) => l.id - r.id;
+export const taskComparator = (l: Task, r: Task) => l.id - r.id;
 export const TaskApp: React.FC = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [filter, setFilter] = useState<Filter>({});
