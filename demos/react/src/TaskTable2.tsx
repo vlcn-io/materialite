@@ -1,63 +1,78 @@
 import React, { useCallback } from "react";
 import { Task } from "./data/tasks/schema.js";
-import { PersistentTreap } from "@vlcn.io/materialite";
-import { Page, VirtualTable2 } from "./virtualized/VirtualTable2.js";
+import { DifferenceStream } from "@vlcn.io/materialite";
+import { Page } from "./virtualized/VirtualTable2.js";
+import VirtualTable2 from "./virtualized/VirtualTable2.js";
 
 type TaskTableProps = {
-  tasks: PersistentTreap<Task>;
+  tasks: DifferenceStream<Task>;
   onTaskClick: (task: Task) => void;
   selectedTask?: number;
 };
 
-const page: Page<string> = {
+const page: Page<Task> = {
   hasNext: true,
   hasPrev: false,
-  nextCursor: "sdf",
-  prevCursor: "sdf",
 };
 export const TaskTable2: React.FC<TaskTableProps> = ({ tasks }) => {
   const onLoadNext = useCallback(() => {
     console.log("loading next");
   }, []);
-  const onLoadPrev = useCallback(() => {
-    console.log("loading prev");
-  }, []);
+  const rowRenderer = useCallback(
+    (row: Task) => <Row row={row} onClick={() => {}} />,
+    []
+  );
 
   return (
-    <div className="bg-gray-100 p-6 overflow-y-auto task-table">
+    <div
+      className="bg-gray-100 task-table"
+      style={{ marginTop: 160, paddingTop: 0, paddingLeft: 30 }}
+    >
       <VirtualTable2
         page={page}
-        width="100%"
-        height={window.innerHeight - 130}
+        className="bg-white rounded-xl"
+        width="calc(100% - 30px)"
+        height={window.innerHeight - 160}
         loading={false}
+        dataStream={tasks}
         onLoadNext={onLoadNext}
-        onLoadPrev={onLoadPrev}
-      >
-        {tasks.map((t) => (
-          <Row task={t} key={t.id} onClick={() => {}} />
-        ))}
-      </VirtualTable2>
+        header={
+          <thead>
+            <tr>
+              <th className="text-left py-2 px-3 font-semibold">ID</th>
+              <th className="text-left py-2 px-3 font-semibold">Title</th>
+              <th className="text-left py-2 px-3 font-semibold">Assignee</th>
+              <th className="text-left py-2 px-3 font-semibold">Due Date</th>
+              <th className="text-left py-2 px-3 font-semibold">Status</th>
+              <th className="text-left py-2 px-3 font-semibold">Priority</th>
+              <th className="text-left py-2 px-3 font-semibold">Project</th>
+              <th className="text-left py-2 px-3 font-semibold">Labels</th>
+            </tr>
+          </thead>
+        }
+        rowRenderer={rowRenderer}
+      />
     </div>
   );
 };
 
-function Row({ task, onClick }: { task: Task; onClick: () => void }) {
+function Row({ row, onClick }: { row: Task; onClick: () => void }) {
   return (
     <tr
       style={{ height: 50 }}
       className={`border-t cursor-pointer ${
-        task.id === 1 ? "bg-blue-200" : "hover:bg-blue-100"
+        row.id === 1 ? "bg-blue-200" : "hover:bg-blue-100"
       }`}
       onClick={onClick}
     >
-      <td className="py-2 px-3">{task.id}</td>
-      <td className="py-2 px-3">{task.title}</td>
-      <td className="py-2 px-3">{task.assignee}</td>
-      <td className="py-2 px-3">{task.dueDate.toISOString().split("T")[0]}</td>
-      <td className="py-2 px-3">{task.status}</td>
-      <td className="py-2 px-3">{task.priority}</td>
-      <td className="py-2 px-3">{task.project}</td>
-      <td className="py-2 px-3">{task.labels.join(", ")}</td>
+      <td className="py-2 px-3">{row.id}</td>
+      <td className="py-2 px-3">{row.title}</td>
+      <td className="py-2 px-3">{row.assignee}</td>
+      <td className="py-2 px-3">{row.dueDate.toISOString().split("T")[0]}</td>
+      <td className="py-2 px-3">{row.status}</td>
+      <td className="py-2 px-3">{row.priority}</td>
+      <td className="py-2 px-3">{row.project}</td>
+      <td className="py-2 px-3">{row.labels.join(", ")}</td>
     </tr>
   );
 }

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo, useMemo } from "react";
 
 import css from "./virtualized/VirtualTable2.module.css";
 
@@ -12,8 +12,15 @@ import {
 } from "@tanstack/react-table";
 import { useVirtual } from "react-virtual";
 import { Task } from "./data/tasks/schema";
+import { PersistentTreap } from "@vlcn.io/materialite";
 
-export default function TaskTable3() {
+type TaskTableProps = {
+  tasks: PersistentTreap<Task>;
+  onTaskClick: (task: Task) => void;
+  selectedTask?: number;
+};
+
+function TaskTable(props: TaskTableProps) {
   //we need a reference to the scrolling element for logic down below
   const tableContainerRef = React.useRef<HTMLDivElement>(null);
 
@@ -72,7 +79,7 @@ export default function TaskTable3() {
   //   );
 
   //we must flatten the array of arrays from the useInfiniteQuery hook
-  const flatData: Task[] = [];
+  const flatData: Task[] = useMemo(() => [...props.tasks], [props.tasks]);
   const totalDBRowCount = 0;
   const totalFetched = flatData.length;
 
@@ -111,6 +118,7 @@ export default function TaskTable3() {
   const { rows } = table.getRowModel();
 
   //Virtualizing is optional, but might be necessary if we are going to potentially have hundreds or thousands of rows
+  console.log(rows.length);
   const rowVirtualizer = useVirtual({
     parentRef: tableContainerRef,
     size: rows.length,
@@ -173,7 +181,7 @@ export default function TaskTable3() {
           {virtualRows.map((virtualRow) => {
             const row = rows[virtualRow.index] as Row<Task>;
             return (
-              <tr key={row.id}>
+              <tr key={row.id} style={{ height: 30 }}>
                 {row.getVisibleCells().map((cell) => {
                   return (
                     <td key={cell.id}>
@@ -197,3 +205,5 @@ export default function TaskTable3() {
     </div>
   );
 }
+
+export default memo(TaskTable);
