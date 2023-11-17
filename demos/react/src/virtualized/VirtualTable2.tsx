@@ -1,6 +1,5 @@
-import React, { memo } from "react";
+import React, { memo, useState } from "react";
 import css from "./VirtualTable2.module.css";
-import { useVirtual } from "react-virtual";
 import { useNewView } from "@vlcn.io/materialite-react";
 import { DifferenceStream } from "@vlcn.io/materialite";
 import { Comparator } from "@vlcn.io/ds-and-algos/types";
@@ -11,6 +10,7 @@ function VirtualTableBase<T>({
   rowRenderer,
   width,
   height,
+  rowHeight,
   dataStream,
   className,
   comparator,
@@ -19,14 +19,30 @@ function VirtualTableBase<T>({
   footer?: React.ReactNode;
   className?: string;
   width: string | number;
-  height: string | number;
+  height: number;
+  rowHeight: number;
   dataStream: DifferenceStream<T>;
-  rowRenderer: (row: T) => React.ReactNode;
+  rowRenderer: (
+    row: T,
+    style: { [key: string]: string | number }
+  ) => React.ReactNode;
   comparator: Comparator<T>;
 }) {
   const tableContainerRef = React.useRef<HTMLDivElement>(null);
+  // use a ref for scroll position?
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const target = e.target as HTMLElement;
+    const scrollTop = target.scrollTop;
+    setScrollTop(scrollTop);
+
+    if (Math.abs(scrollTop - prevScrollTop) > vp) {
+      console.log("jumping");
+      onJump();
+    } else {
+      console.log("near scrolling");
+      onNearScroll();
+    }
+
     const bottom =
       target.scrollHeight - target.scrollTop <= target.clientHeight + 300;
     if (bottom) {
@@ -35,22 +51,98 @@ function VirtualTableBase<T>({
       // onLoadNext(page);
     }
   };
+
+  function onJump() {
+    const viewport = tableContainerRef.current;
+    if (!viewport) {
+      return;
+    }
+    const scrollTop = viewport.scrollTop;
+    const newPage = Math.floor(scrollTop * ((th - vp) / (h - vp)) * (1 / ph));
+    setPage(newPage);
+    setOffest(Math.round(newPage * cj));
+    setPrevScrollTop(scrollTop);
+  }
+
+  function onNearScroll() {
+    const viewport = tableContainerRef.current;
+    if (!viewport) {
+      return;
+    }
+    const scrollTop = viewport.scrollTop;
+
+    // next page
+    if (scrollTop + offset > (page + 1) * ph) {
+      console.log("next page");
+      const nextPage = page + 1;
+      const nextOffset = Math.round(nextPage * cj);
+      const newPrevScrollTop = scrollTop - cj;
+      viewport.scrollTop = prevScrollTop;
+      setPage(nextPage);
+      setOffest(nextOffset);
+      setPrevScrollTop(newPrevScrollTop);
+    } else if (scrollTop + offset < page * ph) {
+      console.log("prev page");
+      // prev page
+      const nextPage = page - 1;
+      const nextOffset = Math.round(nextPage * cj);
+      const newPrevScrollTop = scrollTop + cj;
+      viewport.scrollTop = prevScrollTop;
+      setPage(nextPage);
+      setOffest(nextOffset);
+      setPrevScrollTop(newPrevScrollTop);
+    } else {
+      console.log("nuttin");
+      setPrevScrollTop(scrollTop);
+    }
+  }
+
   const [, data] = useNewView(
     () => dataStream.materialize(comparator),
     [dataStream]
   );
 
-  const rowVirtualizer = useVirtual({
-    parentRef: tableContainerRef,
-    size: data.size,
-    overscan: 10,
-  });
-  const { virtualItems: virtualRows, totalSize } = rowVirtualizer;
-  const paddingTop = virtualRows.length > 0 ? virtualRows?.[0]?.start || 0 : 0;
-  const paddingBottom =
-    virtualRows.length > 0
-      ? totalSize - (virtualRows?.[virtualRows.length - 1]?.end || 0)
-      : 0;
+  const items = data.size;
+  const itemSize = rowHeight;
+  const th = items * itemSize;
+  const h = 33554400;
+  const ph = h / 100;
+  const n = Math.ceil(th / ph);
+  const vp = height;
+  const rh = rowHeight;
+  const cj = (th - h) / (n - 1) > 0 ? (th - h) / (n - 1) : 1; // "jumpiness" coefficient
+  const contentHeight = h > th ? th : h;
+
+  // virtual pages, not real pages. Unrelated to items entirely.
+  const [page, setPage] = useState(0);
+  const [offset, setOffest] = useState(0);
+  const [prevScrollTop, setPrevScrollTop] = useState(0);
+  const [scrollTop, setScrollTop] = useState(
+    tableContainerRef.current?.scrollTop || 0
+  );
+
+  const buffer = vp;
+  console.log(scrollTop);
+  const y = scrollTop + offset;
+  let top = Math.floor((y - buffer) / rh);
+  let bottom = Math.ceil((y + vp + buffer) / rh);
+
+  // top index for items in the viewport
+  top = Math.max(0, top);
+  // bottom index for items in the viewport
+  bottom = Math.min(th / rh, bottom);
+
+  const renderedRows = [];
+  for (let i = top; i <= bottom; ++i) {
+    const d = data.at(i);
+    if (!d) {
+      break;
+    }
+    renderedRows.push(
+      rowRenderer(d, { position: "absolute", top: i * rh - offset, height: rh })
+    );
+  }
+  console.log("L: " + renderedRows.length, bottom - top, top, bottom);
 
   return (
     <div
@@ -62,26 +154,20 @@ function VirtualTableBase<T>({
         height,
       }}
     >
-      <table style={{ width: "100%" }} className="table">
-        {header}
-        <tbody>
-          {paddingTop > 0 && (
-            <tr>
-              <td style={{ height: `${paddingTop}px` }} />
-            </tr>
-          )}
-          {virtualRows.map((virtualRow) => {
-            const row = data.at(virtualRow.index)!;
-            return rowRenderer(row);
-          })}
-          {paddingBottom > 0 && (
-            <tr>
-              <td style={{ height: `${paddingBottom}px` }} />
-            </tr>
-          )}
-        </tbody>
-        {footer}
-      </table>
+      <div
+        style={{
+          height: contentHeight,
+          minHeight: contentHeight,
+          maxHeight: contentHeight,
+          overflow: "hidden",
+        }}
+      >
+        <table style={{ width: "100%" }} className="table">
+          {header}
+          <tbody style={{ position: "relative" }}>{renderedRows}</tbody>
+          {footer}
+        </table>
+      </div>
     </div>
   );
 }

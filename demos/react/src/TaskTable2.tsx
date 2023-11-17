@@ -12,7 +12,9 @@ type TaskTableProps = {
 
 export const TaskTable2: React.FC<TaskTableProps> = ({ tasks }) => {
   const rowRenderer = useCallback(
-    (row: Task) => <Row key={row.id} row={row} onClick={() => {}} />,
+    (row: Task, style: { [key: string]: string | number }) => (
+      <Row key={row.id} row={row} style={style} onClick={() => {}} />
+    ),
     []
   );
 
@@ -26,6 +28,7 @@ export const TaskTable2: React.FC<TaskTableProps> = ({ tasks }) => {
         width="calc(100% - 30px)"
         height={window.innerHeight - 160}
         dataStream={tasks}
+        rowHeight={50}
         comparator={taskComparator}
         header={
           <thead>
@@ -47,10 +50,18 @@ export const TaskTable2: React.FC<TaskTableProps> = ({ tasks }) => {
   );
 };
 
-function Row({ row, onClick }: { row: Task; onClick: () => void }) {
+function Row({
+  row,
+  onClick,
+  style,
+}: {
+  row: Task;
+  onClick: () => void;
+  style: { [key: string]: string | number };
+}) {
   return (
     <tr
-      style={{ height: 50 }}
+      style={style}
       className={`border-t cursor-pointer ${
         row.id === 1 ? "bg-blue-200" : "hover:bg-blue-100"
       }`}
