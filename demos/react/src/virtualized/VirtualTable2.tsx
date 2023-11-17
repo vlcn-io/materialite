@@ -36,10 +36,8 @@ function VirtualTableBase<T>({
     setScrollTop(scrollTop);
 
     if (Math.abs(scrollTop - prevScrollTop) > vp) {
-      console.log("jumping");
       onJump();
     } else {
-      console.log("near scrolling");
       onNearScroll();
     }
 
@@ -73,7 +71,6 @@ function VirtualTableBase<T>({
 
     // next page
     if (scrollTop + offset > (page + 1) * ph) {
-      console.log("next page");
       const nextPage = page + 1;
       const nextOffset = Math.round(nextPage * cj);
       const newPrevScrollTop = scrollTop - cj;
@@ -82,7 +79,6 @@ function VirtualTableBase<T>({
       setOffest(nextOffset);
       setPrevScrollTop(newPrevScrollTop);
     } else if (scrollTop + offset < page * ph) {
-      console.log("prev page");
       // prev page
       const nextPage = page - 1;
       const nextOffset = Math.round(nextPage * cj);
@@ -92,7 +88,6 @@ function VirtualTableBase<T>({
       setOffest(nextOffset);
       setPrevScrollTop(newPrevScrollTop);
     } else {
-      console.log("nuttin");
       setPrevScrollTop(scrollTop);
     }
   }
@@ -122,7 +117,6 @@ function VirtualTableBase<T>({
   );
 
   const buffer = vp;
-  console.log(scrollTop);
   const y = scrollTop + offset;
   let top = Math.floor((y - buffer) / rh);
   let bottom = Math.ceil((y + vp + buffer) / rh);
@@ -142,7 +136,6 @@ function VirtualTableBase<T>({
       rowRenderer(d, { position: "absolute", top: i * rh - offset, height: rh })
     );
   }
-  console.log("L: " + renderedRows.length, bottom - top, top, bottom);
 
   return (
     <div
