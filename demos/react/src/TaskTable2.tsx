@@ -1,11 +1,10 @@
 import React, { useCallback } from "react";
 import { Task } from "./data/tasks/schema.js";
-import { DifferenceStream } from "@vlcn.io/materialite";
-import { useNewView } from "@vlcn.io/materialite-react";
+import { PersistentTreap } from "@vlcn.io/materialite";
 import { Page, VirtualTable2 } from "./virtualized/VirtualTable2.js";
 
 type TaskTableProps = {
-  tasks: DifferenceStream<Task>;
+  tasks: PersistentTreap<Task>;
   onTaskClick: (task: Task) => void;
   selectedTask?: number;
 };
@@ -16,13 +15,7 @@ const page: Page<string> = {
   nextCursor: "sdf",
   prevCursor: "sdf",
 };
-export const TaskTable2: React.FC<TaskTableProps> = (props) => {
-  // AFTER and LIMIT and materialized JS Array
-  const [, tasksList] = useNewView(
-    () => props.tasks.materialize((l, r) => l.id - r.id),
-    [props.tasks]
-  );
-
+export const TaskTable2: React.FC<TaskTableProps> = ({ tasks }) => {
   const onLoadNext = useCallback(() => {
     console.log("loading next");
   }, []);
@@ -32,20 +25,18 @@ export const TaskTable2: React.FC<TaskTableProps> = (props) => {
 
   return (
     <div className="bg-gray-100 p-6 overflow-y-auto task-table">
-      {tasksList == null ? null : (
-        <VirtualTable2
-          page={page}
-          width="100%"
-          height={window.innerHeight - 130}
-          loading={false}
-          onLoadNext={onLoadNext}
-          onLoadPrev={onLoadPrev}
-        >
-          {tasksList.map((t) => (
-            <Row task={t} key={t.id} onClick={() => {}} />
-          ))}
-        </VirtualTable2>
-      )}
+      <VirtualTable2
+        page={page}
+        width="100%"
+        height={window.innerHeight - 130}
+        loading={false}
+        onLoadNext={onLoadNext}
+        onLoadPrev={onLoadPrev}
+      >
+        {tasks.map((t) => (
+          <Row task={t} key={t.id} onClick={() => {}} />
+        ))}
+      </VirtualTable2>
     </div>
   );
 };
