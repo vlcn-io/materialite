@@ -4,12 +4,14 @@ import { TaskComponent } from "./Task.js";
 import { Task } from "./data/tasks/schema.js";
 import { createTasks } from "./data/tasks/createTasks.js";
 import { Materialite } from "@vlcn.io/materialite";
+import { Filter, TaskFilter } from "./TaskFilter.js";
 
 const materialite = new Materialite();
 const tasks = materialite.newStatelessSet<Task>();
 
 export const TaskApp: React.FC = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [filter, setFilter] = useState<Filter>({});
 
   function onTaskSelected(task: Task) {
     setSelectedTask(task);
@@ -31,6 +33,7 @@ export const TaskApp: React.FC = () => {
   const ret = (
     <div className="flex h-screen">
       <div className="w-3/4 bg-gray-100 overflow-y-auto">
+        <TaskFilter onFilterChange={setFilter} />
         <TaskTable
           tasks={filteredTasks}
           onTaskClick={onTaskSelected}
