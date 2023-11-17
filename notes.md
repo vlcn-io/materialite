@@ -1,3 +1,14 @@
+Do we even need the `after` operator anymore? With the new approach to pagination...
+Where we take a limited set until the user decides to scroll then we increase the window.
+
+We still need after so we can resume from leave-off point in scroll
+
+---
+
+When re-sizing
+
+---
+
 Explicit destruction should be fine.
 
 Something higher in the tree destroying a thing is fine since the lower tree is unmounted too.
