@@ -16,7 +16,7 @@ const page: Page<string> = {
   nextCursor: "sdf",
   prevCursor: "sdf",
 };
-export const TaskTable: React.FC<TaskTableProps> = (props) => {
+export const TaskTable2: React.FC<TaskTableProps> = (props) => {
   // AFTER and LIMIT and materialized JS Array
   const [, tasksList] = useNewView(
     () => props.tasks.materialize((l, r) => l.id - r.id),
@@ -31,18 +31,18 @@ export const TaskTable: React.FC<TaskTableProps> = (props) => {
   }, []);
 
   return (
-    <div className="bg-gray-100 p-6 overflow-y-auto">
+    <div className="bg-gray-100 p-6 overflow-y-auto task-table">
       {tasksList == null ? null : (
         <VirtualTable2
           page={page}
           width="100%"
-          height={window.innerHeight - 200}
+          height={window.innerHeight - 130}
           loading={false}
           onLoadNext={onLoadNext}
           onLoadPrev={onLoadPrev}
         >
           {tasksList.map((t) => (
-            <Row task={t} onClick={() => {}} />
+            <Row task={t} key={t.id} onClick={() => {}} />
           ))}
         </VirtualTable2>
       )}
@@ -53,7 +53,6 @@ export const TaskTable: React.FC<TaskTableProps> = (props) => {
 function Row({ task, onClick }: { task: Task; onClick: () => void }) {
   return (
     <tr
-      key={task.id}
       style={{ height: 50 }}
       className={`border-t cursor-pointer ${
         task.id === 1 ? "bg-blue-200" : "hover:bg-blue-100"

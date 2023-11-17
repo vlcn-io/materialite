@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { TaskTable } from "./TaskTable.js";
+import { TaskTable2 } from "./TaskTable2.js";
 import { TaskComponent } from "./Task.js";
 import { Task } from "./data/tasks/schema.js";
 import { createTasks } from "./data/tasks/createTasks.js";
@@ -34,7 +34,7 @@ export const TaskApp: React.FC = () => {
     <div className="flex h-screen">
       <div className="w-3/4 bg-gray-100 overflow-y-auto">
         <TaskFilter onFilterChange={setFilter} />
-        <TaskTable
+        <TaskTable2
           tasks={filteredTasks}
           onTaskClick={onTaskSelected}
           selectedTask={selectedTask != null ? selectedTask.id : undefined}
@@ -52,7 +52,7 @@ export const TaskApp: React.FC = () => {
 
   useEffect(() => {
     //4_000_000
-    tasks.addAll(createTasks(1_000_000));
+    tasks.addAll(createTasks(100));
   }, []);
 
   return ret;

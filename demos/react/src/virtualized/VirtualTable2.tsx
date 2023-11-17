@@ -53,7 +53,7 @@ function VirtualTableBase<T>({
         height,
       }}
     >
-      <table>
+      <table style={{ width }}>
         {header}
         <tbody>{children}</tbody>
         {footer}
