@@ -30,16 +30,12 @@ a:hover {
 .table {
   border-collapse: collapse;
   height: 100%;
+  width: 100%;
 }
 
 .table-header,
 .table-row {
   display: flex;
-}
-
-.task-table {
-  margin-top: 130px;
-  padding: 0;
 }
 
 .table-cell {

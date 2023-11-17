@@ -34,12 +34,11 @@ function VirtualTableBase<T>({
     }
     const target = e.target as HTMLElement;
     const bottom =
-      target.scrollHeight - target.scrollTop >= target.clientHeight - 30;
-    const top = target.scrollTop <= 30;
+      target.scrollHeight - target.scrollTop <= target.clientHeight + 300;
+    const top = target.scrollTop <= 300;
     if (bottom && page.hasNext) {
-      // Load more data
       onLoadNext(page);
-    } else if (top && page.hasNext) {
+    } else if (top && page.hasPrev) {
       onLoadPrev(page);
     }
   };

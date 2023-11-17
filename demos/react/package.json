@@ -10,12 +10,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tanstack/react-table": "^8.10.7",
     "@vlcn.io/ds-and-algos": "workspace:*",
     "@vlcn.io/materialite": "workspace:*",
     "@vlcn.io/materialite-react": "workspace:*",
     "immutable": "5.0.0-beta.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-virtual": "^2.10.4",
     "react-virtualized-auto-sizer": "^1.0.20",
     "react-window": "^1.8.9"
   },
