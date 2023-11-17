@@ -1,17 +1,27 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useState } from "react";
 import { TaskTable2 } from "./TaskTable2.js";
 import { TaskComponent } from "./Task.js";
 import { Task } from "./data/tasks/schema.js";
 import { createTasks } from "./data/tasks/createTasks.js";
 import { Materialite } from "@vlcn.io/materialite";
 import { Filter, TaskFilter } from "./TaskFilter.js";
+import { useNewView } from "@vlcn.io/materialite-react";
 
 const materialite = new Materialite();
-const tasks = materialite.newStatelessSet<Task>();
-
+const taskComparator = (l: Task, r: Task) => l.id - r.id;
 export const TaskApp: React.FC = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [filter, setFilter] = useState<Filter>({});
+
+  const [allTasks, setAllTasks] = useState(() => {
+    const ret = materialite.newSortedSet(taskComparator);
+    materialite.tx(() => {
+      for (const t of createTasks(100)) {
+        ret.add(t);
+      }
+    });
+    return ret;
+  });
 
   function onTaskSelected(task: Task) {
     setSelectedTask(task);
@@ -20,17 +30,19 @@ export const TaskApp: React.FC = () => {
   function onTaskUpdated(oldTask: Task, newTask: Task) {
     setSelectedTask(newTask);
     materialite.tx(() => {
-      tasks.delete(oldTask);
-      tasks.add(newTask);
+      allTasks.delete(oldTask);
+      allTasks.add(newTask);
     });
   }
 
-  const filteredTasks = useMemo(
-    () => tasks.stream.filter((t) => !t.title.includes("foo")),
-    [tasks]
-  );
+  // AFTER and LIMIT and materialized JS Array
+  const [, filteredTasks] = useNewView(() => {
+    return allTasks.stream
+      .filter((t) => !t.title.includes("foo"))
+      .materialize(taskComparator);
+  }, [allTasks]);
 
-  const ret = (
+  return (
     <div className="flex h-screen">
       <div className="w-3/4 bg-gray-100 overflow-y-auto">
         <TaskFilter onFilterChange={setFilter} />
@@ -49,11 +61,4 @@ export const TaskApp: React.FC = () => {
       </div>
     </div>
   );
-
-  useEffect(() => {
-    //4_000_000
-    tasks.addAll(createTasks(100));
-  }, []);
-
-  return ret;
 };
