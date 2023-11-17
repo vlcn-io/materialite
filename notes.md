@@ -1,3 +1,28 @@
+We want to take more as we scroll...
+
+without necessarrily dropping earlier stuff.
+
+So this is an update to `take`? To expand the window?
+
+We could:
+
+- re-build pipeline
+- with new `after`
+
+But where do old results go?
+How do we cleanly page out old results?
+Do we not page them out? Instead retain the prior windows in the virtual table?
+
+Or:
+
+- expand window
+- window issues a `pull` for more upstream
+  - or does it just resume iterating over its iterator it has from the source?
+
+^- problematic since we are mutating the query. Problematic if we want to return native js structures.
+
+---
+
 Source as signal?
 ISignal vs IDifferenceSignal?
 
@@ -24,14 +49,12 @@ todo:
 allow for incremental streams to be taken off of views? I.e., can treat a view as a source itself.
 Can also treat a view as an atom for signals.
 
-
 Change operators to queue pending input instead of pulling when it is missing?
 
 ---
 
 Check pull implementation.
 Ensure readers are impacted by `pull` too so writers do not send to readers that did not pull.
-
 
 ---
 
@@ -42,7 +65,6 @@ Maybe we keep the simplification of not allowing pushing down from non hoistable
 
 Recompute all going only down the requested branch is fine so long as
 we don't hit stateful operators which are forked to other branches.
-
 
 ---
 
@@ -86,8 +108,8 @@ So we could take "typed filters"
 Each operator? stream? needs to know its last seen version.
 We should ignore data if its version is before our last seen version. E.g., recomputation events.
 
-
 ---
+
 Can we really do this incremental pagination?
 
 // Default materialize methods assume same order as source.
@@ -128,13 +150,14 @@ s.filter().map().after(x).first(y).materialize()
 
 Support a general message passing structure down the pipeline to the source?
 
-----
+---
 
 Maybe we should weakly hold materialized views? And if the view is GC'ed we can clean up the pipeline leading to it.
 
 Limits, sorts, offsets...
 
 If we materialize
+
 - Into a mutable JS structure
 - Into a new copy of a JS structure
 
@@ -145,7 +168,7 @@ Order the source.
 We still need a comparator for the result so we know where in the materialized view to place diffs.
 
 stream.first()...
-stream.filter().map().first() 
+stream.filter().map().first()
 
 first or take?
 

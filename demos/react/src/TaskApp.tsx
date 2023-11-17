@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { TaskTable2 } from "./TaskTable2.js";
 import { TaskComponent } from "./Task.js";
 import { Task } from "./data/tasks/schema.js";
 import { createTasks } from "./data/tasks/createTasks.js";
 import { Materialite } from "@vlcn.io/materialite";
 import { Filter, TaskFilter } from "./TaskFilter.js";
 import { useNewView } from "@vlcn.io/materialite-react";
+import TaskTable3 from "./TaskTable3.js";
 
 const materialite = new Materialite();
 const taskComparator = (l: Task, r: Task) => l.id - r.id;
@@ -42,15 +42,16 @@ export const TaskApp: React.FC = () => {
       .materialize(taskComparator);
   }, [allTasks]);
 
+  /*
+  tasks={filteredTasks}
+          onTaskClick={onTaskSelected}
+          selectedTask={selectedTask != null ? selectedTask.id : undefined}
+  */
   return (
     <div className="flex h-screen">
       <div className="w-3/4 bg-gray-100 overflow-y-auto">
         <TaskFilter onFilterChange={setFilter} />
-        <TaskTable2
-          tasks={filteredTasks}
-          onTaskClick={onTaskSelected}
-          selectedTask={selectedTask != null ? selectedTask.id : undefined}
-        />
+        <TaskTable3 />
       </div>
       <div className="w-1/4 bg-white overflow-y-auto p-6">
         {selectedTask ? (

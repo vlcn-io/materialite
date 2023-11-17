@@ -1,6 +1,6 @@
 import React from "react";
 
-import "./index.css";
+import css from "./virtualized/VirtualTable2.module.css";
 
 import {
   ColumnDef,
@@ -13,9 +13,7 @@ import {
 import { useVirtual } from "react-virtual";
 import { Task } from "./data/tasks/schema";
 
-export default function TaskTable() {
-  const rerender = React.useReducer(() => ({}), {})[1];
-
+export default function TaskTable3() {
   //we need a reference to the scrolling element for logic down below
   const tableContainerRef = React.useRef<HTMLDivElement>(null);
 
@@ -104,10 +102,6 @@ export default function TaskTable() {
   const table = useReactTable({
     data: flatData,
     columns,
-    // state: {
-    //   sorting,
-    // },
-    // onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     manualPagination: true,
@@ -134,75 +128,72 @@ export default function TaskTable() {
   }
 
   return (
-    <div className="p-2">
-      <div className="h-2" />
-      <div
-        className="container"
-        onScroll={(e) => fetchMoreOnBottomReached(e.target as HTMLDivElement)}
-        ref={tableContainerRef}
-      >
-        <table>
-          <thead>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
+    <div
+      className={`${css.container} bg-gray-100 p-6 task-table bg-white`}
+      onScroll={(e) => fetchMoreOnBottomReached(e.target as HTMLDivElement)}
+      ref={tableContainerRef}
+      style={{
+        width: "calc(100% - 60px)",
+        height: window.innerHeight - 160,
+        marginTop: 160,
+        marginLeft: 30,
+      }}
+    >
+      <table className="table">
+        <thead>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <tr key={headerGroup.id}>
+              {headerGroup.headers.map((header) => {
+                return (
+                  <th
+                    key={header.id}
+                    colSpan={header.colSpan}
+                    style={{ width: header.getSize() }}
+                  >
+                    {header.isPlaceholder ? null : (
+                      <div>
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                      </div>
+                    )}
+                  </th>
+                );
+              })}
+            </tr>
+          ))}
+        </thead>
+        <tbody>
+          {paddingTop > 0 && (
+            <tr>
+              <td style={{ height: `${paddingTop}px` }} />
+            </tr>
+          )}
+          {virtualRows.map((virtualRow) => {
+            const row = rows[virtualRow.index] as Row<Task>;
+            return (
+              <tr key={row.id}>
+                {row.getVisibleCells().map((cell) => {
                   return (
-                    <th
-                      key={header.id}
-                      colSpan={header.colSpan}
-                      style={{ width: header.getSize() }}
-                    >
-                      {header.isPlaceholder ? null : (
-                        <div>
-                          {flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                        </div>
+                    <td key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
                       )}
-                    </th>
+                    </td>
                   );
                 })}
               </tr>
-            ))}
-          </thead>
-          <tbody>
-            {paddingTop > 0 && (
-              <tr>
-                <td style={{ height: `${paddingTop}px` }} />
-              </tr>
-            )}
-            {virtualRows.map((virtualRow) => {
-              const row = rows[virtualRow.index] as Row<Task>;
-              return (
-                <tr key={row.id}>
-                  {row.getVisibleCells().map((cell) => {
-                    return (
-                      <td key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </td>
-                    );
-                  })}
-                </tr>
-              );
-            })}
-            {paddingBottom > 0 && (
-              <tr>
-                <td style={{ height: `${paddingBottom}px` }} />
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-      <div>
-        Fetched {flatData.length} of {totalDBRowCount} Rows.
-      </div>
-      <div>
-        <button onClick={() => rerender()}>Force Rerender</button>
-      </div>
+            );
+          })}
+          {paddingBottom > 0 && (
+            <tr>
+              <td style={{ height: `${paddingBottom}px` }} />
+            </tr>
+          )}
+        </tbody>
+      </table>
     </div>
   );
 }
