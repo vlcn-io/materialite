@@ -2,10 +2,9 @@ import React, { useState } from "react";
 import { TaskComponent } from "./Task.js";
 import { Task } from "./data/tasks/schema.js";
 import { createTasks } from "./data/tasks/createTasks.js";
-import { Materialite } from "@vlcn.io/materialite";
+import { DifferenceStream, Materialite } from "@vlcn.io/materialite";
 import { Filter, TaskFilter } from "./TaskFilter.js";
-import { useNewView } from "@vlcn.io/materialite-react";
-import TaskTable3 from "./TaskTable3.js";
+import { TaskTable2 } from "./TaskTable2.js";
 
 const materialite = new Materialite();
 const taskComparator = (l: Task, r: Task) => l.id - r.id;
@@ -23,6 +22,11 @@ export const TaskApp: React.FC = () => {
     return ret;
   });
 
+  // filter, after, etc.
+  const [taskStream, setTaskStream] = useState<DifferenceStream<Task>>(
+    allTasks.stream
+  );
+
   function onTaskSelected(task: Task) {
     setSelectedTask(task);
   }
@@ -35,13 +39,6 @@ export const TaskApp: React.FC = () => {
     });
   }
 
-  // AFTER and LIMIT and materialized JS Array
-  const [, filteredTasks] = useNewView(() => {
-    return allTasks.stream
-      .filter((t) => !t.title.includes("foo"))
-      .materialize(taskComparator);
-  }, [allTasks]);
-
   /*
   tasks={filteredTasks}
           onTaskClick={onTaskSelected}
@@ -51,7 +48,7 @@ export const TaskApp: React.FC = () => {
     <div className="flex h-screen">
       <div className="w-3/4 bg-gray-100 overflow-y-auto">
         <TaskFilter onFilterChange={setFilter} />
-        <TaskTable3 />
+        <TaskTable2 tasks={taskStream} onTaskClick={onTaskSelected} />
       </div>
       <div className="w-1/4 bg-white overflow-y-auto p-6">
         {selectedTask ? (

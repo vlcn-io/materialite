@@ -1,3 +1,9 @@
+Explicit destruction should be fine.
+
+Something higher in the tree destroying a thing is fine since the lower tree is unmounted too.
+
+---
+
 We want to take more as we scroll...
 
 without necessarrily dropping earlier stuff.
@@ -20,6 +26,23 @@ Or:
   - or does it just resume iterating over its iterator it has from the source?
 
 ^- problematic since we are mutating the query. Problematic if we want to return native js structures.
+
+TanStack requires swapping too... Can we swap without fubaring scroll position?
+We need buffers.
+2 buffers.
+
+On bottom reach, add buffer.
+If max buffers, remove buffer.
+We render both buffers in the frame.
+
+Buffers are materialized views.
+
+Lower bound constrained to `after`
+
+But what about paging backwards? Need a `before` too?
+
+The easiest thing is to limit @ the view and derive from the view to slowly include more things.
+Using a treap so we can grow infinitely. Don't need to create buffers.
 
 ---
 

@@ -33,16 +33,6 @@ a:hover {
   width: 100%;
 }
 
-.table-header,
-.table-row {
-  display: flex;
-}
-
-.table-cell {
-  flex: 1;
-  border: 1px solid #ddd;
-}
-
 body {
   margin: 0;
   min-width: 320px;
