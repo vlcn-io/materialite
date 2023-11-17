@@ -132,9 +132,7 @@ function VirtualTableBase<T>({
     if (!d) {
       break;
     }
-    renderedRows.push(
-      rowRenderer(d, { position: "absolute", top: i * rh - offset, height: rh })
-    );
+    renderedRows.push(rowRenderer(d, { height: rh }));
   }
 
   return (
@@ -150,12 +148,18 @@ function VirtualTableBase<T>({
       <div
         style={{
           height: contentHeight,
-          minHeight: contentHeight,
-          maxHeight: contentHeight,
+          position: "relative",
           overflow: "hidden",
         }}
       >
-        <table style={{ width: "100%" }} className="table">
+        <table
+          style={{
+            width: "100%",
+            position: "absolute",
+            top: top * rh - offset,
+          }}
+          className="table"
+        >
           {header}
           <tbody style={{ position: "relative" }}>{renderedRows}</tbody>
           {footer}

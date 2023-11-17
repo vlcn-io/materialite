@@ -67,7 +67,7 @@ function Row({
       }`}
       onClick={onClick}
     >
-      <td className="py-2 px-3">{row.id}</td>
+      <td className="py-2 px-3">{row.id.toLocaleString()}</td>
       <td className="py-2 px-3">{row.title}</td>
       <td className="py-2 px-3">{row.assignee}</td>
       <td className="py-2 px-3">{row.dueDate.toISOString().split("T")[0]}</td>
