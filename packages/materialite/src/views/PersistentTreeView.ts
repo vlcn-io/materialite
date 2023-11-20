@@ -17,13 +17,6 @@ import { Materialite } from "../materialite.js";
 export class PersistentTreeView<T> extends View<T, PersistentTreap<T>> {
   #data: PersistentTreap<T> = new PersistentTreap<T>(this.comparator);
 
-  // If the view has a limit
-  // We could not put this in the view
-  // and instead re-materialize a stream...
-  // clone with new args essentially...
-  // then we can use the normal take operator.
-  // Rematerialize is so bogus. So niche.
-  // Use case is infinite scroll...
   #limit?: number;
   #min?: T;
   #max?: T;
@@ -47,6 +40,14 @@ export class PersistentTreeView<T> extends View<T, PersistentTreap<T>> {
 
   #addAll: (data: PersistentTreap<T>, value: T) => PersistentTreap<T>;
   #removeAll: (data: PersistentTreap<T>, value: T) => PersistentTreap<T>;
+
+  /**
+   * Re-materialize the view but with a new limit.
+   * All other params remain the same.
+   * Returns a new view.
+   * The view will ask the upstream for data _after_ the current view's max
+   */
+  rematerialize() {}
 
   get value() {
     return this.#data;
@@ -80,6 +81,14 @@ export class PersistentTreeView<T> extends View<T, PersistentTreap<T>> {
     const iterator = c.entries[Symbol.iterator]();
     let next;
 
+    let sourceComparator;
+    if (
+      c.eventMetadata?.cause === "full_recompute" ||
+      c.eventMetadata?.cause === "partial_recompute"
+    ) {
+      sourceComparator = c.eventMetadata.comparator;
+    }
+
     const process = (value: T, mult: number) => {
       if (mult > 0) {
         changed = true;
@@ -90,7 +99,22 @@ export class PersistentTreeView<T> extends View<T, PersistentTreap<T>> {
       }
     };
 
+    // TODO: we should bail from this loop early if we're in a re-compute pass
+    // and detect that we've filled out limit.
+    // And the source is ordered the same as this.......
     while (!(next = iterator.next()).done) {
+      if (
+        sourceComparator &&
+        sourceComparator === this.comparator &&
+        this.#limit !== undefined
+      ) {
+        if (this.#data.size >= this.#limit) {
+          // bail early. During a re-compute with a source in the same order
+          // as the view we can bail once we've consumed `LIMIT` items.
+          break;
+        }
+      }
+
       empty = false;
       const [value, mult] = next.value;
       let nextNext = iterator.next();

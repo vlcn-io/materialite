@@ -23,6 +23,14 @@ export type DestroyOptions = { autoCleanup?: boolean };
 export type EventMetadata =
   | {
       cause: "full_recompute";
+      // comparator from the source
+      // so operators know if they can bail early or not
+      comparator?: Comparator<unknown>;
+    }
+  | {
+      cause: "partial_recompute";
+      // comparator from the source
+      // so operators know if they can bail early or not
       comparator?: Comparator<unknown>;
     }
   | {
