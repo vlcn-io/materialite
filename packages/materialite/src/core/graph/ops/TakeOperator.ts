@@ -91,6 +91,7 @@ export class TakeOperator<I> extends LinearUnaryOperator<I, I> {
           // TODO: test this that we actually do stop pulling and don't visit every member of a collecton
           // even if we are proceeded by maps and filters.
           // Unfortunately I believe filter and map will visit the full source?
+          // I.e., If downstream hits limits then upstreams can stop computing.
           return new Multiset(ret, collection.eventMetadata);
         }
       }

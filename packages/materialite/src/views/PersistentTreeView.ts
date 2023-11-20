@@ -17,13 +17,36 @@ import { Materialite } from "../materialite.js";
 export class PersistentTreeView<T> extends View<T, PersistentTreap<T>> {
   #data: PersistentTreap<T> = new PersistentTreap<T>(this.comparator);
 
+  // If the view has a limit
+  // We could not put this in the view
+  // and instead re-materialize a stream...
+  // clone with new args essentially...
+  // then we can use the normal take operator.
+  // Rematerialize is so bogus. So niche.
+  // Use case is infinite scroll...
+  #limit?: number;
+  #min?: T;
+  #max?: T;
+
   constructor(
     materialite: Materialite,
     stream: AbstractDifferenceStream<T>,
-    comparator: (a: T, b: T) => number
+    comparator: (a: T, b: T) => number,
+    limit?: number
   ) {
     super(materialite, stream, comparator);
+    this.#limit = limit;
+    if (limit !== undefined) {
+      this.#addAll = this.#limitedAddAll;
+      this.#removeAll = this.#limitedRemoveAll;
+    } else {
+      this.#addAll = addAll;
+      this.#removeAll = removeAll;
+    }
   }
+
+  #addAll: (data: PersistentTreap<T>, value: T) => PersistentTreap<T>;
+  #removeAll: (data: PersistentTreap<T>, value: T) => PersistentTreap<T>;
 
   get value() {
     return this.#data;
@@ -56,6 +79,17 @@ export class PersistentTreeView<T> extends View<T, PersistentTreap<T>> {
     let empty = true;
     const iterator = c.entries[Symbol.iterator]();
     let next;
+
+    const process = (value: T, mult: number) => {
+      if (mult > 0) {
+        changed = true;
+        data = this.#addAll(data, value);
+      } else if (mult < 0) {
+        changed = true;
+        data = this.#removeAll(data, value);
+      }
+    };
+
     while (!(next = iterator.next()).done) {
       empty = false;
       const [value, mult] = next.value;
@@ -81,34 +115,26 @@ export class PersistentTreeView<T> extends View<T, PersistentTreap<T>> {
       }
     }
 
-    function process(value: T, mult: number) {
-      if (mult > 0) {
-        changed = true;
-        data = addAll(data, value, mult);
-      } else if (mult < 0) {
-        changed = true;
-        data = removeAll(data, value, Math.abs(mult));
-      }
-    }
-
     return [changed || empty, data];
+  }
+
+  #limitedAddAll(data: PersistentTreap<T>, value: T) {
+    return data;
+  }
+
+  #limitedRemoveAll(data: PersistentTreap<T>, value: T) {
+    return data;
   }
 }
 
-function addAll<T>(data: PersistentTreap<T>, value: T, mult: number) {
-  while (mult > 0) {
-    data = data.add(value);
-    mult -= 1;
-  }
-
+function addAll<T>(data: PersistentTreap<T>, value: T) {
+  // A treap can't have dupes so we can ignore `mult`
+  data = data.add(value);
   return data;
 }
 
-function removeAll<T>(data: PersistentTreap<T>, value: T, mult: number) {
-  while (mult > 0) {
-    data = data.delete(value);
-    mult -= 1;
-  }
-
+function removeAll<T>(data: PersistentTreap<T>, value: T) {
+  // A treap can't have dupes so we can ignore `mult`
+  data = data.delete(value);
   return data;
 }

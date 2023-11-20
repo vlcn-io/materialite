@@ -1,7 +1,31 @@
+TODO:
+
+1. Test lazyness (lazy.test.ts)
+2. Implement partial "full recompute" to allow for re-materialization
+   1. Also allows for pulling in data once something goes missing from a window due to delete
+3. Start porting to Strut.io?
+4. Clean / prune the APIs?
+
+How might we implement pulling? Such that once limit is hit, upstreams stop computing.
+
+---
+
+- No more eager destructing on normal listener remove
+  - but eager on operator remove?
+    - I think so. How else would we clean sub-graphs?
+- ***
+
+What next...
+
+- get a page
+- rematerialize the view from the old view but with a long range. Pull from thee end of the last view.
+
+---
+
 Do we even need the `after` operator anymore? With the new approach to pagination...
 Where we take a limited set until the user decides to scroll then we increase the window.
 
-We still need after so we can resume from leave-off point in scroll
+Yes. We still need after so we can resume from leave-off point in scroll
 
 ---
 
