@@ -173,7 +173,8 @@ export abstract class AbstractDifferenceStream<T>
     options: MaterializeOptions = { wantInitialData: true }
   ): PersistentTreeView<T> {
     return this.materializeInto(
-      (stream) => new PersistentTreeView(this.materialite, stream, c),
+      (stream) =>
+        new PersistentTreeView(this.materialite, stream, c, options.limit),
       options
     );
   }

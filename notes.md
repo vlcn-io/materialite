@@ -1,3 +1,22 @@
+Cut the API space.
+
+rematerialization is problematic. Creates these partial recomputation events rather than full.
+
+So how do?
+
+Clone & diff based pipeline rematerialization?
+
+```ts
+const view = tasks.after().take().materialize();
+
+view.rematerializeFrom(tasks.after().take());
+
+// ^^ -- update args of pipeline... well.. after is still
+// not the same after. we have a partial compute still.
+```
+
+---
+
 TODO:
 
 1. Test lazyness (lazy.test.ts)

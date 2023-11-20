@@ -65,11 +65,23 @@ export abstract class StatefulSetSource<T>
           self.#pending = [];
           self.#stream.queueData([
             version,
-            // TODO: add event to multiset
+            // TODO: if there is `after` (or anything hoisted?) it is a `partial_recompute` not `full`
+            // If _after_ is at the end of a pipline, can we ensure
+            // that all operators up till after behave correctly on seeing duplicated data?
+            // We either need to inject retractions or ignore partial recomputes?
+            // If the end of the pipeline is driving hoisting, like a view re-materialization,
+            // we have issues.
+            // This is a reason to reconsider rematerialization.
+            // This is problematic for linear count operators.
+            // How can we keep an accurate count in the face of a partial
+            // recompute unless we issue retractions first?
             new Multiset(
               asEntries(self.#tree, self.comparator, self.#recomputeAll),
               {
-                cause: "full_recompute",
+                cause:
+                  self.#recomputeAll.expressions.length > 0
+                    ? "partial_recompute"
+                    : "full_recompute",
                 comparator,
               }
             ),

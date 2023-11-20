@@ -6,7 +6,7 @@ import { IDerivation, ISignal } from "../signal/ISignal.js";
 
 export abstract class View<T, CT> implements ISignal<CT> {
   readonly #stream;
-  readonly #materialite: Materialite;
+  protected readonly materialite: Materialite;
   protected readonly comparator;
   protected readonly reader;
   protected notifiedListenersVersion = -1;
@@ -24,7 +24,7 @@ export abstract class View<T, CT> implements ISignal<CT> {
     stream: AbstractDifferenceStream<T>,
     comparator: (l: T, r: T) => number = consolidationComparator
   ) {
-    this.#materialite = materialite;
+    this.materialite = materialite;
     this.#stream = stream;
     this.comparator = comparator;
     this.reader = this.#stream.newReader();
@@ -50,11 +50,11 @@ export abstract class View<T, CT> implements ISignal<CT> {
   }
 
   pipe<R>(f: (v: CT) => R): ISignal<R> {
-    return this.#materialite.compute(f, this);
+    return this.materialite.compute(f, this);
   }
 
   pull() {
-    this.#materialite.tx(() => {
+    this.materialite.tx(() => {
       this.reader.pull({
         expressions: [],
       });

@@ -47,7 +47,29 @@ export class PersistentTreeView<T> extends View<T, PersistentTreap<T>> {
    * Returns a new view.
    * The view will ask the upstream for data _after_ the current view's max
    */
-  rematerialize() {}
+  rematerialize(newLimit: number) {
+    const newView = new PersistentTreeView(
+      this.materialite,
+      this.stream,
+      this.comparator,
+      newLimit
+    );
+    newView.#data = this.#data;
+
+    this.materialite.tx(() => {
+      newView.reader.pull({
+        expressions: [
+          {
+            _tag: "after",
+            comparator: this.comparator,
+            cursor: this.#max,
+          },
+        ],
+      });
+    });
+
+    return newView;
+  }
 
   get value() {
     return this.#data;
@@ -108,7 +130,7 @@ export class PersistentTreeView<T> extends View<T, PersistentTreap<T>> {
         sourceComparator === this.comparator &&
         this.#limit !== undefined
       ) {
-        if (this.#data.size >= this.#limit) {
+        if (data.size >= this.#limit) {
           // bail early. During a re-compute with a source in the same order
           // as the view we can bail once we've consumed `LIMIT` items.
           break;
@@ -145,15 +167,13 @@ export class PersistentTreeView<T> extends View<T, PersistentTreap<T>> {
   #limitedAddAll(data: PersistentTreap<T>, value: T) {
     const limit = this.#limit || 0;
     // Under limit? We can just add.
-    if (this.#data.size < limit) {
+    if (data.size < limit) {
       this.#updateMinMax(value);
       return data.add(value);
     }
 
-    if (this.#data.size > limit) {
-      throw new Error(
-        `Data size exceeded limit! ${this.#data.size} | ${limit}`
-      );
+    if (data.size > limit) {
+      throw new Error(`Data size exceeded limit! ${data.size} | ${limit}`);
     }
 
     // at limit? We can only add if the value is under max
