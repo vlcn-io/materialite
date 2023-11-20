@@ -1,7 +1,7 @@
-import React, { memo, useState } from "react";
+import React, { memo, useRef, useState } from "react";
 import css from "./VirtualTable2.module.css";
 import { useNewView } from "@vlcn.io/materialite-react";
-import { DifferenceStream } from "@vlcn.io/materialite";
+import { DifferenceStream, PersistentTreeView } from "@vlcn.io/materialite";
 import { Comparator } from "@vlcn.io/ds-and-algos/types";
 
 function VirtualTableBase<T>({
@@ -29,6 +29,10 @@ function VirtualTableBase<T>({
   comparator: Comparator<T>;
 }) {
   const tableContainerRef = React.useRef<HTMLDivElement>(null);
+
+  const pageSize = Math.ceil(height / rowHeight);
+  const [limit, setLimit] = useState(pageSize);
+
   // use a ref for scroll position?
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const target = e.target as HTMLElement;
@@ -43,10 +47,11 @@ function VirtualTableBase<T>({
 
     const bottom =
       target.scrollHeight - target.scrollTop <= target.clientHeight + 300;
-    if (bottom) {
+    if (bottom && data.size >= limit) {
       // and not loading
       // and have next page
       // onLoadNext(page);
+      setLimit(limit + pageSize);
     }
   };
 
@@ -92,10 +97,21 @@ function VirtualTableBase<T>({
     }
   }
 
-  const [, data] = useNewView(
-    () => dataStream.materialize(comparator),
-    [dataStream]
-  );
+  const viewRef = useRef<PersistentTreeView<T>>();
+  const [, data] = useNewView(() => {
+    let ret: PersistentTreeView<T>;
+    if (viewRef.current != null) {
+      ret = viewRef.current.rematerialize(limit);
+      viewRef.current.destroy();
+    } else {
+      ret = dataStream.materialize(comparator, {
+        wantInitialData: true,
+        limit: pageSize,
+      });
+    }
+    viewRef.current = ret;
+    return ret;
+  }, [dataStream, limit]);
 
   const items = data.size;
   const itemSize = rowHeight;

@@ -56,17 +56,23 @@ export class PersistentTreeView<T> extends View<T, PersistentTreap<T>> {
     );
     newView.#data = this.#data;
 
-    this.materialite.tx(() => {
-      newView.reader.pull({
-        expressions: [
-          {
-            _tag: "after",
-            comparator: this.comparator,
-            cursor: this.#max,
-          },
-        ],
+    if (this.#max !== undefined) {
+      this.materialite.tx(() => {
+        newView.reader.pull({
+          expressions: [
+            {
+              _tag: "after",
+              comparator: this.comparator,
+              cursor: this.#max,
+            },
+          ],
+        });
       });
-    });
+    } else {
+      this.materialite.tx(() => {
+        newView.reader.pull({ expressions: [] });
+      });
+    }
 
     return newView;
   }

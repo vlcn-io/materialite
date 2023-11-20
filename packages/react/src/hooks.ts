@@ -46,6 +46,7 @@ export function useNewSignal<T>(fn: () => ISignal<T>, deps: any[]) {
   useEffect(() => {
     const signal = fn();
     setSignal(signal);
+    setValue(signal.value);
     return signal.on((value) => {
       setValue(value);
     });
