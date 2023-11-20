@@ -119,11 +119,84 @@ export class PersistentTreeView<T> extends View<T, PersistentTreap<T>> {
   }
 
   #limitedAddAll(data: PersistentTreap<T>, value: T) {
+    const limit = this.#limit || 0;
+    // Under limit? We can just add.
+    if (this.#data.size < limit) {
+      this.#updateMinMax(value);
+      return data.add(value);
+    }
+
+    if (this.#data.size > limit) {
+      throw new Error(
+        `Data size exceeded limit! ${this.#data.size} | ${limit}`
+      );
+    }
+
+    // at limit? We can only add if the value is under max
+    const comp = this.comparator(value, this.#max!);
+    if (comp > 0) {
+      return data;
+    }
+    // <= max we add.
+    data = data.add(value);
+    // and then remove the max since we were at limit
+    data = data.delete(this.#max!);
+    // and then update max
+    this.#max = data.getMax() || undefined;
+
+    // and what if the value was under min? We update our min.
+    if (this.comparator(value, this.#min!) <= 0) {
+      this.#min = value;
+    }
     return data;
   }
 
   #limitedRemoveAll(data: PersistentTreap<T>, value: T) {
+    // if we're outside the window, do not remove.
+    const minComp = this.#min && this.comparator(value, this.#min);
+    const maxComp = this.#max && this.comparator(value, this.#max);
+
+    if (minComp && minComp < 0) {
+      return data;
+    }
+
+    if (maxComp && maxComp > 0) {
+      return data;
+    }
+
+    // inside the window?
+    // do the removal and update min/max
+    // only update min/max if the removals was equal to min/max tho
+    // otherwise we removed a element that doesn't impact min/max
+
+    data = data.delete(value);
+    // TODO: since we deleted we need to send a request upstream for more data!
+
+    if (minComp && minComp === 0) {
+      this.#min = value;
+    }
+    if (maxComp && maxComp === 0) {
+      this.#max = value;
+    }
+
     return data;
+  }
+
+  #updateMinMax(value: T) {
+    if (this.#min === undefined || this.#max === undefined) {
+      this.#max = this.#min = value;
+      return;
+    }
+
+    if (this.comparator(value, this.#min) <= 0) {
+      this.#min = value;
+      return;
+    }
+
+    if (this.comparator(value, this.#max) >= 0) {
+      this.#max = value;
+      return;
+    }
   }
 }
 
@@ -138,3 +211,26 @@ function removeAll<T>(data: PersistentTreap<T>, value: T) {
   data = data.delete(value);
   return data;
 }
+
+/**
+ * Limited add algorithm:
+ *
+ * 1. Under limit? Add the thing. Set min and max appropriately.
+ * 2. At limit? Only add if less than max. Kick out max. Update max. Update min if needed.
+ * 3. Can always _move down_ can never _move up_
+ *
+ * Removals?
+ * 1. Outside min,max window? not present, no removal
+ * 2. In window, remove. Update min/max if value we min or max.
+ * 3. Under size limit post removal? Ask source for more data.
+ *
+ * Ask for more data:
+ * 1. The view has the least thing
+ * 2. And all contiguous least things up till max
+ * 3. So we only need to request >= max.
+ *
+ * Hmm.. Enforce a constraint in the system that all comparators must take primary key into account?
+ * That all entries are unique?
+ *
+ * How about that array problem? Array of numbers problem. They're non-unique and we need to deal with that.
+ */

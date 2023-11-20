@@ -8,6 +8,19 @@ TODO:
 
 How might we implement pulling? Such that once limit is hit, upstreams stop computing.
 
+Simple virtual scroll solution:
+
+1. Pull all the data into a treap
+2. Re-materialize into treap as we scroll
+3. Pull a bunch of windows that we maintain in pages
+   -- NO: Has a delete and shuffling problem!
+4. Pull the last (2) windows
+   -- Only shuffling between 2 windows
+   -- How do we map the virtual index correctly?
+   -- we just need to understand where these pages come in WRT to the overall virtual indices.
+   -- but what about when sizes change? Same same. `PULL NEXT PAGE AFTER _cursor_ MAP TO _virtual-index_`
+   -- ^^ doable but... lots of new mechanics to introduce.
+
 ---
 
 - No more eager destructing on normal listener remove
