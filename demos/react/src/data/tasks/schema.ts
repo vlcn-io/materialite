@@ -12,3 +12,8 @@ export type Task = {
   project: string;
   selected?: boolean;
 };
+export type Comment = {
+  id: number;
+  taskId: number;
+  content: string;
+};
