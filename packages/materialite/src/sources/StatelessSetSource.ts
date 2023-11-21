@@ -3,6 +3,7 @@
 // Clean up taps when they get GC'ed?
 // When the sink is removed?
 
+import { AbstractDifferenceStream } from "../core/graph/AbstractDifferenceStream.js";
 import { RootDifferenceStream } from "../core/graph/RootDifferenceStream.js";
 import { Entry, Multiset } from "../core/multiset.js";
 import {
@@ -50,7 +51,7 @@ export class SetSource<T>
     };
   }
 
-  get stream() {
+  get stream(): AbstractDifferenceStream<T> {
     return this.#stream;
   }
 

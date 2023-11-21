@@ -30,6 +30,7 @@ export class LinearCountOperator<V> extends LinearUnaryOperator<V, number> {
     output: DifferenceStreamWriter<number>
   ) {
     const inner = (collection: Multiset<V>) => {
+      // TODO: handle partial recompute....... should we even?
       if (collection.eventMetadata?.cause === "full_recompute") {
         this.#state = 0;
       }

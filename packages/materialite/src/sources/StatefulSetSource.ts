@@ -9,6 +9,7 @@ import {
 import { Entry, Multiset } from "../core/multiset.js";
 import { Hoisted } from "../core/graph/Msg.js";
 import { RootDifferenceStream } from "../core/graph/RootDifferenceStream.js";
+import { AbstractDifferenceStream } from "../core/graph/AbstractDifferenceStream.js";
 
 export abstract class StatefulSetSource<T>
   implements IStatefulSource<T, ITree<T>>
@@ -21,7 +22,7 @@ export abstract class StatefulSetSource<T>
   protected readonly materialite: MaterialiteForSourceInternal;
   readonly #listeners = new Set<(data: ITree<T>) => void>();
   #pending: Entry<T>[] = [];
-  #recomputeAll: Hoisted | null = null;
+  #recompute: Hoisted | null = null;
   #tree: ITree<T>;
   readonly comparator: Comparator<T>;
 
@@ -61,7 +62,7 @@ export abstract class StatefulSetSource<T>
           }
         }
 
-        if (self.#recomputeAll) {
+        if (self.#recompute) {
           self.#pending = [];
           self.#stream.queueData([
             version,
@@ -76,17 +77,17 @@ export abstract class StatefulSetSource<T>
             // How can we keep an accurate count in the face of a partial
             // recompute unless we issue retractions first?
             new Multiset(
-              asEntries(self.#tree, self.comparator, self.#recomputeAll),
+              asEntries(self.#tree, self.comparator, self.#recompute),
               {
                 cause:
-                  self.#recomputeAll.expressions.length > 0
+                  self.#recompute.expressions.length > 0
                     ? "partial_recompute"
                     : "full_recompute",
                 comparator,
               }
             ),
           ]);
-          self.#recomputeAll = null;
+          self.#recompute = null;
         } else {
           self.#stream.queueData([version, new Multiset(self.#pending, null)]);
           self.#pending = [];
@@ -112,7 +113,7 @@ export abstract class StatefulSetSource<T>
 
   abstract withNewOrdering(comp: Comparator<T>): this;
 
-  get stream() {
+  get stream(): AbstractDifferenceStream<T> {
     return this.#stream;
   }
 
@@ -150,7 +151,7 @@ export abstract class StatefulSetSource<T>
   }
 
   resendAll(msg: Hoisted): this {
-    this.#recomputeAll = msg;
+    this.#recompute = msg;
     this.materialite.addDirtySource(this.#internal);
     return this;
   }

@@ -1,3 +1,4 @@
+import { AbstractDifferenceStream } from "../core/graph/AbstractDifferenceStream.js";
 import { Hoisted } from "../core/graph/Msg.js";
 import { RootDifferenceStream } from "../core/graph/RootDifferenceStream.js";
 import { Entry, Multiset } from "../core/multiset.js";
@@ -93,7 +94,7 @@ export class MutableMapSource<K, T>
     };
   }
 
-  get stream() {
+  get stream(): AbstractDifferenceStream<T> {
     return this.#stream;
   }
 

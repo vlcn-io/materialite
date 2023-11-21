@@ -5,7 +5,7 @@
 // re-pulls need to happen if views are attached late to a data stream.
 // Those view are missing all the history and so need to issue a re-pull for past data.
 
-import { Multiset } from "../multiset.js";
+import { Multiset, isRecmopute } from "../multiset.js";
 import { Version } from "../types.js";
 
 type Node<T> = {
@@ -25,7 +25,7 @@ export class Queue<T> {
       console.warn("enqueueing old data");
       return;
     }
-    if (data[1].eventMetadata?.cause === "full_recompute") {
+    if (isRecmopute(data[1])) {
       if (this.#awaitingRecompute) {
         this.#awaitingRecompute = false;
       } else {

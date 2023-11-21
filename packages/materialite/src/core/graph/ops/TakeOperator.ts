@@ -7,7 +7,7 @@
 // and insert of the new thing.
 
 import { Comparator } from "@vlcn.io/ds-and-algos/types";
-import { Entry, Multiset } from "../../multiset.js";
+import { Entry, Multiset, isRecmopute } from "../../multiset.js";
 import { DifferenceStreamReader } from "../DifferenceReader.js";
 import { DifferenceStreamWriter } from "../DifferenceWriter.js";
 import { LinearUnaryOperator } from "./LinearUnaryOperator.js";
@@ -86,7 +86,7 @@ export class TakeOperator<I> extends LinearUnaryOperator<I, I> {
         continue;
       }
       if (this.#size >= this.#limit) {
-        if (collection.eventMetadata?.cause === "full_recompute") {
+        if (isRecmopute(collection)) {
           // we can stop pulling
           // TODO: test this that we actually do stop pulling and don't visit every member of a collecton
           // even if we are proceeded by maps and filters.

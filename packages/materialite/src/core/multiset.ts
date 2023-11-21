@@ -165,3 +165,10 @@ function genFilter<T>(s: Iterable<T>, cb: (x: T) => boolean) {
     },
   };
 }
+
+export function isRecmopute(s: Multiset<unknown>) {
+  return (
+    s.eventMetadata?.cause === "full_recompute" ||
+    s.eventMetadata?.cause === "partial_recompute"
+  );
+}

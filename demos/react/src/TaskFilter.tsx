@@ -10,6 +10,7 @@ import {
 
 type TaskFilterProps = {
   onFilterChange: (filter: Filter) => void;
+  filter: Filter;
 };
 
 export type Filter = {

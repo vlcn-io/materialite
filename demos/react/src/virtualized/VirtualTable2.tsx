@@ -34,7 +34,6 @@ function VirtualTableBase<T>({
   // load 2 pages to start
   const [limit, setLimit] = useState(pageSize * 2);
 
-  // use a ref for scroll position?
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const target = e.target as HTMLElement;
     const scrollTop = target.scrollTop;
@@ -103,13 +102,14 @@ function VirtualTableBase<T>({
   const viewRef = useRef<PersistentTreeView<T>>();
   const [, data] = useNewView(() => {
     let ret: PersistentTreeView<T>;
-    if (viewRef.current != null) {
+    if (viewRef.current != null && dataStream === viewRef.current.stream) {
       ret = viewRef.current.rematerialize(limit);
       viewRef.current.destroy();
     } else {
+      setLimit(pageSize * 2);
       ret = dataStream.materialize(comparator, {
         wantInitialData: true,
-        limit: pageSize,
+        limit: pageSize * 2,
       });
     }
     viewRef.current = ret;

@@ -109,7 +109,16 @@ export abstract class View<T, CT> implements ISignal<CT> {
     this.#maybeCleanup(options.autoCleanup || false);
   }
 
-  #maybeCleanup(autoCleanup: boolean) {
+  #maybeCleanup(autoCleanup: boolean, isNextTick = false) {
+    if (autoCleanup && !isNextTick) {
+      // Give the user a chance to attach listeners in the current tick
+      // before auto-cleaning
+      setTimeout(() => {
+        this.#maybeCleanup(autoCleanup, true);
+      }, 0);
+      return;
+    }
+
     if (
       autoCleanup &&
       this.#listeners.size === 0 &&

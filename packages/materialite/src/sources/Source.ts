@@ -1,6 +1,6 @@
 import { Comparator } from "@vlcn.io/ds-and-algos/types";
 import { Hoisted } from "../core/graph/Msg.js";
-import { RootDifferenceStream } from "../core/graph/RootDifferenceStream.js";
+import { AbstractDifferenceStream } from "../core/graph/AbstractDifferenceStream.js";
 
 export type Source<T, K = T, CT = unknown> =
   | (IStatelessSource<T> & ISortedSource<T>)
@@ -12,7 +12,7 @@ export type KeyFn<T, K> = (v: T) => K;
 export interface ISource<T> {
   readonly _state: "stateful" | "stateless";
   readonly _sort: "sorted" | "unsorted";
-  readonly stream: RootDifferenceStream<T>;
+  readonly stream: AbstractDifferenceStream<T>;
   /**
    * Detaches all pipelines from this source.
    */

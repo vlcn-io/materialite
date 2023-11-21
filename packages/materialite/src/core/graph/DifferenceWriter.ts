@@ -70,9 +70,18 @@ abstract class AbstractDifferenceStreamWriter<T> {
       this.readers.splice(idx, 1);
       this.queues.splice(idx, 1);
     }
-    if (this.readers.length === 0 && options.autoCleanup === true) {
-      // no more readers?
-      // then we can destroy the operator
+    this.#maybeCleanup(options.autoCleanup || false);
+  }
+
+  #maybeCleanup(autoCleanup: boolean, isNextTick = false) {
+    if (autoCleanup && !isNextTick) {
+      setTimeout(() => {
+        this.#maybeCleanup(autoCleanup, true);
+      }, 0);
+      return;
+    }
+
+    if (autoCleanup && this.readers.length === 0) {
       this.destroy();
     }
   }

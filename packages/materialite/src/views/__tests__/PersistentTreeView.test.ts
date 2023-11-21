@@ -49,3 +49,5 @@ test("rematerialization", () => {
   ]);
   expect(numProcessed).toBe(6);
 });
+
+// test("rematerialization with filtered stream", () => {});
