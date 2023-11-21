@@ -49,6 +49,9 @@ function VirtualTableBase<T>({
     // total height and we page in when hitting a virtual region that is missing data.
     const bottom =
       target.scrollHeight - target.scrollTop <= target.clientHeight + height;
+    // TODO: better determination of when we have no more results.
+    // if we 1. filter, 2. drop something from view by changing attributes to be filtered out then we won't page more in with
+    // this pagination strategy.
     if (bottom && data.size >= limit) {
       // and not loading
       // and have next page

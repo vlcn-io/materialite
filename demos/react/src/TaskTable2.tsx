@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { CSSProperties, useCallback } from "react";
 import { Task } from "./data/tasks/schema.js";
 import { DifferenceStream } from "@vlcn.io/materialite";
 import VirtualTable2 from "./virtualized/VirtualTable2.js";
@@ -7,15 +7,27 @@ import { taskComparator } from "./TaskApp.js";
 type TaskTableProps = {
   tasks: DifferenceStream<Task>;
   onTaskClick: (task: Task) => void;
-  selectedTask?: number;
+  selectedTask: Task | null;
 };
 
-export const TaskTable2: React.FC<TaskTableProps> = ({ tasks }) => {
+export const TaskTable2: React.FC<TaskTableProps> = ({
+  tasks,
+  onTaskClick,
+  selectedTask,
+}) => {
   const rowRenderer = useCallback(
     (row: Task, style: { [key: string]: string | number }) => (
-      <Row key={row.id} row={row} style={style} onClick={() => {}} />
+      <Row
+        key={row.id}
+        row={row}
+        style={style}
+        selectedTask={selectedTask}
+        onClick={() => {
+          onTaskClick(row);
+        }}
+      />
     ),
-    []
+    [selectedTask]
   );
 
   return (
@@ -54,16 +66,18 @@ function Row({
   row,
   onClick,
   style,
+  selectedTask,
 }: {
   row: Task;
   onClick: () => void;
-  style: { [key: string]: string | number };
+  style: CSSProperties;
+  selectedTask: Task | null;
 }) {
   return (
     <tr
       style={style}
       className={`border-t cursor-pointer ${
-        row.id === 1 ? "bg-blue-200" : "hover:bg-blue-100"
+        row.id === selectedTask?.id ? "bg-blue-200" : "hover:bg-blue-100"
       }`}
       onClick={onClick}
     >

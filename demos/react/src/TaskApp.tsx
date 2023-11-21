@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { TaskComponent } from "./Task.js";
+import { TaskComponent } from "./TaskComponent.js";
 import { Task } from "./data/tasks/schema.js";
 import { createTasks } from "./data/tasks/createTasks.js";
 import { DifferenceStream, Materialite } from "@vlcn.io/materialite";
@@ -64,7 +64,11 @@ export const TaskApp: React.FC = () => {
     <div className="flex h-screen">
       <div className="w-3/4 bg-gray-100 overflow-y-auto">
         <TaskFilter onFilterChange={updateFilter} filter={filter} />
-        <TaskTable2 tasks={taskStream} onTaskClick={onTaskSelected} />
+        <TaskTable2
+          tasks={taskStream}
+          onTaskClick={onTaskSelected}
+          selectedTask={selectedTask}
+        />
       </div>
       <div className="w-1/4 bg-white overflow-y-auto p-6">
         {selectedTask ? (
