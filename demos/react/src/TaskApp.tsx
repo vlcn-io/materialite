@@ -16,7 +16,7 @@ export const TaskApp: React.FC = () => {
     const ret = materialite.newSortedSet(taskComparator);
     materialite.tx(() => {
       // 1_000_000
-      for (const t of createTasks(1_000)) {
+      for (const t of createTasks(1_000_000)) {
         ret.add(t);
       }
     });

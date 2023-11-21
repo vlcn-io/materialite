@@ -31,7 +31,8 @@ function VirtualTableBase<T>({
   const tableContainerRef = React.useRef<HTMLDivElement>(null);
 
   const pageSize = Math.ceil(height / rowHeight);
-  const [limit, setLimit] = useState(pageSize);
+  // load 2 pages to start
+  const [limit, setLimit] = useState(pageSize * 2);
 
   // use a ref for scroll position?
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
@@ -45,8 +46,10 @@ function VirtualTableBase<T>({
       onNearScroll();
     }
 
+    // TODO: change this so scroll bar represents
+    // total height and we page in when hitting a virtual region that is missing data.
     const bottom =
-      target.scrollHeight - target.scrollTop <= target.clientHeight + 300;
+      target.scrollHeight - target.scrollTop <= target.clientHeight + height;
     if (bottom && data.size >= limit) {
       // and not loading
       // and have next page
