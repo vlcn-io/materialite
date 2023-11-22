@@ -8,7 +8,7 @@ import { useQuery } from "@vlcn.io/materialite-react";
 export const TaskFilter: React.FC = () => {
   const [, filters] = useQuery(
     () =>
-      db.appStates.stream
+      db.appState.stream
         .filter((s): s is Filter => s._tag === "filter")
         .materialize(appStateComparator),
     []
@@ -21,9 +21,9 @@ export const TaskFilter: React.FC = () => {
 
   function controlChange(key: keyof Task, value?: string) {
     if (value != null) {
-      db.appStates.add({ _tag: "filter", key, value });
+      db.appState.add({ _tag: "filter", key, value });
     } else {
-      db.appStates.delete({ _tag: "filter", key } as any); // TODO: deletion by partial object.... hmm, based on comparator args really.
+      db.appState.delete({ _tag: "filter", key } as any); // TODO: deletion by partial object.... hmm, based on comparator args really.
     }
   }
 

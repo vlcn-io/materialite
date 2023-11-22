@@ -36,7 +36,7 @@ export const TaskTable: React.FC<TaskTableProps> = ({
 
   const [, filters] = useQuery(
     () =>
-      db.appStates.stream
+      db.appState.stream
         .filter((s): s is Filter => s._tag === "filter")
         // TODO: simpler method of indicating compartor should be same as source
         .materialize(appStateComparator),
