@@ -49,7 +49,7 @@ export class TreeIterator<T> implements IterableIterator<T> {
     if (this.#primed && this.#first) {
       this.#first = false;
       return {
-        done: false,
+        done: this.cursor === null ? true : false,
         value: this.cursor !== null ? this.cursor.value : null,
       } as IteratorResult<T>;
     }

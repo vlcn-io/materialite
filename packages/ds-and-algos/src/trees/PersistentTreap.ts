@@ -224,7 +224,14 @@ export class PersistentTreap<T> implements ITree<T> {
       return new Node(value, priority);
     }
 
-    const cmp = this.comparator(value, node.value);
+    let cmp;
+    try {
+      cmp = this.comparator(value, node.value);
+    } catch (e) {
+      debugger;
+      throw e;
+    }
+
     const newNode = new Node(node.value, node.priority);
     newNode.left = node.left;
     newNode.right = node.right;
