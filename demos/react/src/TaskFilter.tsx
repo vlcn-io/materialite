@@ -4,18 +4,17 @@ import { Task } from "./data/schema.js";
 import { names, priorities, statuses, projects } from "./data/createTasks.js";
 import { Filter, appStateComparator, db } from "./data/DB.js";
 import { useNewView } from "@vlcn.io/materialite-react";
-import { PersistentTreap } from "@vlcn.io/materialite";
 
 export const TaskFilter: React.FC = () => {
   const [, filters] = useNewView(
     () =>
       db.appStates.stream
-        .filter((s) => s._tag === "filter")
+        .filter((s): s is Filter => s._tag === "filter")
         .materialize(appStateComparator),
     []
   );
 
-  const filtersObj = (filters as PersistentTreap<Filter>).reduce((acc, f) => {
+  const filtersObj = filters.reduce((acc, f) => {
     (acc[f.key] as any) = f.value;
     return acc;
   }, {} as Partial<Task>);

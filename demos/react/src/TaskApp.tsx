@@ -13,14 +13,14 @@ export const TaskApp: React.FC = () => {
   const [, selectedTask] = useNewView(
     () =>
       db.appStates.stream
-        .filter((s) => s._tag === "selected") // TODO: allow filter to narrow the type
+        .filter((s): s is Selected => s._tag === "selected")
         .materializeValue(null),
     []
   );
 
   function onTaskSelected(task: Task) {
     db.tx(() => {
-      if (selectedTask?._tag === "selected") {
+      if (selectedTask) {
         db.appStates.delete({ _tag: "selected", id: selectedTask.id });
       }
 
