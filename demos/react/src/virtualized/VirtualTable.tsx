@@ -1,5 +1,5 @@
 import React, { memo, useRef, useState } from "react";
-import css from "./VirtualTable2.module.css";
+import css from "./VirtualTable.module.css";
 import { useQuery } from "@vlcn.io/materialite-react";
 import { DifferenceStream, PersistentTreeView } from "@vlcn.io/materialite";
 import { Comparator } from "@vlcn.io/ds-and-algos/types";

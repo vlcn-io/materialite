@@ -10,4 +10,4 @@
 - better destructing... TaskTable2 for example.
 - `.value` rather than `materializeValue`?
 - `useQuery` rather than `useNewView`? Materializes to default structure?
--
+- BUG: dissassociation from data and queries??
