@@ -50,7 +50,6 @@ export const TaskTable: React.FC<TaskTableProps> = ({
       taskStream.destroy();
     }
     setTaskStream(applyFilters(filters, db.tasks.stream));
-    console.log("filters changed");
   }
 
   const rowRenderer = useCallback(
