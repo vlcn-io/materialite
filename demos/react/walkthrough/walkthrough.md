@@ -333,3 +333,5 @@ This is where materialite shines: It'll keep that query efficiently maintained a
 `TaskTable.tsx` then renders the results of that query via a virtualized table. Here we're using a very experimental / new feature: the ability for Materialite to hoist operations back to source collections. Essentially giving Materialite both stream processing and normal querying characteristics. This is described in more detail [here](https://github.com/vlcn-io/materialite/discussions/2).
 
 > I don't currently like the APIs used to do this and this is currently a source of many bugs. The bugs exist by omission as I just haven't had the time to reconcile the streaming updates with [normal queries](https://tantaman.com/2022-05-26-query-planning.html) to seed the stream.
+
+Deployed application: https://vlcn-io.github.io/materialite/
