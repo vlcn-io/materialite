@@ -8,7 +8,7 @@ This is a walkthrough of the code behind https://github.com/vlcn-io/materialite/
 
 Think of Materialite as a database. A database that can efficiently respond to changes in data.
 
-Think of the demo application as an app where all state is stored in the database. Rather than ever using `useState` and `setState`, we read and write state to/from the database.
+Think of the demo application as an app where all state is stored in that database. Rather than ever using `useState` and `setState`, we read and write state to/from the database.
 
 > ⚠️ Note that I'm still figuring out the best APIs to expose to developers and there are still bugs 🐛 in Materialite.
 
