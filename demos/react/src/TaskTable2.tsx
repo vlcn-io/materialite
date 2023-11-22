@@ -1,21 +1,61 @@
-import React, { CSSProperties, useCallback } from "react";
+import React, { CSSProperties, useCallback, useState } from "react";
 import { Task } from "./data/schema.js";
-import { DifferenceStream } from "@vlcn.io/materialite";
+import { DifferenceStream, PersistentTreap } from "@vlcn.io/materialite";
 import VirtualTable2 from "./virtualized/VirtualTable2.js";
-import { taskComparator } from "./data/DB.js";
+import { Filter, appStateComparator, db, taskComparator } from "./data/DB.js";
+import { useNewView } from "@vlcn.io/materialite-react";
 
 type TaskTableProps = {
-  tasks: DifferenceStream<Task>;
   onTaskClick: (task: Task) => void;
   selectedTask: number | null;
 };
 
+function applyFilters(
+  filters: Iterable<Filter>,
+  tasks: DifferenceStream<Task>
+) {
+  let ret = tasks;
+  for (const { key, value } of filters) {
+    if (!value) continue;
+    ret = ret.filter((task) => {
+      return task[key] === value;
+    });
+  }
+  return ret;
+}
+
 export const TaskTable2: React.FC<TaskTableProps> = ({
-  tasks,
   onTaskClick,
   selectedTask,
 }) => {
-  // query and use filters here...
+  const tableHeight = window.innerHeight - 160;
+  const rowHeight = 50;
+  const [oldFilters, setOldFilters] =
+    React.useState<PersistentTreap<Filter> | null>(null);
+  const [taskStream, setTaskStream] = useState(db.tasks.stream);
+
+  const [, filters] = useNewView(
+    () =>
+      db.appStates.stream
+        .filter((s) => s._tag === "filter")
+        // TODO: simpler method of indicating compartor should be same as source?
+        // maybe we can hoist the comparator from source to streams until we hit a incompatible operator?
+        .materialize(appStateComparator),
+    []
+  );
+
+  if (filters !== oldFilters) {
+    setOldFilters(filters as PersistentTreap<Filter>);
+    // TODO: what if the stream is never consumed?
+    if (taskStream !== db.tasks.stream) {
+      // ugh.. destruction really needs to be fixed up.
+      taskStream.destroy();
+    }
+    setTaskStream(
+      applyFilters(filters as PersistentTreap<Filter>, db.tasks.stream)
+    );
+    console.log("filters changed");
+  }
 
   const rowRenderer = useCallback(
     (row: Task, style: { [key: string]: string | number }) => (
@@ -40,9 +80,9 @@ export const TaskTable2: React.FC<TaskTableProps> = ({
       <VirtualTable2
         className="bg-white rounded-xl"
         width="calc(100% - 30px)"
-        height={window.innerHeight - 160}
-        dataStream={tasks}
-        rowHeight={50}
+        height={tableHeight}
+        dataStream={taskStream}
+        rowHeight={rowHeight}
         comparator={taskComparator}
         header={
           <thead>

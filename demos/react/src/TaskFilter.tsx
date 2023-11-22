@@ -1,29 +1,31 @@
-import React, { useState } from "react";
-import { Priority, Status } from "./data/schema.js";
+import React from "react";
+import { Task } from "./data/schema.js";
 
 import { names, priorities, statuses, projects } from "./data/createTasks.js";
+import { Filter, appStateComparator, db } from "./data/DB.js";
+import { useNewView } from "@vlcn.io/materialite-react";
+import { PersistentTreap } from "@vlcn.io/materialite";
 
-type TaskFilterProps = {
-  onFilterChange: (filter: Filter) => void;
-  filter: Filter;
-};
+export const TaskFilter: React.FC = () => {
+  const [, filters] = useNewView(
+    () =>
+      db.appStates.stream
+        .filter((s) => s._tag === "filter")
+        .materialize(appStateComparator),
+    []
+  );
 
-export type Filter = {
-  assignee?: string;
-  priority?: Priority;
-  status?: Status;
-  project?: string;
-};
+  const filtersObj = (filters as PersistentTreap<Filter>).reduce((acc, f) => {
+    (acc[f.key] as any) = f.value;
+    return acc;
+  }, {} as Partial<Task>);
 
-export const TaskFilter: React.FC<TaskFilterProps> = ({ onFilterChange }) => {
-  const [filter, setFilter] = useState<Filter>({});
-
-  function controlChange(key: keyof Filter, value?: string) {
-    setFilter((prev) => ({ ...prev, [key]: value }));
-    onFilterChange({
-      ...filter,
-      [key]: value || undefined,
-    });
+  function controlChange(key: keyof Task, value?: string) {
+    if (value != null) {
+      db.appStates.add({ _tag: "filter", key, value });
+    } else {
+      db.appStates.delete({ _tag: "filter", key } as any); // TODO: deletion by partial object.... hmm, based on comparator args really.
+    }
   }
 
   function makeOption(v: string) {
@@ -45,7 +47,7 @@ export const TaskFilter: React.FC<TaskFilterProps> = ({ onFilterChange }) => {
           <label className="m-2 inline-block w-24">Assignee</label>
           <select
             className="bg-green-100 p-2 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none w-64"
-            value={filter.assignee || ""}
+            value={filtersObj.assignee || ""}
             onChange={(e) => {
               controlChange("assignee", e.target.value || undefined);
             }}
@@ -58,7 +60,7 @@ export const TaskFilter: React.FC<TaskFilterProps> = ({ onFilterChange }) => {
           <label className="m-2 inline-block w-24">Priority</label>
           <select
             className="bg-green-100 p-2 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none w-64"
-            value={filter.priority || ""}
+            value={filtersObj.priority || ""}
             onChange={(e) => {
               controlChange("priority", e.target.value || undefined);
             }}
@@ -71,7 +73,7 @@ export const TaskFilter: React.FC<TaskFilterProps> = ({ onFilterChange }) => {
           <label className="m-2 inline-block w-24">Project</label>
           <select
             className="bg-green-100 p-2 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none w-64"
-            value={filter.project || ""}
+            value={filtersObj.project || ""}
             onChange={(e) => {
               controlChange("project", e.target.value || undefined);
             }}
@@ -84,7 +86,7 @@ export const TaskFilter: React.FC<TaskFilterProps> = ({ onFilterChange }) => {
           <label className="m-2 inline-block w-24">Status</label>
           <select
             className="bg-green-100 p-2 rounded-md shadow-sm focus:ring focus:ring-blue-200 focus:outline-none w-64"
-            value={filter.status || ""}
+            value={filtersObj.status || ""}
             onChange={(e) => {
               controlChange("status", e.target.value || undefined);
             }}

@@ -29,11 +29,11 @@ export const appStateComparator = (l: AppState, r: AppState) => {
 
   switch (l._tag) {
     case "filter":
-      return (
-        l.key.localeCompare((r as Filter).key) ||
-        l.value.localeCompare((r as Filter).value)
-      );
+      // filters with the same key are removed and replaced with the new one
+      // hence no comparison on value
+      return l.key.localeCompare((r as Filter).key);
     case "selected":
+      // we allow for many selected items, hence compare on id
       return l.id - (r as Selected).id;
   }
 };
@@ -46,6 +46,7 @@ export const db = {
   tasks: m.newSortedSet(taskComparator),
   appStates: m.newSortedSet(appStateComparator),
   comments: m.newSortedSet(commentComparator),
+  tx: m.tx.bind(m),
 };
 
 function fillWithSampleData() {
