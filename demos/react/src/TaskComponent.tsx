@@ -5,13 +5,16 @@ import { useNewView } from "@vlcn.io/materialite-react";
 import { db } from "./data/DB.js";
 type TaskComponentProps = {
   taskId: number;
-  onTaskChanged: (oldTask: Task, task: Task) => void;
 };
 
-export const TaskComponent: React.FC<TaskComponentProps> = ({
-  taskId,
-  onTaskChanged,
-}) => {
+export const TaskComponent: React.FC<TaskComponentProps> = ({ taskId }) => {
+  function onTaskChanged(oldTask: Task, newTask: Task) {
+    db.tx(() => {
+      db.tasks.delete(oldTask);
+      db.tasks.add(newTask);
+    });
+  }
+
   const [, task] = useNewView(() => {
     return (
       db.tasks.stream

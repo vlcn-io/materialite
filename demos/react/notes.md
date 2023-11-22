@@ -5,3 +5,9 @@
 - unmaterialized variant of useQuery?
   - or update virtual table to take materialized variant?
 - distinct count
+- // TODO: re-order view vs value return
+- hoist comparator up the chain and materialize using source comparator as default comparator if it still exists
+- better destructing... TaskTable2 for example.
+- `.value` rather than `materializeValue`?
+- `useQuery` rather than `useNewView`? Materializes to default structure?
+-

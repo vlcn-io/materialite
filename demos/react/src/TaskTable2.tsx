@@ -38,15 +38,13 @@ export const TaskTable2: React.FC<TaskTableProps> = ({
     () =>
       db.appStates.stream
         .filter((s): s is Filter => s._tag === "filter")
-        // TODO: simpler method of indicating compartor should be same as source?
-        // maybe we can hoist the comparator from source to streams until we hit a incompatible operator?
+        // TODO: simpler method of indicating compartor should be same as source
         .materialize(appStateComparator),
     []
   );
 
   if (filters !== oldFilters) {
     setOldFilters(filters);
-    // TODO: what if the stream is never consumed?
     if (taskStream !== db.tasks.stream) {
       // ugh.. destruction really needs to be fixed up.
       taskStream.destroy();

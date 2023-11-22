@@ -7,9 +7,6 @@ import { Selected, db } from "./data/DB.js";
 import { useNewView } from "@vlcn.io/materialite-react";
 
 export const TaskApp: React.FC = () => {
-  const allTasks = db.tasks;
-
-  // TODO: re-order view vs value return
   const [, selectedTask] = useNewView(
     () =>
       db.appStates.stream
@@ -28,13 +25,6 @@ export const TaskApp: React.FC = () => {
     });
   }
 
-  function onTaskUpdated(oldTask: Task, newTask: Task) {
-    db.tx(() => {
-      allTasks.delete(oldTask);
-      allTasks.add(newTask);
-    });
-  }
-
   return (
     <div className="flex h-screen">
       <div className="w-3/4 bg-gray-100 overflow-y-auto">
@@ -46,10 +36,7 @@ export const TaskApp: React.FC = () => {
       </div>
       <div className="w-1/4 bg-white overflow-y-auto p-6">
         {selectedTask ? (
-          <TaskComponent
-            taskId={(selectedTask as Selected).id}
-            onTaskChanged={onTaskUpdated}
-          />
+          <TaskComponent taskId={(selectedTask as Selected).id} />
         ) : (
           <div>Select a task to view details</div>
         )}
