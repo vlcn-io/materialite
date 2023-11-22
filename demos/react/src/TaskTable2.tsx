@@ -37,7 +37,7 @@ export const TaskTable2: React.FC<TaskTableProps> = ({
   const [, filters] = useNewView(
     () =>
       db.appStates.stream
-        .filter((s) => s._tag === "filter")
+        .filter((s): s is Filter => s._tag === "filter")
         // TODO: simpler method of indicating compartor should be same as source?
         // maybe we can hoist the comparator from source to streams until we hit a incompatible operator?
         .materialize(appStateComparator),
@@ -45,15 +45,13 @@ export const TaskTable2: React.FC<TaskTableProps> = ({
   );
 
   if (filters !== oldFilters) {
-    setOldFilters(filters as PersistentTreap<Filter>);
+    setOldFilters(filters);
     // TODO: what if the stream is never consumed?
     if (taskStream !== db.tasks.stream) {
       // ugh.. destruction really needs to be fixed up.
       taskStream.destroy();
     }
-    setTaskStream(
-      applyFilters(filters as PersistentTreap<Filter>, db.tasks.stream)
-    );
+    setTaskStream(applyFilters(filters, db.tasks.stream));
     console.log("filters changed");
   }
 

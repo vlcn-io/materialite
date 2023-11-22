@@ -17,6 +17,7 @@ export interface IDifferenceStream<T> {
   after(v: T, comparator: Comparator<T>): IDifferenceStream<T>;
   take(n: number, comparator: Comparator<T>): IDifferenceStream<T>;
   map<O>(f: (value: T) => O): IDifferenceStream<O>;
+  filter<S extends T>(f: (x: T) => x is S): IDifferenceStream<S>;
   filter(f: (x: T) => boolean): IDifferenceStream<T>;
   negate(): IDifferenceStream<T>;
   concat<T2>(other: IDifferenceStream<T2>): IDifferenceStream<T | T2>;

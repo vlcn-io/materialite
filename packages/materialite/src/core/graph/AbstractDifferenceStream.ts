@@ -64,8 +64,10 @@ export abstract class AbstractDifferenceStream<T>
     return ret;
   }
 
-  filter(f: (x: T) => boolean): AbstractDifferenceStream<T> {
-    const ret = this.newStream<T>();
+  filter<S extends T>(f: (x: T) => x is S): AbstractDifferenceStream<S>;
+  filter(f: (x: T) => boolean): AbstractDifferenceStream<T>;
+  filter<S extends T>(f: (x: T) => boolean): AbstractDifferenceStream<S> {
+    const ret = this.newStream<S>();
     new FilterOperator<T>(this.writer.newReader(), ret.writer, f);
     return ret;
   }
