@@ -1,7 +1,7 @@
 import React, { CSSProperties, useCallback, useState } from "react";
 import { Task } from "./data/schema.js";
 import { DifferenceStream, PersistentTreap } from "@vlcn.io/materialite";
-import VirtualTable2 from "./virtualized/VirtualTable2.js";
+import VirtualTable2 from "./virtualized/VirtualTable.js";
 import { Filter, appStateComparator, db, taskComparator } from "./data/DB.js";
 import { useQuery } from "@vlcn.io/materialite-react";
 
@@ -24,7 +24,7 @@ function applyFilters(
   return ret;
 }
 
-export const TaskTable2: React.FC<TaskTableProps> = ({
+export const TaskTable: React.FC<TaskTableProps> = ({
   onTaskClick,
   selectedTask,
 }) => {
