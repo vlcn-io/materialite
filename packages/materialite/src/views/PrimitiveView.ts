@@ -6,13 +6,13 @@ import { View } from "./View.js";
 /**
  * Represents the most recent value from a stream of primitives.
  */
-export class ValueView<T> extends View<T, T> {
-  #data: T;
+export class ValueView<T> extends View<T, T | null> {
+  #data: T | null;
 
   constructor(
     materialite: Materialite,
     stream: AbstractDifferenceStream<T>,
-    initial: T
+    initial: T | null
   ) {
     super(materialite, stream);
     this.#data = initial;
