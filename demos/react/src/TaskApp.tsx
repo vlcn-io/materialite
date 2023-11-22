@@ -8,7 +8,7 @@ import { useQuery } from "@vlcn.io/materialite-react";
 export default function TaskApp() {
   const [, selectedTask] = useQuery(
     () =>
-      db.appStates.stream
+      db.appState.stream
         .filter((s): s is Selected => s._tag === "selected")
         .materializeValue(null),
     []
@@ -17,10 +17,10 @@ export default function TaskApp() {
   function onTaskSelected(task: Task) {
     db.tx(() => {
       if (selectedTask) {
-        db.appStates.delete({ _tag: "selected", id: selectedTask.id });
+        db.appState.delete({ _tag: "selected", id: selectedTask.id });
       }
 
-      db.appStates.add({ _tag: "selected", id: task.id });
+      db.appState.add({ _tag: "selected", id: task.id });
     });
   }
 

@@ -44,7 +44,7 @@ export const appStateComparator = (l: AppState, r: AppState) => {
 // So our DB needs extra indices. E.g., a comment by issue by date indice.
 export const db = {
   tasks: m.newSortedSet(taskComparator),
-  appStates: m.newSortedSet(appStateComparator),
+  appState: m.newSortedSet(appStateComparator),
   comments: m.newSortedSet(commentComparator),
   tx: m.tx.bind(m),
 };
