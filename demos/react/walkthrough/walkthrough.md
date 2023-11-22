@@ -1,8 +1,14 @@
-# Materialite Demo App Walkthrough
+# Materialite React Demo Walkthrough
+
+This is a walkthrough of the code behind https://github.com/vlcn-io/materialite/tree/main/demos/react
+
+![screenshot of demo app](./app.png)
+
+---
 
 Think of Materialite as a database. A database that can efficiently respond to changes in data.
 
-Think of the react demo application as an app where all state is stored in the database. Rather than ever using `useState` and `setState` we read and write state to/from the database.
+Think of the demo application as an app where all state is stored in the database. Rather than ever using `useState` and `setState`, we read and write state to/from the database.
 
 > ⚠️ Note that I'm still figuring out the best APIs to expose to developers and there are still bugs 🐛 in Materialite.
 
@@ -18,7 +24,7 @@ The state of each of these components is stored in the DB. Each of these compone
 
 [materialite-react-demo.webm](https://github.com/vlcn-io/materialite/assets/1009003/22798248-2930-4f84-bfc9-a066f6eb7481)
 
-## main.tsx
+## [main.tsx](https://github.com/vlcn-io/materialite/blob/195b75d0093fe876b5ee9837e4d55ea3ff41b8aa/demos/react/src/main.tsx)
 
 `main.tsx` is the component used to mount into the DOM. All it does is mount and render `TaskApp` into a DOM element.
 
@@ -26,9 +32,11 @@ The state of each of these components is stored in the DB. Each of these compone
 ReactDOM.createRoot(document.getElementById("root")!).render(<TaskApp />);
 ```
 
-## DB.ts
+_[code](https://github.com/vlcn-io/materialite/blob/195b75d0093fe876b5ee9837e4d55ea3ff41b8aa/demos/react/src/main.tsx#L5)_
 
-> Think of the react demo application as an app where all state is stored in the database.
+## [DB.ts](https://github.com/vlcn-io/materialite/blob/195b75d0093fe876b5ee9837e4d55ea3ff41b8aa/demos/react/src/data/DB.ts)
+
+> Think of the demo application as an app where all state is stored in the database.
 
 `DB.ts` is the core entrypoint to our database and where all state is read and written. Here we set up three collections or tables:
 
@@ -36,7 +44,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(<TaskApp />);
 2. comments
 3. appState
 
-as well as a convenience function to start a new transaction.
+as well as a convenience function to start a new transaction (tx).
 
 ```ts
 const m = new Materialite();
@@ -50,14 +58,14 @@ export const db = {
 
 _[code](https://github.com/vlcn-io/materialite/blob/195b75d0093fe876b5ee9837e4d55ea3ff41b8aa/demos/react/src/data/DB.ts#L45-L50)_
 
-Each collection requires a comparator so that:
+Each collection takes a comparator so that:
 
-1. We can access the backing data in sorted order, making things like pagination and comment lookup fast.
-2. Replace duplicate items
+1. We can access the data in sorted order, making things like pagination and comment lookup fast.
+2. Replace duplicate items.
 
 `tasks` and `comments` are pretty obvious collections, `appState` less so. `appState` represents things like selected tasks, selected filters and other "ui level state" that you'd generally stick into `useState`. Managing this state in the DB has benefits discussed [here](https://riffle.systems/essays/prelude/).
 
-Enforcing things like uniqueness constraints for a collection can be done via the comparator provided to the collection. E.g., we only allow one `filter` for a given key.
+Enforcing things like uniqueness constraints for a collection can be done via the comparator. E.g., we only allow one `filter` for a given key.
 
 ```ts
 export const appStateComparator = (l: AppState, r: AppState) => {
@@ -66,19 +74,17 @@ export const appStateComparator = (l: AppState, r: AppState) => {
 
   switch (l._tag) {
     case "filter":
-      // filters with the same key are removed and replaced with the new one
+      // filters with the same key are replaced
       // hence no comparison on value
       return l.key.localeCompare((r as Filter).key);
-    case "selected":
-      // we allow for many selected items, hence compare on id
-      return l.id - (r as Selected).id;
+    // ...
   }
 };
 ```
 
 _[code](https://github.com/vlcn-io/materialite/blob/195b75d0093fe876b5ee9837e4d55ea3ff41b8aa/demos/react/src/data/DB.ts#L26-L39)_
 
-## TaskApp.tsx
+## [TaskApp.tsx](https://github.com/vlcn-io/materialite/blob/195b75d0093fe876b5ee9837e4d55ea3ff41b8aa/demos/react/src/TaskApp.tsx)
 
 `TaskApp.tsx` is the root of our application. It:
 
@@ -103,9 +109,9 @@ export default function TaskApp() {
 
 _[code](https://github.com/vlcn-io/materialite/blob/195b75d0093fe876b5ee9837e4d55ea3ff41b8aa/demos/react/src/TaskApp.tsx#L8-L15)_
 
-Any time task selection state changes, `useQuery` will return a new `selectedTask` value and re-render the component.
+Any time task selection state changes, `useQuery` will return a new `selectedTask` and re-render the component.
 
-Note that `AppState` is a union type:
+A brief detour -- note that `AppState` is a union type:
 
 ```ts
 export type Filter = {
@@ -154,13 +160,15 @@ function onTaskSelected(task: Task) {
 // ...
 ```
 
+_[code](https://github.com/vlcn-io/materialite/blob/195b75d0093fe876b5ee9837e4d55ea3ff41b8aa/demos/react/src/TaskApp.tsx#L17-L25)_
+
 ### Sub-Components
 
-After setting out a subscription against the selected task query and a callback to write the selected task, `TaskApp.tsx` renders the sub-components that make up the app:
+After setting up a subscription against the selected task query and a callback to write the selected task, `TaskApp.tsx` renders the sub-components that make up the app:
 
-1. TaskFilter
-2. TaskTable
-3. TaskComponent
+1. [TaskFilter](https://github.com/vlcn-io/materialite/blob/195b75d0093fe876b5ee9837e4d55ea3ff41b8aa/demos/react/src/TaskFilter.tsx)
+2. [TaskTable](https://github.com/vlcn-io/materialite/blob/195b75d0093fe876b5ee9837e4d55ea3ff41b8aa/demos/react/src/TaskTable.tsx)
+3. [TaskComponent](https://github.com/vlcn-io/materialite/blob/195b75d0093fe876b5ee9837e4d55ea3ff41b8aa/demos/react/src/TaskComponent.tsx)
 
 `TaskTable` and `TaskFilter` both require access to the same state: what the current filter set is. Note, however, that we don't have to pass this state around.
 
@@ -191,7 +199,7 @@ The reason is that components can share state directly through the database.
 
 Lets take a look at `TaskFilter`.
 
-## TaskFilter.tsx
+## [TaskFilter.tsx](https://github.com/vlcn-io/materialite/blob/195b75d0093fe876b5ee9837e4d55ea3ff41b8aa/demos/react/src/TaskFilter.tsx)
 
 The first thing that `TaskFilter` does is to subscribe to a query against the current application state, filtering down to the `filter` type, via the `useQuery` hook.
 
@@ -223,7 +231,7 @@ And the filter UI:
 
 ![filter ui](./filter.png)
 
-So each row is a key of `Task` and the currently set value to filter that key by.
+Each row is a key of `Task` and the value to filter that key by.
 
 The set of filters returned by the DB is then used to populate the filter UI.
 
@@ -248,9 +256,7 @@ const filtersObj = filters.reduce((acc, f) => {
 
 _[code](https://github.com/vlcn-io/materialite/blob/195b75d0093fe876b5ee9837e4d55ea3ff41b8aa/demos/react/src/TaskFilter.tsx#L44-L56)_
 
-We'll see a similar pattern in `TaskTable.tsx`.
-
-The next thing `TaskFilter` does is set up a handler to write filter changes to the DB.
+The next thing `TaskFilter` does is set up a handler to write filter changes to the DB. I.e., when the user changes a UI element, write that state to the DB.
 
 ```ts
 function controlChange(key: keyof Task, value?: string) {
@@ -262,11 +268,13 @@ function controlChange(key: keyof Task, value?: string) {
 }
 ```
 
+_[code](https://github.com/vlcn-io/materialite/blob/195b75d0093fe876b5ee9837e4d55ea3ff41b8aa/demos/react/src/TaskFilter.tsx#L22-L28)_
+
 This gives us a simple unidirectional dataflow. All writes flow down to the DB, all reads up from the DB. Reminiscient of a simple 90's coding style where the backend served the UI from state read directly out of a DB.
 
-## TaskTable.tsx
+## [TaskTable.tsx](https://github.com/vlcn-io/materialite/blob/195b75d0093fe876b5ee9837e4d55ea3ff41b8aa/demos/react/src/TaskTable.tsx)
 
-TaskTable also needs the current set of filters. Rather than trying to pass callbacks around and threading dependencies through components that don't need to be aware of them, `TaskTable` simply queries the DB as `TaskFilter` does.
+`TaskTable` also needs the current set of filters. Rather than trying to pass callbacks around and threading dependencies through components that don't need to be aware of them, `TaskTable` simply queries the DB as `TaskFilter` does.
 
 ```ts
 const [, filters] = useQuery(
@@ -314,6 +322,8 @@ function fillWithSampleData() {
     }
   });
 }
+
+fillWithSampleData();
 ```
 
 _[code](https://github.com/vlcn-io/materialite/blob/195b75d0093fe876b5ee9837e4d55ea3ff41b8aa/demos/react/src/data/DB.ts#L52-L60)_
