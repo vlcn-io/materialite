@@ -114,6 +114,12 @@ function VirtualTableBase<T>({
         wantInitialData: true,
         limit: pageSize * 2,
       });
+
+      // in case we are at the bottom already. e.g., after filter changes
+      const target = tableContainerRef.current;
+      if (target) {
+        target.scrollTop = 0;
+      }
     }
     viewRef.current = ret;
     return ret;
