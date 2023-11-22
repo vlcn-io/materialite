@@ -1,35 +1,15 @@
-import React, { useState } from "react";
+import React from "react";
 import { TaskComponent } from "./TaskComponent.js";
 import { Task } from "./data/schema.js";
-import { DifferenceStream, Materialite } from "@vlcn.io/materialite";
-import { Filter, TaskFilter } from "./TaskFilter.js";
+import { TaskFilter } from "./TaskFilter.js";
 import { TaskTable2 } from "./TaskTable2.js";
 import { Selected, db } from "./data/DB.js";
 import { useNewView } from "@vlcn.io/materialite-react";
 
-const materialite = new Materialite();
-function applyFilters(filters: Filter, tasks: DifferenceStream<Task>) {
-  let ret = tasks;
-  for (const [key, value] of Object.entries(filters) as [
-    keyof Filter,
-    string
-  ][]) {
-    if (!value) continue;
-    ret = ret.filter((task) => {
-      return task[key] === value;
-    });
-  }
-  return ret;
-}
-
 export const TaskApp: React.FC = () => {
-  const [filter, setFilter] = useState<Filter>({});
   const allTasks = db.tasks;
 
-  const [taskStream, setTaskStream] = useState<DifferenceStream<Task>>(() =>
-    applyFilters(filter, allTasks.stream)
-  );
-
+  // TODO: re-order view vs value return
   const [, selectedTask] = useNewView(
     () =>
       db.appStates.stream
@@ -38,18 +18,18 @@ export const TaskApp: React.FC = () => {
     []
   );
 
-  const updateFilter = (newFilter: Filter) => {
-    allTasks.detachPipelines(); // TODO: This should already be handled by downstream components on un-mount. Test to ensure it is.
-    setTaskStream(applyFilters(newFilter, allTasks.stream));
-    setFilter(newFilter);
-  };
-
   function onTaskSelected(task: Task) {
-    db.appStates.add({ _tag: "selected", id: task.id });
+    db.tx(() => {
+      if (selectedTask?._tag === "selected") {
+        db.appStates.delete({ _tag: "selected", id: selectedTask.id });
+      }
+
+      db.appStates.add({ _tag: "selected", id: task.id });
+    });
   }
 
   function onTaskUpdated(oldTask: Task, newTask: Task) {
-    materialite.tx(() => {
+    db.tx(() => {
       allTasks.delete(oldTask);
       allTasks.add(newTask);
     });
@@ -58,9 +38,8 @@ export const TaskApp: React.FC = () => {
   return (
     <div className="flex h-screen">
       <div className="w-3/4 bg-gray-100 overflow-y-auto">
-        <TaskFilter onFilterChange={updateFilter} filter={filter} />
+        <TaskFilter />
         <TaskTable2
-          tasks={taskStream}
           onTaskClick={onTaskSelected}
           selectedTask={(selectedTask as Selected | null)?.id || null}
         />

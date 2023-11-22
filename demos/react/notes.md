@@ -4,3 +4,4 @@
   - useQuery instead of useNewView? query <=> view
 - unmaterialized variant of useQuery?
   - or update virtual table to take materialized variant?
+- distinct count
