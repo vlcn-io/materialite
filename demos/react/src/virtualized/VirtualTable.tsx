@@ -170,7 +170,7 @@ function VirtualTableBase<T>({
     >
       <div
         style={{
-          height: contentHeight,
+          height: contentHeight + 50,
           position: "relative",
           overflow: "hidden",
         }}

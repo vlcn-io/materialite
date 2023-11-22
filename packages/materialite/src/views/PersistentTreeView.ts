@@ -54,6 +54,8 @@ export class PersistentTreeView<T> extends View<T, PersistentTreap<T>> {
       this.comparator,
       newLimit
     );
+    newView.#min = this.#min;
+    newView.#max = this.#max;
     newView.#data = this.#data;
 
     if (this.#max !== undefined) {
@@ -134,12 +136,13 @@ export class PersistentTreeView<T> extends View<T, PersistentTreap<T>> {
     // and detect that we've filled out limit.
     // And the source is ordered the same as this.......
     while (!(next = iterator.next()).done) {
+      const [value, mult] = next.value;
       if (
         sourceComparator &&
         sourceComparator === this.comparator &&
         this.#limit !== undefined
       ) {
-        if (data.size >= this.#limit) {
+        if (data.size >= this.#limit && mult > 0) {
           // bail early. During a re-compute with a source in the same order
           // as the view we can bail once we've consumed `LIMIT` items.
           break;
@@ -147,7 +150,6 @@ export class PersistentTreeView<T> extends View<T, PersistentTreap<T>> {
       }
 
       empty = false;
-      const [value, mult] = next.value;
       let nextNext = iterator.next();
       if (!nextNext.done) {
         const [nextValue, nextMult] = nextNext.value;
