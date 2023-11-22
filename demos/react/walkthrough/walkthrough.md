@@ -1,6 +1,6 @@
 # Materialite React Demo Walkthrough
 
-This is a walkthrough of the code behind https://vlcn-io.github.io/materialite/
+This is a walkthrough of the code behind https://vlcn-io.github.io/materialite/ Note: use a laptop. The layout is not responsive in the least.
 
 ![screenshot of demo app](./app.png)
 
