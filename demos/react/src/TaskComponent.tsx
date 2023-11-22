@@ -18,6 +18,7 @@ export const TaskComponent: React.FC<TaskComponentProps> = ({ taskId }) => {
   const [, task] = useNewView(() => {
     return (
       db.tasks.stream
+        // TODO: hoist id based comparisons to the source
         .filter((t) => t.id === taskId)
         // TODO: materializeValue could be less verbose.
         // just `.value`?
