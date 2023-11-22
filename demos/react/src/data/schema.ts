@@ -16,4 +16,5 @@ export type Comment = {
   id: number;
   taskId: number;
   content: string;
+  created: number;
 };

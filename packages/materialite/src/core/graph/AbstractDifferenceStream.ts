@@ -201,7 +201,7 @@ export abstract class AbstractDifferenceStream<T>
 
   materializeValue<T extends any>(
     this: AbstractDifferenceStream<T>,
-    initial: T,
+    initial: T | null,
     options: MaterializeOptions = { wantInitialData: true }
   ): ValueView<T> {
     return this.materializeInto(

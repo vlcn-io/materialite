@@ -1,12 +1,7 @@
 import React, { useState } from "react";
-import { Priority, Status } from "./data/tasks/schema.js";
+import { Priority, Status } from "./data/schema.js";
 
-import {
-  names,
-  priorities,
-  statuses,
-  projects,
-} from "./data/tasks/createTasks.js";
+import { names, priorities, statuses, projects } from "./data/createTasks.js";
 
 type TaskFilterProps = {
   onFilterChange: (filter: Filter) => void;

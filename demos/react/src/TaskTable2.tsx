@@ -1,13 +1,13 @@
 import React, { CSSProperties, useCallback } from "react";
-import { Task } from "./data/tasks/schema.js";
+import { Task } from "./data/schema.js";
 import { DifferenceStream } from "@vlcn.io/materialite";
 import VirtualTable2 from "./virtualized/VirtualTable2.js";
-import { taskComparator } from "./TaskApp.js";
+import { taskComparator } from "./data/DB.js";
 
 type TaskTableProps = {
   tasks: DifferenceStream<Task>;
   onTaskClick: (task: Task) => void;
-  selectedTask: Task | null;
+  selectedTask: number | null;
 };
 
 export const TaskTable2: React.FC<TaskTableProps> = ({
@@ -15,6 +15,8 @@ export const TaskTable2: React.FC<TaskTableProps> = ({
   onTaskClick,
   selectedTask,
 }) => {
+  // query and use filters here...
+
   const rowRenderer = useCallback(
     (row: Task, style: { [key: string]: string | number }) => (
       <Row
@@ -71,13 +73,13 @@ function Row({
   row: Task;
   onClick: () => void;
   style: CSSProperties;
-  selectedTask: Task | null;
+  selectedTask: number | null;
 }) {
   return (
     <tr
       style={style}
       className={`border-t cursor-pointer ${
-        row.id === selectedTask?.id ? "bg-blue-200" : "hover:bg-blue-100"
+        row.id === selectedTask ? "bg-blue-200" : "hover:bg-blue-100"
       }`}
       onClick={onClick}
     >

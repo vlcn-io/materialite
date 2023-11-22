@@ -1,14 +1,13 @@
 import React, { useState } from "react";
 import { TaskComponent } from "./TaskComponent.js";
-import { Task } from "./data/tasks/schema.js";
-import { createTasks } from "./data/tasks/createTasks.js";
+import { Task } from "./data/schema.js";
 import { DifferenceStream, Materialite } from "@vlcn.io/materialite";
 import { Filter, TaskFilter } from "./TaskFilter.js";
 import { TaskTable2 } from "./TaskTable2.js";
+import { Selected, db } from "./data/DB.js";
+import { useNewView } from "@vlcn.io/materialite-react";
 
 const materialite = new Materialite();
-export const taskComparator = (l: Task, r: Task) => l.id - r.id;
-
 function applyFilters(filters: Filter, tasks: DifferenceStream<Task>) {
   let ret = tasks;
   for (const [key, value] of Object.entries(filters) as [
@@ -24,22 +23,19 @@ function applyFilters(filters: Filter, tasks: DifferenceStream<Task>) {
 }
 
 export const TaskApp: React.FC = () => {
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [filter, setFilter] = useState<Filter>({});
+  const allTasks = db.tasks;
 
-  const [allTasks, _] = useState(() => {
-    const ret = materialite.newSortedSet(taskComparator);
-    materialite.tx(() => {
-      for (const t of createTasks(1_000_000)) {
-        ret.add(t);
-      }
-    });
-    return ret;
-  });
-
-  // filter, after, etc.
   const [taskStream, setTaskStream] = useState<DifferenceStream<Task>>(() =>
     applyFilters(filter, allTasks.stream)
+  );
+
+  const [, selectedTask] = useNewView(
+    () =>
+      db.appStates.stream
+        .filter((s) => s._tag === "selected") // TODO: allow filter to narrow the type
+        .materializeValue(null),
+    []
   );
 
   const updateFilter = (newFilter: Filter) => {
@@ -49,11 +45,10 @@ export const TaskApp: React.FC = () => {
   };
 
   function onTaskSelected(task: Task) {
-    setSelectedTask(task);
+    db.appStates.add({ _tag: "selected", id: task.id });
   }
 
   function onTaskUpdated(oldTask: Task, newTask: Task) {
-    setSelectedTask(newTask);
     materialite.tx(() => {
       allTasks.delete(oldTask);
       allTasks.add(newTask);
@@ -67,12 +62,15 @@ export const TaskApp: React.FC = () => {
         <TaskTable2
           tasks={taskStream}
           onTaskClick={onTaskSelected}
-          selectedTask={selectedTask}
+          selectedTask={(selectedTask as Selected | null)?.id || null}
         />
       </div>
       <div className="w-1/4 bg-white overflow-y-auto p-6">
         {selectedTask ? (
-          <TaskComponent task={selectedTask} onTaskChanged={onTaskUpdated} />
+          <TaskComponent
+            taskId={(selectedTask as Selected).id}
+            onTaskChanged={onTaskUpdated}
+          />
         ) : (
           <div>Select a task to view details</div>
         )}

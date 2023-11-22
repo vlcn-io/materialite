@@ -1,15 +1,27 @@
 import React from "react";
-import { Task } from "./data/tasks/schema.js";
-import { names, projects } from "./data/tasks/createTasks.js";
+import { Task } from "./data/schema.js";
+import { names, projects } from "./data/createTasks.js";
+import { useNewView } from "@vlcn.io/materialite-react";
+import { db } from "./data/DB.js";
 type TaskComponentProps = {
-  task: Task;
+  taskId: number;
   onTaskChanged: (oldTask: Task, task: Task) => void;
 };
 
 export const TaskComponent: React.FC<TaskComponentProps> = ({
-  task,
+  taskId,
   onTaskChanged,
 }) => {
+  const [, task] = useNewView(() => {
+    return (
+      db.tasks.stream
+        .filter((t) => t.id === taskId)
+        // TODO: materializeValue could be less verbose.
+        // just `.value`?
+        .materializeValue(null)
+    );
+  }, [taskId]);
+  if (task == null) return null;
   return (
     <div>
       <h1 className="text-xl font-semibold mb-4">
