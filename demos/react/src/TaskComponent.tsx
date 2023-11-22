@@ -1,7 +1,7 @@
 import React from "react";
 import { Task } from "./data/schema.js";
 import { names, projects } from "./data/createTasks.js";
-import { useNewView } from "@vlcn.io/materialite-react";
+import { useQuery } from "@vlcn.io/materialite-react";
 import { db } from "./data/DB.js";
 type TaskComponentProps = {
   taskId: number;
@@ -15,7 +15,7 @@ export const TaskComponent: React.FC<TaskComponentProps> = ({ taskId }) => {
     });
   }
 
-  const [, task] = useNewView(() => {
+  const [, task] = useQuery(() => {
     return (
       db.tasks.stream
         // TODO: hoist id based comparisons to the source

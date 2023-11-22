@@ -3,10 +3,10 @@ import { Task } from "./data/schema.js";
 
 import { names, priorities, statuses, projects } from "./data/createTasks.js";
 import { Filter, appStateComparator, db } from "./data/DB.js";
-import { useNewView } from "@vlcn.io/materialite-react";
+import { useQuery } from "@vlcn.io/materialite-react";
 
 export const TaskFilter: React.FC = () => {
-  const [, filters] = useNewView(
+  const [, filters] = useQuery(
     () =>
       db.appStates.stream
         .filter((s): s is Filter => s._tag === "filter")

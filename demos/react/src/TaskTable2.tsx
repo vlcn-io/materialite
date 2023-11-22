@@ -3,7 +3,7 @@ import { Task } from "./data/schema.js";
 import { DifferenceStream, PersistentTreap } from "@vlcn.io/materialite";
 import VirtualTable2 from "./virtualized/VirtualTable2.js";
 import { Filter, appStateComparator, db, taskComparator } from "./data/DB.js";
-import { useNewView } from "@vlcn.io/materialite-react";
+import { useQuery } from "@vlcn.io/materialite-react";
 
 type TaskTableProps = {
   onTaskClick: (task: Task) => void;
@@ -34,7 +34,7 @@ export const TaskTable2: React.FC<TaskTableProps> = ({
     React.useState<PersistentTreap<Filter> | null>(null);
   const [taskStream, setTaskStream] = useState(db.tasks.stream);
 
-  const [, filters] = useNewView(
+  const [, filters] = useQuery(
     () =>
       db.appStates.stream
         .filter((s): s is Filter => s._tag === "filter")

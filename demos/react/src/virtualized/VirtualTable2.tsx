@@ -1,6 +1,6 @@
 import React, { memo, useRef, useState } from "react";
 import css from "./VirtualTable2.module.css";
-import { useNewView } from "@vlcn.io/materialite-react";
+import { useQuery } from "@vlcn.io/materialite-react";
 import { DifferenceStream, PersistentTreeView } from "@vlcn.io/materialite";
 import { Comparator } from "@vlcn.io/ds-and-algos/types";
 
@@ -103,7 +103,7 @@ function VirtualTableBase<T>({
   }
 
   const viewRef = useRef<PersistentTreeView<T>>();
-  const [, data] = useNewView(() => {
+  const [, data] = useQuery(() => {
     let ret: PersistentTreeView<T>;
     if (viewRef.current != null && dataStream === viewRef.current.stream) {
       ret = viewRef.current.rematerialize(limit);

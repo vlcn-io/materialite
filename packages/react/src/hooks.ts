@@ -23,6 +23,10 @@ export function useNewView<T>(fn: () => ISignal<T>, deps: any[]) {
   return useNewSignal(fn, deps);
 }
 
+export function useQuery<T>(fn: () => ISignal<T>, deps: any[]) {
+  return useNewSignal(fn, deps);
+}
+
 export function useSignal<T>(signal: ISignal<T>) {
   const [value, setValue] = useState<T>(signal.value);
   useEffect(() => {

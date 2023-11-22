@@ -4,10 +4,10 @@ import { Task } from "./data/schema.js";
 import { TaskFilter } from "./TaskFilter.js";
 import { TaskTable2 } from "./TaskTable2.js";
 import { Selected, db } from "./data/DB.js";
-import { useNewView } from "@vlcn.io/materialite-react";
+import { useQuery } from "@vlcn.io/materialite-react";
 
 export const TaskApp: React.FC = () => {
-  const [, selectedTask] = useNewView(
+  const [, selectedTask] = useQuery(
     () =>
       db.appStates.stream
         .filter((s): s is Selected => s._tag === "selected")
