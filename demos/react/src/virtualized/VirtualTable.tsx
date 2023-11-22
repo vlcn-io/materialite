@@ -52,10 +52,11 @@ function VirtualTableBase<T>({
     // TODO: better determination of when we have no more results.
     // if we 1. filter, 2. drop something from view by changing attributes to be filtered out then we won't page more in with
     // this pagination strategy.
-    if (bottom && data.size >= limit) {
+    if (bottom && (data.size >= limit || lastDataSize !== data.size)) {
       // and not loading
       // and have next page
       // onLoadNext(page);
+      setLastDataSize(data.size);
       setLimit(limit + pageSize);
     }
   };
@@ -107,7 +108,6 @@ function VirtualTableBase<T>({
     let ret: PersistentTreeView<T>;
     if (viewRef.current != null && dataStream === viewRef.current.stream) {
       ret = viewRef.current.rematerialize(limit);
-      viewRef.current.destroy();
     } else {
       setLimit(pageSize * 2);
       ret = dataStream.materialize(comparator, {
@@ -118,6 +118,7 @@ function VirtualTableBase<T>({
     viewRef.current = ret;
     return ret;
   }, [dataStream, limit]);
+  const [lastDataSize, setLastDataSize] = useState(data.size);
 
   const items = data.size;
   const itemSize = rowHeight;

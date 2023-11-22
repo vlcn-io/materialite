@@ -74,6 +74,9 @@ export class PersistentTreeView<T> extends View<T, PersistentTreap<T>> {
       });
     }
 
+    // I assume this is reasonable behavior. If you're rematerializing a view you don't need the old thing?
+    this.destroy();
+
     return newView;
   }
 
