@@ -1,3 +1,4 @@
+// https://codepen.io/manju-reddys/pen/eEjOZo
 import React, { memo, useRef, useState } from "react";
 import css from "./VirtualTable.module.css";
 import { useQuery } from "@vlcn.io/materialite-react";
@@ -49,6 +50,13 @@ function VirtualTableBase<T>({
     // total height and we page in when hitting a virtual region that is missing data.
     const bottom =
       target.scrollHeight - target.scrollTop <= target.clientHeight + height;
+    console.log(
+      target.scrollHeight,
+      target.scrollTop,
+      target.clientHeight,
+      height,
+      bottom
+    );
     // TODO: better determination of when we have no more results.
     // if we 1. filter, 2. drop something from view by changing attributes to be filtered out then we won't page more in with
     // this pagination strategy.
