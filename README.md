@@ -35,6 +35,8 @@ pnpm test
 
 # API
 
+> A walkthrough of building a React Tasks app with Materialite can be found here: https://github.com/vlcn-io/materialite/blob/main/demos/react/walkthrough/walkthrough.md
+
 The main concepts in `Materialite` are:
 
 1. Sources
