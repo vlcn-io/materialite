@@ -1,5 +1,5 @@
 import { ISignal, ISource } from "@vlcn.io/materialite";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function useNewSource<T>(fn: () => ISource<T>, deps: any[]) {
   const [source, setSource] = useState<ISource<T>>(() => {
@@ -38,23 +38,38 @@ export function useSignal<T>(signal: ISignal<T>) {
   return value;
 }
 
-// export function useSignals <-- compose signals into a new signal.
-// or `useDerive`?
-// or overload `useSignal` / `useNewSignal`?
+export function useNewSignal<T>(fn: () => ISignal<T>, deps: unknown[]) {
+  const [signal, setSignal] = useState<ISignal<T>>();
+  const [value, setValue] = useState<T>();
+  const [prevDeps, setPrevDeps] = useState<unknown[] | null>(null);
 
-export function useNewSignal<T>(fn: () => ISignal<T>, deps: any[]) {
-  const [signal, setSignal] = useState<ISignal<T>>(() => {
-    return fn();
-  });
-  const [value, setValue] = useState<T>(signal.value);
-  useEffect(() => {
-    const signal = fn();
-    setSignal(signal);
-    setValue(signal.value);
-    return signal.on((value) => {
+  const destructor = useRef<() => void>();
+  if (prevDeps === null || !shallowCompareArrays(prevDeps, deps)) {
+    setPrevDeps(deps);
+    const newSignal = fn();
+    setSignal(newSignal);
+    setValue(newSignal.value);
+    if (destructor.current) {
+      destructor.current();
+    }
+    destructor.current = newSignal.on((value) => {
       setValue(value);
     });
-  }, deps);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (destructor.current) destructor.current();
+    };
+  }, []);
 
   return [signal, value] as const;
+}
+
+function shallowCompareArrays(l: unknown[], r: unknown[]) {
+  if (l.length !== r.length) return false;
+  for (let i = 0; i < l.length; i++) {
+    if (l[i] !== r[i]) return false;
+  }
+  return true;
 }
