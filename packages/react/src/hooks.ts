@@ -38,7 +38,10 @@ export function useSignal<T>(signal: ISignal<T>) {
   return value;
 }
 
-export function useNewSignal<T>(fn: () => ISignal<T>, deps: unknown[]) {
+export function useNewSignal<T>(
+  fn: () => ISignal<T>,
+  deps: unknown[]
+): [ISignal<T>, T] {
   const [signal, setSignal] = useState<ISignal<T>>();
   const [value, setValue] = useState<T>();
   const [prevDeps, setPrevDeps] = useState<unknown[] | null>(null);
@@ -63,6 +66,7 @@ export function useNewSignal<T>(fn: () => ISignal<T>, deps: unknown[]) {
     };
   }, []);
 
+  // @ts-ignore
   return [signal, value] as const;
 }
 
