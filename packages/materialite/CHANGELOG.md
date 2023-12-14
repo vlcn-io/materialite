@@ -1,5 +1,13 @@
 # @vlcn.io/materialite
 
+## 3.0.1
+
+### Patch Changes
+
+- prevent tearing by emulating useEffect via useState
+- Updated dependencies
+  - @vlcn.io/ds-and-algos@3.0.1
+
 ## 3.0.0
 
 ### Major Changes

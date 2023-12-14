@@ -1,5 +1,11 @@
 # @vlcn.io/ds-and-algos
 
+## 3.0.1
+
+### Patch Changes
+
+- prevent tearing by emulating useEffect via useState
+
 ## 3.0.0
 
 ### Major Changes

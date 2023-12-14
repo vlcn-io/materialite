@@ -1,5 +1,13 @@
 # @vlcn.io/materialite-react
 
+## 2.0.1
+
+### Patch Changes
+
+- prevent tearing by emulating useEffect via useState
+- Updated dependencies
+  - @vlcn.io/materialite@3.0.1
+
 ## 2.0.0
 
 ### Major Changes
