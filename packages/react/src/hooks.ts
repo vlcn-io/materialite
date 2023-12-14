@@ -43,30 +43,38 @@ export function useNewSignal<T>(
   deps: unknown[]
 ): [ISignal<T>, T] {
   const [signal, setSignal] = useState<ISignal<T>>();
+  const signalRef = useRef<ISignal<T>>();
   const [value, setValue] = useState<T>();
   const [prevDeps, setPrevDeps] = useState<unknown[] | null>(null);
 
   const destructor = useRef<() => void>();
-  const mounted = useRef(false);
+  const mounted = useRef(true);
   useEffect(() => {
-    mounted.current = true;
+    signalRef.current = signal;
     return () => {
-      if (destructor.current) destructor.current();
+      if (destructor.current) {
+        destructor.current();
+      }
       mounted.current = false;
     };
-  }, []);
+  }, [signal]);
 
   if (prevDeps === null || !shallowCompareArrays(prevDeps, deps)) {
     setPrevDeps(deps);
     const newSignal = fn();
     setSignal(newSignal);
     setValue(newSignal.value);
-    if (destructor.current) {
-      destructor.current();
+    const lastDestructor = destructor.current;
+    if (lastDestructor) {
+      lastDestructor();
     }
     destructor.current = newSignal.on((value) => {
-      if (!mounted.current) return;
-      if (newSignal != signal) return;
+      if (
+        !mounted.current ||
+        (signalRef.current && signalRef.current !== newSignal)
+      ) {
+        return;
+      }
       setValue(value);
     });
   }
