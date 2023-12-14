@@ -1,3 +1,5 @@
+import { test } from "vitest";
+
 /**
  * Map, filter, etc. are lazy.
  *
@@ -5,3 +7,6 @@
  * we want in the view then on the other end (upstreams) we will stop
  * processing once that limit is hit.
  */
+test("lazy", () => {
+  console.log("todo");
+});

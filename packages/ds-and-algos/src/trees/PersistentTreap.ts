@@ -118,7 +118,7 @@ export class PersistentTreap<T> implements ITree<T> {
   }
 
   // TODO: we can do better here. We can `findIndex` based on a provided value in O(logn)
-  findIndex(pred: (x: T) => boolean): number {
+  findIndexByPredicate(pred: (x: T) => boolean): number {
     let index = 0;
 
     for (const value of inOrderTraversal(this.root)) {
@@ -129,6 +129,22 @@ export class PersistentTreap<T> implements ITree<T> {
     }
 
     return -1;
+  }
+
+  findIndex(value: T): number | null {
+    return this._findIndex(this.root, value, 0);
+  }
+
+  _findIndex(node: Node<T> | null, value: T, offset: number): number | null {
+    if (!node) return null;
+
+    const cmp = this.comparator(value, node.value);
+    const thisIndex = (node.left?.size ?? 0) + offset;
+    if (cmp === 0) {
+      return thisIndex;
+    }
+    if (cmp < 0) return this._findIndex(node.left, value, offset);
+    return this._findIndex(node.right, value, thisIndex + 1);
   }
 
   reduce<U>(callback: (accumulator: U, value: T) => U, initialValue: U): U {
@@ -327,6 +343,21 @@ export class PersistentTreap<T> implements ITree<T> {
       1 + (node.left ? node.left.size : 0) + (node.right ? node.right.size : 0);
 
     return newNode;
+  }
+
+  print() {
+    this._print(this.root);
+  }
+
+  private _print(node: Node<T> | null) {
+    if (!node) return;
+    console.log(node);
+    if (node.left) {
+      this._print(node.left);
+    }
+    if (node.right) {
+      this._print(node.right);
+    }
   }
 }
 
