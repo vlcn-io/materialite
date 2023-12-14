@@ -47,6 +47,15 @@ export function useNewSignal<T>(
   const [prevDeps, setPrevDeps] = useState<unknown[] | null>(null);
 
   const destructor = useRef<() => void>();
+  const mounted = useRef(false);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      if (destructor.current) destructor.current();
+      mounted.current = false;
+    };
+  }, []);
+
   if (prevDeps === null || !shallowCompareArrays(prevDeps, deps)) {
     setPrevDeps(deps);
     const newSignal = fn();
@@ -56,15 +65,11 @@ export function useNewSignal<T>(
       destructor.current();
     }
     destructor.current = newSignal.on((value) => {
+      if (!mounted.current) return;
+      if (newSignal != signal) return;
       setValue(value);
     });
   }
-
-  useEffect(() => {
-    return () => {
-      if (destructor.current) destructor.current();
-    };
-  }, []);
 
   // @ts-ignore
   return [signal, value] as const;
