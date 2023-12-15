@@ -1,5 +1,13 @@
 # @vlcn.io/materialite-react
 
+## 2.0.2
+
+### Patch Changes
+
+- fix error where paths that did not ask for a recompute are notified of a recompute
+- Updated dependencies
+  - @vlcn.io/materialite@3.0.2
+
 ## 2.0.1
 
 ### Patch Changes

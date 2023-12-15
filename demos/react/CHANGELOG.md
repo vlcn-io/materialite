@@ -1,5 +1,15 @@
 # materialite-demo
 
+## 0.0.5
+
+### Patch Changes
+
+- fix error where paths that did not ask for a recompute are notified of a recompute
+- Updated dependencies
+  - @vlcn.io/ds-and-algos@3.0.2
+  - @vlcn.io/materialite@3.0.2
+  - @vlcn.io/materialite-react@2.0.2
+
 ## 0.0.4
 
 ### Patch Changes
