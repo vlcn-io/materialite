@@ -87,7 +87,6 @@ export abstract class StatefulSetSource<T>
               }
             ),
           ]);
-          self.#recompute = null;
         } else {
           self.#stream.queueData([version, new Multiset(self.#pending, null)]);
           self.#pending = [];
@@ -95,7 +94,17 @@ export abstract class StatefulSetSource<T>
       },
       // release queues by telling the stream to send data
       onCommitPhase2(version: Version) {
-        self.#stream.notify(version);
+        if (self.#recompute) {
+          self.#stream.notify(
+            version,
+            self.#recompute.expressions.length > 0
+              ? "partial_recompute"
+              : "full_recompute"
+          );
+          self.#recompute = null;
+        } else {
+          self.#stream.notify(version, "difference");
+        }
       },
       onCommitted(version: Version) {
         // In case we have direct source observers

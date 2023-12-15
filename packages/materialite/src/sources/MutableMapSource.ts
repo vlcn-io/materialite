@@ -76,9 +76,9 @@ export class MutableMapSource<K, T>
       onCommitPhase2(version: Version) {
         if (self.#recomputeAll) {
           self.#recomputeAll = false;
-          self.#stream.notify(version);
+          self.#stream.notify(version, "full_recompute");
         } else {
-          self.#stream.notify(version);
+          self.#stream.notify(version, "difference");
         }
 
         for (const l of self.#listeners) {

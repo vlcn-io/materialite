@@ -1,5 +1,5 @@
 import { Multiset } from "../multiset.js";
-import { Version } from "../types.js";
+import { Cause, Version } from "../types.js";
 import { DifferenceStreamWriter } from "./DifferenceWriter.js";
 import { Hoisted } from "./Msg.js";
 import { Queue } from "./Queue.js";
@@ -10,6 +10,7 @@ import { IOperator } from "./ops/Operator.js";
 export class DifferenceStreamReader<T = any> {
   protected readonly queue;
   readonly #upstream: DifferenceStreamWriter<T>;
+  #awaitingRecompute = false;
   #operator: IOperator;
   #lastSeenVersion: Version = -1;
   constructor(upstream: DifferenceStreamWriter<T>, queue: Queue<T>) {
@@ -29,7 +30,13 @@ export class DifferenceStreamReader<T = any> {
     this.#operator = operator;
   }
 
-  notify(v: Version) {
+  notify(v: Version, cause: Cause) {
+    if (cause === "full_recompute" || cause === "partial_recompute") {
+      if (this.#awaitingRecompute === false) {
+        return;
+      }
+    }
+    this.#awaitingRecompute = false;
     this.#lastSeenVersion = v;
     this.#operator.run(v);
   }
@@ -60,6 +67,7 @@ export class DifferenceStreamReader<T = any> {
   }
 
   pull(msg: Hoisted) {
+    this.#awaitingRecompute = true;
     this.queue.prepareForRecompute();
     this.#upstream.pull(msg);
   }

@@ -20,6 +20,7 @@ export type MaterialiteForSourceInternal = {
 };
 export type DestroyOptions = { autoCleanup?: boolean };
 
+export type Cause = "full_recompute" | "partial_recompute" | "difference";
 export type EventMetadata =
   | {
       cause: "full_recompute";

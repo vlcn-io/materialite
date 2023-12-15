@@ -27,9 +27,10 @@ export class PersistentTreeView<T> extends View<T, PersistentTreap<T>> {
     materialite: Materialite,
     stream: AbstractDifferenceStream<T>,
     comparator: (a: T, b: T) => number,
-    limit?: number
+    limit?: number,
+    name: string = ""
   ) {
-    super(materialite, stream, comparator);
+    super(materialite, stream, comparator, name);
     this.#limit = limit;
     if (limit !== undefined) {
       this.#addAll = this.#limitedAddAll;
