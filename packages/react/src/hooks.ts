@@ -23,8 +23,12 @@ export function useNewView<T>(fn: () => ISignal<T>, deps: any[]) {
   return useNewSignal(fn, deps);
 }
 
-export function useQuery<T>(fn: () => ISignal<T>, deps: any[]) {
-  return useNewSignal(fn, deps);
+export function useQuery<T>(
+  fn: () => ISignal<T>,
+  deps: any[],
+  name: string = ""
+) {
+  return useNewSignal(fn, deps, name);
 }
 
 export function useSignal<T>(signal: ISignal<T>) {
@@ -40,42 +44,44 @@ export function useSignal<T>(signal: ISignal<T>) {
 
 export function useNewSignal<T>(
   fn: () => ISignal<T>,
-  deps: unknown[]
+  deps: unknown[],
+  name: string = ""
 ): [ISignal<T>, T] {
-  const [signal, setSignal] = useState<ISignal<T>>();
   const [value, setValue] = useState<T>();
-  const [prevDeps, setPrevDeps] = useState<unknown[] | null>(null);
+  const signalRef = useRef<ISignal<T>>();
+  const subscriber = useRef<Subscriber<T>>();
+  const prevDeps = useRef<unknown[] | null>(null);
 
-  const destructor = useRef<() => void>();
-  const mounted = useRef(true);
   useEffect(() => {
     return () => {
-      if (destructor.current) {
-        destructor.current();
+      if (subscriber.current) {
+        subscriber.current.destroy();
       }
-      mounted.current = false;
     };
   }, []);
 
-  if (prevDeps === null || !shallowCompareArrays(prevDeps, deps)) {
-    setPrevDeps(deps);
-    const newSignal = fn();
-    setSignal(newSignal);
-    setValue(newSignal.value);
-    const lastDestructor = destructor.current;
-    if (lastDestructor) {
-      lastDestructor();
+  if (
+    prevDeps.current === null ||
+    !shallowCompareArrays(prevDeps.current, deps)
+  ) {
+    prevDeps.current = deps;
+
+    // TODO: computing the new signal is for some reason notifying
+    // paths that shouldn't get the information. This is a bug.
+    // Workaround at the moment is to destroy the previous subscriber first.
+    const lastSubscriber = subscriber.current;
+    if (lastSubscriber) {
+      lastSubscriber.destroy();
     }
-    destructor.current = newSignal.on((value) => {
-      if (!mounted.current) {
-        return;
-      }
-      setValue(value);
-    });
+
+    const newSignal = fn();
+    signalRef.current = newSignal;
+    subscriber.current = new Subscriber(newSignal, setValue, name);
+    setValue(newSignal.value);
   }
 
   // @ts-ignore
-  return [signal, value] as const;
+  return [signalRef.current, value] as const;
 }
 
 function shallowCompareArrays(l: unknown[], r: unknown[]) {
@@ -84,4 +90,31 @@ function shallowCompareArrays(l: unknown[], r: unknown[]) {
     if (l[i] !== r[i]) return false;
   }
   return true;
+}
+
+let id = 0;
+class Subscriber<T> {
+  readonly #unsub: () => void;
+  private destroyed = false;
+  public readonly id = id++;
+
+  constructor(
+    signal: ISignal<T>,
+    public readonly setValue: (value: T) => void,
+    public readonly name: string
+  ) {
+    this.#unsub = signal.on(this.#signalChanged);
+  }
+
+  destroy() {
+    this.destroyed = true;
+    this.#unsub();
+  }
+
+  #signalChanged = (value: T) => {
+    if (this.destroyed) {
+      return;
+    }
+    this.setValue(value);
+  };
 }

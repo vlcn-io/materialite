@@ -10,6 +10,7 @@ import { ArrayView } from "../../views/ArrayView.js";
 export type MaterializeOptions = {
   wantInitialData?: boolean;
   limit?: number;
+  name?: string;
 };
 export type EffectOptions = MaterializeOptions;
 

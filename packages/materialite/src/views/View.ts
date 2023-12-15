@@ -22,7 +22,8 @@ export abstract class View<T, CT> implements ISignal<CT> {
   constructor(
     materialite: Materialite,
     stream: AbstractDifferenceStream<T>,
-    comparator: (l: T, r: T) => number = consolidationComparator
+    comparator: (l: T, r: T) => number = consolidationComparator,
+    public readonly name: string = ""
   ) {
     this.materialite = materialite;
     this.#stream = stream;

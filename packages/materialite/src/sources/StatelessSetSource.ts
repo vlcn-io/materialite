@@ -37,7 +37,7 @@ export class SetSource<T>
       },
       // release queues by telling the stream to send data
       onCommitPhase2(version: Version) {
-        self.#stream.notify(version);
+        self.#stream.notify(version, "difference");
       },
       // notify effects / listeners
       // this is done once the entire reactive graph has finished computing

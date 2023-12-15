@@ -1,3 +1,45 @@
+# re-write the reactive graph
+
+Transactions have three stages:
+
+1. enqueue values
+2. run computations (currently called `notify`)
+3. notify observers (currerntly called `notifyCommitted`)
+
+(1) has a special case where we must deal with "recomputes". This is currently bolted on as a hack.
+
+- Recomputes can be abstracted behind data version information and/or frontiers?
+  - Recomputes can be sent at current version
+  - Operators that have already processed up to the current version will ignore the data
+  - We do, however, have to invalidate certain nodes of the graph. Pushing their version to 0 when a recompute
+    is requested down their path.
+    - Maybe not push to 0 but indicate that the path is ready to receive the same version over again? This is related to partial recomputes below.
+
+So that's recompute.
+
+What about a partial recompute? This is not a problem for linear operators but for operators with memory...
+Options:
+
+1. Send retractions for data that is about to be re-sent
+2. Simplify everything by assuming uniqueness off values
+3. Special case metadata to indicate a message is duplicative of past data and a partial recompute?
+
+   - Maybe this doesn't need to be special cased. Operators can deal with this when receiving data for version they already have
+
+4. Attaching new views to a stream with existing views seems to cause a recompute of the old views...
+   Found in repliear kanban
+   --> Issue is that `notifyCommitted` does not respect path pruning.
+
+# Observability
+
+- Add OTEL hooks
+- Add counters
+  - Destruction
+  - Graph size
+- Add ability to export and visualize the graph
+
+---
+
 Cut the API space.
 
 rematerialization is problematic. Creates these partial recomputation events rather than full.
