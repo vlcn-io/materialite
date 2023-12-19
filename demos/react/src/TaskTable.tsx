@@ -75,6 +75,7 @@ export const TaskTable: React.FC<TaskTableProps> = ({
       <VirtualTable2
         className="bg-white rounded-xl"
         width="calc(100% - 30px)"
+        totalRows={db.tasks.value.size}
         height={tableHeight}
         dataStream={taskStream}
         rowHeight={rowHeight}

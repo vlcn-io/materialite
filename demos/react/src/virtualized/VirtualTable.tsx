@@ -11,6 +11,7 @@ function VirtualTableBase<T>({
   width,
   height,
   rowHeight,
+  totalRows,
   dataStream,
   className,
   comparator,
@@ -21,6 +22,7 @@ function VirtualTableBase<T>({
   width: string | number;
   height: number;
   rowHeight: number;
+  totalRows: number;
   dataStream: DifferenceStream<T>;
   rowRenderer: (
     row: T,
@@ -47,17 +49,20 @@ function VirtualTableBase<T>({
 
     // TODO: change this so scroll bar represents
     // total height and we page in when hitting a virtual region that is missing data.
-    const bottom =
-      target.scrollHeight - target.scrollTop <= target.clientHeight + height;
-    // TODO: better determination of when we have no more results.
-    // if we 1. filter, 2. drop something from view by changing attributes to be filtered out then we won't page more in with
-    // this pagination strategy.
-    if (bottom && (data.size >= limit || lastDataSize !== data.size)) {
-      // and not loading
-      // and have next page
-      // onLoadNext(page);
+    const bottomIdx = Math.floor((scrollTop + offset + vp) / rh);
+    const scrollDirection = scrollTop - prevScrollTop > 0 ? "down" : "up";
+
+    if (
+      scrollDirection === "down" &&
+      bottomIdx >= data.size - 1 &&
+      (data.size >= limit || lastDataSize !== data.size)
+    ) {
       setLastDataSize(data.size);
-      setLimit(limit + pageSize);
+      const newLimit = bottomIdx + pageSize * 4;
+      setLimit(newLimit);
+      console.log("new limit", newLimit);
+      console.log("s: ", target.scrollTop);
+      console.log("s2: ", scrollTop);
     }
   };
 
@@ -126,7 +131,7 @@ function VirtualTableBase<T>({
   }, [dataStream, limit]);
   const [lastDataSize, setLastDataSize] = useState(data.size);
 
-  const items = data.size;
+  const items = totalRows;
   const itemSize = rowHeight;
   const th = items * itemSize;
   const h = 33554400;
