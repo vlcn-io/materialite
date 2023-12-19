@@ -46,8 +46,7 @@ export function useNewSignal<T>(
   fn: () => ISignal<T>,
   deps: unknown[],
   name: string = ""
-): [ISignal<T>, T] {
-  const [value, setValue] = useState<T>();
+): readonly [ISignal<T>, T] {
   const signalRef = useRef<ISignal<T>>();
   const subscriber = useRef<Subscriber<T>>();
   const prevDeps = useRef<unknown[] | null>(null);
@@ -60,8 +59,9 @@ export function useNewSignal<T>(
     };
   }, []);
 
+  let newSignal: ISignal<T> | null = null;
   if (
-    prevDeps.current === null ||
+    prevDeps.current == null ||
     !shallowCompareArrays(prevDeps.current, deps)
   ) {
     prevDeps.current = deps;
@@ -74,14 +74,19 @@ export function useNewSignal<T>(
       lastSubscriber.destroy();
     }
 
-    const newSignal = fn();
+    newSignal = fn();
     signalRef.current = newSignal;
+  }
+
+  const [value, setValue] = useState<T | null>(
+    newSignal ? newSignal.value : null
+  );
+  if (newSignal) {
     subscriber.current = new Subscriber(newSignal, setValue, name);
     setValue(newSignal.value);
   }
 
-  // @ts-ignore
-  return [signalRef.current, value] as const;
+  return [signalRef.current!, value!] as const;
 }
 
 function shallowCompareArrays(l: unknown[], r: unknown[]) {
