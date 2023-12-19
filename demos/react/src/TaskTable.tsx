@@ -1,9 +1,9 @@
-import React, { CSSProperties, useCallback, useState } from "react";
+import React, { CSSProperties, useCallback } from "react";
 import { Task } from "./data/schema.js";
-import { DifferenceStream, PersistentTreap } from "@vlcn.io/materialite";
-import VirtualTable2 from "./virtualized/VirtualTable.js";
-import { Filter, appStateComparator, db, taskComparator } from "./data/DB.js";
+import { DifferenceStream } from "@vlcn.io/materialite";
+import { Filter, db, taskComparator } from "./data/DB.js";
 import { useQuery } from "@vlcn.io/materialite-react";
+import OffsetVirtualTable from "./virtualized/OffsetVirtualTable.js";
 
 type TaskTableProps = {
   onTaskClick: (task: Task) => void;
@@ -30,27 +30,19 @@ export const TaskTable: React.FC<TaskTableProps> = ({
 }) => {
   const tableHeight = window.innerHeight - 160;
   const rowHeight = 50;
-  const [oldFilters, setOldFilters] =
-    React.useState<PersistentTreap<Filter> | null>(null);
-  const [taskStream, setTaskStream] = useState(db.tasks.stream);
 
   const [, filters] = useQuery(
     () =>
       db.appState.stream
         .filter((s): s is Filter => s._tag === "filter")
-        // TODO: simpler method of indicating compartor should be same as source
-        .materialize(appStateComparator),
+        .materialize(db.appState.comparator),
     []
   );
-
-  if (filters !== oldFilters) {
-    setOldFilters(filters);
-    if (taskStream !== db.tasks.stream) {
-      // ugh.. destruction really needs to be fixed up.
-      taskStream.destroy();
-    }
-    setTaskStream(applyFilters(filters, db.tasks.stream));
-  }
+  const [, tasks] = useQuery(() => {
+    return applyFilters(filters, db.tasks.stream).materialize(
+      db.tasks.comparator
+    );
+  }, [filters]);
 
   const rowRenderer = useCallback(
     (row: Task, style: { [key: string]: string | number }) => (
@@ -67,18 +59,23 @@ export const TaskTable: React.FC<TaskTableProps> = ({
     [selectedTask]
   );
 
+  const onPage = useCallback(() => {}, []);
+
   return (
     <div
       className="bg-gray-100 task-table"
       style={{ marginTop: 160, paddingTop: 0, paddingLeft: 30 }}
     >
-      <VirtualTable2
+      <OffsetVirtualTable
         className="bg-white rounded-xl"
         width="calc(100% - 30px)"
         height={tableHeight}
-        dataStream={taskStream}
+        rows={tasks}
+        totalRows={db.tasks.value.size}
+        startIndex={0}
+        onPage={onPage}
+        loading={false}
         rowHeight={rowHeight}
-        comparator={taskComparator}
         header={
           <thead>
             <tr>

@@ -20,6 +20,11 @@ import css from "./VirtualTable.module.css";
  * We will only re-fetch if we scroll into or beyond our over-scan region.
  */
 
+export interface IndexedSeq<T> {
+  at(index: number): T | null;
+  size: number;
+}
+
 function VirtualTableBase<T>({
   rowRenderer,
   width,
@@ -29,22 +34,22 @@ function VirtualTableBase<T>({
   totalRows,
   startIndex,
   onPage,
-  hasNextPage,
-  hasPrevPage,
   loading,
   className,
+  header,
+  footer,
 }: {
+  header?: React.ReactNode;
+  footer?: React.ReactNode;
   className?: string;
   width: string | number;
   height: number;
   rowHeight: number;
-  rows: readonly T[];
+  rows: IndexedSeq<T>;
   totalRows: number;
   startIndex: number;
   onPage: (offset: number) => void;
   loading: boolean;
-  hasPrevPage: boolean;
-  hasNextPage: boolean;
   rowRenderer: (
     row: T,
     style: { [key: string]: string | number }
@@ -58,7 +63,7 @@ function VirtualTableBase<T>({
     const bottomIdx = Math.floor((scrollTop + offset + vp) / rh);
     const topIdx = Math.floor((scrollTop + offset) / rh);
     if (loading) {
-      if (topIdx - startIndex < 0 || bottomIdx - startIndex > rows.length) {
+      if (topIdx - startIndex < 0 || bottomIdx - startIndex > rows.size) {
         e.preventDefault();
         target.scrollTop = prevScrollTop;
         return false;
@@ -74,19 +79,19 @@ function VirtualTableBase<T>({
 
     const scrollDirection = scrollTop - prevScrollTop > 0 ? "down" : "up";
 
-    const loadedItems = rows.length;
+    const loadedItems = rows.size;
     const lastSixthIndex = Math.floor(loadedItems * (5 / 6));
     const firstSixthIndex = Math.floor(loadedItems * (1 / 6));
     if (
       scrollDirection === "down" &&
-      hasNextPage &&
+      loadedItems + startIndex < totalRows &&
       !loading &&
       bottomIdx - startIndex > lastSixthIndex
     ) {
       onPage(topIdx);
     } else if (
       scrollDirection === "up" &&
-      hasPrevPage &&
+      startIndex > 0 &&
       !loading &&
       topIdx - startIndex < firstSixthIndex
     ) {
@@ -174,17 +179,11 @@ function VirtualTableBase<T>({
 
   const renderedRows = [];
   for (let i = top; i <= bottom; ++i) {
-    const d = rows[i - startIndex];
+    const d = rows.at(i - startIndex);
     if (!d) {
       break;
     }
-    renderedRows.push(
-      rowRenderer(d, {
-        height: rh,
-        top: i * rh - offset,
-        position: "absolute",
-      })
-    );
+    renderedRows.push(rowRenderer(d, { height: rh }));
   }
 
   return (
@@ -195,17 +194,28 @@ function VirtualTableBase<T>({
       style={{
         width,
         height,
-        position: "relative",
       }}
     >
       <div
         style={{
-          height: contentHeight,
+          height: contentHeight + 50,
           position: "relative",
           overflow: "hidden",
         }}
-      ></div>
-      {renderedRows}
+      >
+        <table
+          style={{
+            width: "100%",
+            position: "absolute",
+            top: top * rh - offset,
+          }}
+          className="table"
+        >
+          {header}
+          <tbody style={{ position: "relative" }}>{renderedRows}</tbody>
+          {footer}
+        </table>
+      </div>
     </div>
   );
 }
