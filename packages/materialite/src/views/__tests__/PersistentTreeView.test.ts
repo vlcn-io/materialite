@@ -38,16 +38,17 @@ test("rematerialization", () => {
   expect([...newView.value]).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
   // prior view is unchanged
   expect([...view.value]).toEqual([0, 1, 2, 3, 4]);
-  expect(numProcessed).toBe(8); // todo;
+  expect(numProcessed).toBe(7); // todo;
 
   view.destroy();
   numProcessed = 0;
   processed.length = 0;
+
   const finalView = newView.rematerialize(15);
   expect([...finalView.value]).toEqual([
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
   ]);
-  expect(numProcessed).toBe(6);
+  expect(numProcessed).toBe(5);
 });
 
 // test("rematerialization with filtered stream", () => {});
