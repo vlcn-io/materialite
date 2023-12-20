@@ -7,7 +7,6 @@ import "react-toastify/dist/ReactToastify.css";
 import List from "./pages/List";
 import Issue from "./pages/Issue";
 import LeftMenu from "./components/LeftMenu";
-import SyncWorker from "./sync-worker.js?worker";
 
 interface MenuContextInterface {
   showMenu: boolean;
@@ -21,17 +20,6 @@ const slideUp = cssTransition({
   exit: "animate__animated animate__slideOutDown",
 });
 
-function getEndpoint() {
-  let proto = "ws:";
-  const host = window.location.host;
-  if (window.location.protocol === "https:") {
-    proto = "wss:";
-  }
-
-  return `${proto}//${host}/sync`;
-}
-
-const worker = new SyncWorker();
 const App = () => {
   const [showMenu, setShowMenu] = useState(false);
 

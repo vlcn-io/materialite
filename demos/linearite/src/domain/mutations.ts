@@ -5,7 +5,17 @@ import { db } from "./db";
 // TODO: tables used cache for writes
 export const mutations = {
   putIssue(issue: Issue) {
-    db.issues.add(issue);
+    db.tx(() => {
+      const existing = db.issues.base.value.get(issue.id);
+      if (existing) {
+        db.issues.delete(existing);
+      }
+
+      db.issues.add({
+        ...issue,
+        modified: Date.now(),
+      });
+    });
   },
 
   putDescription(desc: Description) {

@@ -25,8 +25,8 @@ const issueComparators: Record<Order, (l: Issue, r: Issue) => number> = {
   creator: tieBreak((l, r) => l.creator.localeCompare(r.creator)),
   priority: tieBreak((l, r) => l.priority.localeCompare(r.priority)),
   status: tieBreak((l, r) => l.status.localeCompare(r.status)),
-  created: tieBreak((l, r) => l.created - r.created),
-  modified: tieBreak((l, r) => l.modified - r.modified),
+  created: tieBreak((l, r) => r.created - l.created),
+  modified: tieBreak((l, r) => r.modified - l.modified),
   kanbanorder: tieBreak((l, r) => l.kanbanorder.localeCompare(r.kanbanorder)),
 };
 
