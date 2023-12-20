@@ -40,12 +40,14 @@ export const queries = {
   },
 } as const;
 
-function applyFilters(
+export function applyFilters(
   stream: DifferenceStream<Issue>,
   filterState: FilterState
 ) {
   if (filterState.query) {
-    stream = stream.filter((i) => i.title.includes(filterState.query!));
+    stream = stream.filter((i) =>
+      i.title.toLowerCase().includes(filterState.query!.toLowerCase())
+    );
   }
   if (filterState.status) {
     stream = stream.filter((i) => filterState.status!.includes(i.status));

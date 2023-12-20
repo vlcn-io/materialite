@@ -24,6 +24,7 @@ function IssuePage() {
   // and a hoisted way.
   const allIssues = useSignal(db.issues.base);
   const issue = allIssues.get(parseInt(id || ""));
+  console.log(issue);
   // TODO (mlaw): https://github.com/vlcn-io/materialite/discussions/17
   useSignal(db.descriptions);
   const description = db.descriptions.value.get({

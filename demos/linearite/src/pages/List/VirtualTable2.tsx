@@ -1,64 +1,39 @@
-import React, { memo, useState } from "react";
+import React, { memo, useRef, useState } from "react";
 import css from "./VirtualTable.module.css";
+import { useQuery } from "@vlcn.io/materialite-react";
+import { DifferenceStream, PersistentTreeView } from "@vlcn.io/materialite";
 
-/**
- * - over-scan on rows
- * - keep track of offset start for row set
- *
- * "fetchNextPage(startIndex, startCursor)"
- * page: startIndex
- *
- * fetchNextPage can over-scan to pull in before window and after window items.
- * 2 windows worth of items?
- * Half window before and half window after?
- * Or 3 windows worth of items?
- *
- * @param param0
- * @returns
- */
+type Comparator<T> = (a: T, b: T) => number;
 function VirtualTableBase<T>({
   rowRenderer,
   width,
   height,
   rowHeight,
-  rows,
   totalRows,
-  startIndex,
-  onNextPage,
-  onPrevPage,
-  hasNextPage,
-  hasPrevPage,
-  loading,
+  dataStream,
   className,
+  comparator,
 }: {
   className?: string;
   width: string | number;
   height: number;
   rowHeight: number;
-  rows: readonly T[];
   totalRows: number;
-  startIndex: number;
-  onNextPage: () => void;
-  onPrevPage: () => void;
-  loading: boolean;
-  hasPrevPage: boolean;
-  hasNextPage: boolean;
+  dataStream: DifferenceStream<T>;
   rowRenderer: (
     row: T,
     style: { [key: string]: string | number }
   ) => React.ReactNode;
+  comparator: Comparator<T>;
 }) {
   const tableContainerRef = React.useRef<HTMLDivElement>(null);
 
+  const pageSize = Math.ceil(height / rowHeight);
+  // load 2 pages to start
+  const [limit, setLimit] = useState(pageSize * 2);
+
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const target = e.target as HTMLElement;
-    if (loading) {
-      // TODO (mlaw):
-      // allow scrolling while loading if we're inside the over-scan window.
-      e.preventDefault();
-      target.scrollTop = prevScrollTop;
-      return false;
-    }
     const scrollTop = target.scrollTop;
     setScrollTop(scrollTop);
 
@@ -68,36 +43,19 @@ function VirtualTableBase<T>({
       onNearScroll();
     }
 
+    // TODO: change this so scroll bar represents
+    // total height and we page in when hitting a virtual region that is missing data.
+    const bottomIdx = Math.floor((scrollTop + offset + vp) / rh);
     const scrollDirection = scrollTop - prevScrollTop > 0 ? "down" : "up";
 
-    // TODO: Need to clamp the scroll to not jump ahead more than the items loaded.
-
-    const loadedItems = rows.length;
-    const lastThirdIndex = Math.floor(loadedItems * (2 / 3));
-    const firstThirdIndex = Math.floor(loadedItems * (1 / 3));
-    const bottomIdx = Math.floor((scrollTop + offset + vp) / rh);
-    const topIdx = Math.floor((scrollTop + offset) / rh);
     if (
       scrollDirection === "down" &&
-      hasNextPage &&
-      !loading &&
-      bottomIdx - startIndex > lastThirdIndex
+      bottomIdx >= data.size - 1 &&
+      (data.size >= limit || lastDataSize !== data.size)
     ) {
-      const pos = (lastThirdIndex + startIndex) * rh - offset - vp;
-      target.scrollTop = pos;
-      setPrevScrollTop(pos);
-      onNextPage();
-    } else if (
-      scrollDirection === "up" &&
-      hasPrevPage &&
-      !loading &&
-      topIdx - startIndex < firstThirdIndex
-    ) {
-      console.log("LOADING PREV PAGE");
-      const pos = (firstThirdIndex + startIndex) * rh - offset;
-      target.scrollTop = pos;
-      setPrevScrollTop(pos);
-      onPrevPage();
+      setLastDataSize(data.size);
+      const newLimit = bottomIdx + pageSize * 4;
+      setLimit(newLimit);
     }
   };
 
@@ -120,7 +78,7 @@ function VirtualTableBase<T>({
     }
     const scrollTop = viewport.scrollTop;
 
-    // next scroll bar page
+    // next page
     if (scrollTop + offset > (page + 1) * ph) {
       const nextPage = page + 1;
       const nextOffset = Math.round(nextPage * cj);
@@ -130,7 +88,7 @@ function VirtualTableBase<T>({
       setOffest(nextOffset);
       setPrevScrollTop(newPrevScrollTop);
     } else if (scrollTop + offset < page * ph) {
-      // prev scroll bar page
+      // prev page
       const nextPage = page - 1;
       const nextOffset = Math.round(nextPage * cj);
       const newPrevScrollTop = scrollTop + cj;
@@ -142,6 +100,29 @@ function VirtualTableBase<T>({
       setPrevScrollTop(scrollTop);
     }
   }
+
+  const viewRef = useRef<PersistentTreeView<T>>();
+  const [, data] = useQuery(() => {
+    let ret: PersistentTreeView<T>;
+    if (viewRef.current != null && dataStream === viewRef.current.stream) {
+      ret = viewRef.current.rematerialize(limit);
+    } else {
+      setLimit(pageSize * 2);
+      ret = dataStream.materialize(comparator, {
+        wantInitialData: true,
+        limit: pageSize * 2,
+      });
+
+      // in case we are at the bottom already. e.g., after filter changes
+      const target = tableContainerRef.current;
+      if (target) {
+        target.scrollTop = 0;
+      }
+    }
+    viewRef.current = ret;
+    return ret;
+  }, [dataStream, limit]);
+  const [lastDataSize, setLastDataSize] = useState(data.size);
 
   const items = totalRows;
   const itemSize = rowHeight;
@@ -161,24 +142,6 @@ function VirtualTableBase<T>({
   const [scrollTop, setScrollTop] = useState(
     tableContainerRef.current?.scrollTop || 0
   );
-  const [lastLoading, setLastLoading] = useState(loading);
-  if (lastLoading !== loading) {
-    setLastLoading(loading);
-    if (!loading) {
-      tableContainerRef.current!.scrollTop = prevScrollTop;
-    }
-  }
-  // useEffect(() => {
-  //   const current = tableContainerRef.current;
-  //   if (!current) {
-  //     return;
-  //   }
-
-  //   current.addEventListener("scroll", handleScroll);
-  //   return () => {
-  //     current.removeEventListener("scroll", handleScroll);
-  //   };
-  // }, [tableContainerRef.current, handleScroll]);
 
   const buffer = vp;
   const y = scrollTop + offset;
@@ -186,13 +149,13 @@ function VirtualTableBase<T>({
   let bottom = Math.ceil((y + vp + buffer) / rh);
 
   // top index for items in the viewport
-  top = Math.max(startIndex, top);
+  top = Math.max(0, top);
   // bottom index for items in the viewport
   bottom = Math.min(th / rh, bottom);
 
   const renderedRows = [];
   for (let i = top; i <= bottom; ++i) {
-    const d = rows[i - startIndex];
+    const d = data.at(i);
     if (!d) {
       break;
     }

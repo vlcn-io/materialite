@@ -13,11 +13,7 @@ function Board() {
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
-      <TopFilter
-        title="Board"
-        filteredIssuesCount={filteredIssuesCount!}
-        hideSort={true}
-      />
+      <TopFilter title="Board" count={filteredIssuesCount!} hideSort={true} />
       <IssueBoard />
     </div>
   );

@@ -8,21 +8,14 @@ function onPage() {}
 
 function List({ showSearch = false }) {
   const [, filterState] = useQuery(() => queries.filters(db), []);
-  const [, issues] = useQuery(
-    () => queries.issues(db, filterState!),
+  const [, filteredIssuesCount] = useQuery(
+    () => queries.filteredIssuesCount(db, filterState!),
     [filterState]
   );
-
   return (
     <div className="flex flex-col flex-grow">
-      <TopFilter filteredIssuesCount={issues.size} showSearch={showSearch} />
-      <IssueList
-        issues={issues}
-        onPage={onPage}
-        loading={false}
-        startIndex={0}
-        totalRows={issues.size}
-      />
+      <TopFilter count={filteredIssuesCount!} showSearch={showSearch} />
+      <IssueList count={filteredIssuesCount!} />
     </div>
   );
 }

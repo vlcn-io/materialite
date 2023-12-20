@@ -12,22 +12,22 @@ import { useQuery, useSignal } from "@vlcn.io/materialite-react";
 import { queries } from "../domain/queries";
 
 interface Props {
-  filteredIssuesCount: number;
   hideSort?: boolean;
   showSearch?: boolean;
   title?: string;
+  count: number;
 }
 
 export default function TopFilter({
-  filteredIssuesCount,
   hideSort,
   showSearch,
+  count,
   title = "All issues",
 }: Props) {
+  const [, filterState] = useQuery(() => queries.filters(db), []);
   const [showViewOption, setShowViewOption] = useState(false);
   const { showMenu, setShowMenu } = useContext(MenuContext)!;
   const [searchQuery, setSearchQuery] = useState("");
-  const [, filterState] = useQuery(() => queries.filters(db), []);
 
   const allIssues = useSignal(db.issues.base);
 
@@ -74,9 +74,9 @@ export default function TopFilter({
 
           <div className="p-1 font-semibold me-1">{title}</div>
           <span>
-            {filteredIssuesCount}
-            {filteredIssuesCount !== allIssues.size
-              ? ` of ${allIssues.size}`
+            {count.toLocaleString()}
+            {count !== allIssues.size
+              ? ` of ${allIssues.size.toLocaleString()}`
               : ""}
           </span>
           <FilterMenu

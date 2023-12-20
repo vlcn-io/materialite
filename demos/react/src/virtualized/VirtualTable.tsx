@@ -60,9 +60,6 @@ function VirtualTableBase<T>({
       setLastDataSize(data.size);
       const newLimit = bottomIdx + pageSize * 4;
       setLimit(newLimit);
-      console.log("new limit", newLimit);
-      console.log("s: ", target.scrollTop);
-      console.log("s2: ", scrollTop);
     }
   };
 
