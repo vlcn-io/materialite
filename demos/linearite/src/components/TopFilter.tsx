@@ -1,55 +1,62 @@
-import { ReactComponent as MenuIcon } from '../assets/icons/menu.svg'
-import { useState, useContext } from 'react'
-import { BsSortUp, BsPlus, BsX, BsSearch as SearchIcon } from 'react-icons/bs'
-import ViewOptionMenu from './ViewOptionMenu'
-import { MenuContext } from '../App'
-import FilterMenu from './contextmenu/FilterMenu'
-import { PriorityDisplay, StatusDisplay } from '../types/issue'
-import { Issue, decodeFilterState } from '../domain/SchemaType'
-import { first, useDB, useQuery2 } from '@vlcn.io/react'
-import { DBName } from '../domain/Schema'
-import { queries } from '../domain/queries'
-import { mutations } from '../domain/mutations'
-import debounce from 'lodash.debounce'
+import { ReactComponent as MenuIcon } from "../assets/icons/menu.svg";
+import { useState, useContext } from "react";
+import { BsSortUp, BsPlus, BsX, BsSearch as SearchIcon } from "react-icons/bs";
+import ViewOptionMenu from "./ViewOptionMenu";
+import { MenuContext } from "../App";
+import FilterMenu from "./contextmenu/FilterMenu";
+import { PriorityDisplay, StatusDisplay } from "../types/issue";
+import { mutations } from "../domain/mutations";
+import debounce from "lodash.debounce";
+import { db } from "../domain/db";
+import { useQuery, useSignal } from "@vlcn.io/materialite-react";
+import { queries } from "../domain/queries";
 
 interface Props {
-  filteredIssuesCount: number
-  hideSort?: boolean
-  showSearch?: boolean
-  title?: string
+  filteredIssuesCount: number;
+  hideSort?: boolean;
+  showSearch?: boolean;
+  title?: string;
 }
 
-export default function TopFilter({ filteredIssuesCount, hideSort, showSearch, title = 'All issues' }: Props) {
-  const [showViewOption, setShowViewOption] = useState(false)
-  const { showMenu, setShowMenu } = useContext(MenuContext)!
-  const [searchQuery, setSearchQuery] = useState('')
-  const ctx = useDB(DBName)
-  const filterState = decodeFilterState(first(useQuery2(ctx, queries.filterState).data))
-  const totalIssuesCount = first(useQuery2(ctx, queries.totalIssueCount).data)?.c ?? 0
+export default function TopFilter({
+  filteredIssuesCount,
+  hideSort,
+  showSearch,
+  title = "All issues",
+}: Props) {
+  const [showViewOption, setShowViewOption] = useState(false);
+  const { showMenu, setShowMenu } = useContext(MenuContext)!;
+  const [searchQuery, setSearchQuery] = useState("");
+  const [, filterState] = useQuery(() => queries.filters(db), []);
+
+  const allIssues = useSignal(db.issues.base);
 
   // is debounce required?
   const handleSearchInner = debounce((query: string) => {
-    mutations.putFilterState(ctx.db, {
-      ...filterState,
+    mutations.putFilterState({
+      ...filterState!,
       query: query,
-    })
-  }, 100)
+    });
+  }, 10);
 
   const handleSearch = (query: string) => {
-    setSearchQuery(query)
-    handleSearchInner(query)
-  }
+    setSearchQuery(query);
+    handleSearchInner(query);
+  };
 
   const eqStatuses = (statuses: string[]) => {
-    const statusSet = new Set(statuses)
-    return filterState.status?.length === statusSet.size && filterState.status.every((x) => statusSet.has(x))
-  }
+    const statusSet = new Set(statuses);
+    return (
+      filterState!.status?.length === statusSet.size &&
+      filterState!.status.every((x) => statusSet.has(x))
+    );
+  };
 
-  if (filterState.status?.length) {
-    if (eqStatuses(['backlog'])) {
-      title = 'Backlog'
-    } else if (eqStatuses(['todo', 'in_progress'])) {
-      title = 'Active'
+  if (filterState!.status?.length) {
+    if (eqStatuses(["backlog"])) {
+      title = "Backlog";
+    } else if (eqStatuses(["todo", "in_progress"])) {
+      title = "Active";
     }
   }
 
@@ -58,14 +65,19 @@ export default function TopFilter({ filteredIssuesCount, hideSort, showSearch, t
       <div className="flex justify-between flex-shrink-0 pl-2 pr-6 border-b border-gray-200 h-14 lg:pl-9">
         {/* left section */}
         <div className="flex items-center">
-          <button className="flex-shrink-0 h-full px-5 lg:hidden" onClick={() => setShowMenu(!showMenu)}>
+          <button
+            className="flex-shrink-0 h-full px-5 lg:hidden"
+            onClick={() => setShowMenu(!showMenu)}
+          >
             <MenuIcon className="w-3.5 text-gray-500 hover:text-gray-800" />
           </button>
 
           <div className="p-1 font-semibold me-1">{title}</div>
           <span>
             {filteredIssuesCount}
-            {filteredIssuesCount !== totalIssuesCount ? ` of ${totalIssuesCount}` : ''}
+            {filteredIssuesCount !== allIssues.size
+              ? ` of ${allIssues.size}`
+              : ""}
           </span>
           <FilterMenu
             button={
@@ -74,53 +86,60 @@ export default function TopFilter({ filteredIssuesCount, hideSort, showSearch, t
                 Filter
               </button>
             }
-            id={'filter-menu'}
+            id={"filter-menu"}
           />
         </div>
 
         <div className="flex items-center">
           {!hideSort && (
-            <button className="p-2 rounded hover:bg-gray-100" onClick={() => setShowViewOption(true)}>
+            <button
+              className="p-2 rounded hover:bg-gray-100"
+              onClick={() => setShowViewOption(true)}
+            >
               <BsSortUp size="16" className="inline" />
             </button>
           )}
         </div>
       </div>
 
-      {(!!filterState.status?.length || !!filterState.priority?.length) && (
+      {(!!filterState!.status?.length || !!filterState!.priority?.length) && (
         <div className="flex flex-shrink-0 pl-2 pr-6 border-b border-gray-200 lg:pl-9 py-2">
-          {!!filterState.priority?.length && (
+          {!!filterState!.priority?.length && (
             <div className="flex pr-4 space-x-[1px]">
               <span className="px-1 bg-gray-300 rounded-l">Priority is</span>
               <span className="px-1 bg-gray-300 ">
-                {filterState.priority?.map((priority) => PriorityDisplay[priority]).join(', ')}
+                {filterState!.priority
+                  ?.map((priority) => PriorityDisplay[priority])
+                  .join(", ")}
               </span>
               <span
                 className="px-1 bg-gray-300 rounded-r cursor-pointer flex items-center"
                 onClick={() => {
-                  mutations.putFilterState(ctx.db, {
-                    ...filterState,
+                  mutations.putFilterState({
+                    ...filterState!,
                     priority: null,
-                  })
+                  });
                 }}
               >
                 <BsX size={16} />
               </span>
             </div>
           )}
-          {!!filterState.status?.length && (
+          {!!filterState!.status?.length && (
             <div className="flex pr-4 space-x-[1px]">
               <span className="px-1 bg-gray-300 rounded-l">Status is</span>
               <span className="px-1 bg-gray-300 ">
-                {filterState.status?.map((status) => StatusDisplay[status]).join(', ')}
+                {filterState!.status
+                  ?.map((status) => StatusDisplay[status])
+                  .join(", ")}
               </span>
               <span
                 className="px-1 bg-gray-300 rounded-r cursor-pointer flex items-center"
                 onClick={() => {
-                  mutations.putFilterState(ctx.db, {
-                    ...filterState,
+                  mutations.putFilterState({
+                    ...filterState!,
                     status: null,
-                  })
+                  });
                 }}
               >
                 <BsX size={16} />
@@ -142,7 +161,10 @@ export default function TopFilter({ filteredIssuesCount, hideSort, showSearch, t
         </div>
       )}
 
-      <ViewOptionMenu isOpen={showViewOption} onDismiss={() => setShowViewOption(false)} />
+      <ViewOptionMenu
+        isOpen={showViewOption}
+        onDismiss={() => setShowViewOption(false)}
+      />
     </>
-  )
+  );
 }

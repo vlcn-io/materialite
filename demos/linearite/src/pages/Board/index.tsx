@@ -1,27 +1,24 @@
+import { useQuery } from "@vlcn.io/materialite-react";
 import TopFilter from "../../components/TopFilter";
-import IssueBoard from "./IssueBoard";
-import { decodeFilterState } from "../../domain/SchemaType";
-import { first, useDB, useQuery2 } from "@vlcn.io/react";
+import { db } from "../../domain/db";
 import { queries } from "../../domain/queries";
-import { DBName } from "../../domain/Schema";
+import IssueBoard from "./IssueBoard";
 
 function Board() {
-  const ctx = useDB(DBName);
-  const filterState = decodeFilterState(
-    first(useQuery2(ctx, queries.filterState).data)
+  const [, filterState] = useQuery(() => queries.filters(db), []);
+  const [, filteredIssuesCount] = useQuery(
+    () => queries.filteredIssuesCount(db, filterState!),
+    [filterState]
   );
-  const issues = useQuery2(ctx, queries.boardIssues(filterState)).data ?? [];
-  const filteredIssuesCount =
-    first(useQuery2(ctx, queries.filteredIssueCount(filterState)).data)?.c ?? 0;
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
       <TopFilter
         title="Board"
-        filteredIssuesCount={filteredIssuesCount}
+        filteredIssuesCount={filteredIssuesCount!}
         hideSort={true}
       />
-      <IssueBoard issues={issues} />
+      <IssueBoard />
     </div>
   );
 }

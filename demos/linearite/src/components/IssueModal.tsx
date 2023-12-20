@@ -1,85 +1,86 @@
-import { memo, useEffect, useRef, useState } from 'react'
+import { memo, useEffect, useRef, useState } from "react";
 
-import { BsChevronRight as ChevronRight } from 'react-icons/bs'
-import { ReactComponent as CloseIcon } from '../assets/icons/close.svg'
-import { ReactComponent as LivestoreIcon } from '../assets/images/icon.inverse.svg'
+import { BsChevronRight as ChevronRight } from "react-icons/bs";
+import { ReactComponent as CloseIcon } from "../assets/icons/close.svg";
+import { ReactComponent as LivestoreIcon } from "../assets/images/icon.inverse.svg";
 
-import Modal from '../components/Modal'
-import Editor from '../components/editor/Editor'
-import PriorityIcon from './PriorityIcon'
-import StatusIcon from './StatusIcon'
-import PriorityMenu from './contextmenu/PriorityMenu'
-import StatusMenu from './contextmenu/StatusMenu'
+import Modal from "../components/Modal";
+import Editor from "../components/editor/Editor";
+import PriorityIcon from "./PriorityIcon";
+import StatusIcon from "./StatusIcon";
+import PriorityMenu from "./contextmenu/PriorityMenu";
+import StatusMenu from "./contextmenu/StatusMenu";
 
-import { Priority, Status, PriorityDisplay } from '../types/issue'
-import { showInfo, showWarning } from '../utils/notification'
-import { useDB } from '@vlcn.io/react'
-import { DBName, newID } from '../domain/Schema'
-import { mutations } from '../domain/mutations'
-import { Issue, PriorityType, StatusType } from '../domain/SchemaType'
+import { Priority, Status, PriorityDisplay } from "../types/issue";
+import { showInfo, showWarning } from "../utils/notification";
+import { mutations } from "../domain/mutations";
+import { Issue, PriorityType, StatusType } from "../domain/SchemaType";
+import { db } from "../domain/db";
 
 interface Props {
-  isOpen: boolean
-  onDismiss?: () => void
+  isOpen: boolean;
+  onDismiss?: () => void;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
 function IssueModal({ isOpen, onDismiss }: Props) {
-  const ref = useRef<HTMLInputElement>(null)
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState<string>()
-  const [priority, setPriority] = useState<PriorityType>(Priority.NONE)
-  const [status, setStatus] = useState<StatusType>(Status.BACKLOG)
-  const ctx = useDB(DBName)
+  const ref = useRef<HTMLInputElement>(null);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState<string>();
+  const [priority, setPriority] = useState<PriorityType>(Priority.NONE);
+  const [status, setStatus] = useState<StatusType>(Status.BACKLOG);
 
   const handleSubmit = async () => {
-    if (title === '') {
-      showWarning('Please enter a title before submitting', 'Title required')
-      return
+    if (title === "") {
+      showWarning("Please enter a title before submitting", "Title required");
+      return;
     }
 
-    const date = Date.now()
-    const id = newID<Issue>()
-    await mutations.createIssueWithDescription(ctx.db, {
+    const date = Date.now();
+    const id = db.nextId<Issue>();
+    mutations.putIssueWithDescription(
+      {
         id,
         title: title,
-        creator: 'testuser',
+        creator: "testuser",
         priority: priority,
         status: status,
         modified: date,
         created: date,
-        kanbanorder: 1 // 1 means end of list. It'll find the appropriate fract index
-      }, {
+        kanbanorder: "aa", // TODO (mlaw)
+      },
+      {
         id,
-        body: description ?? '',
-      });
+        body: description ?? "",
+      }
+    );
 
-    if (onDismiss) onDismiss()
-    reset()
-    showInfo('You created new issue.', 'Issue created')
-  }
+    if (onDismiss) onDismiss();
+    reset();
+    showInfo("You created new issue.", "Issue created");
+  };
 
   const handleClickCloseBtn = () => {
-    if (onDismiss) onDismiss()
-    reset()
-  }
+    if (onDismiss) onDismiss();
+    reset();
+  };
 
   const reset = () => {
     setTimeout(() => {
-      setTitle('')
-      setDescription('')
-      setPriority(Priority.NONE)
-      setStatus(Status.BACKLOG)
-    }, 250)
-  }
+      setTitle("");
+      setDescription("");
+      setPriority(Priority.NONE);
+      setStatus(Status.BACKLOG);
+    }, 250);
+  };
 
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => {
-        ref.current?.focus()
-      }, 250)
+        ref.current?.focus();
+      }, 250);
     }
-  }, [isOpen])
+  }, [isOpen]);
 
   const body = (
     <div className="flex flex-col w-full py-4 overflow-hidden">
@@ -113,7 +114,7 @@ function IssueModal({ isOpen, onDismiss }: Props) {
               </button>
             }
             onSelect={(st) => {
-              setStatus(st)
+              setStatus(st);
             }}
           />
           <input
@@ -129,7 +130,7 @@ function IssueModal({ isOpen, onDismiss }: Props) {
         <div className="w-full px-4">
           <Editor
             className="prose w-full max-w-full mt-2 font-normal appearance-none min-h-12 p-1 text-md editor border border-transparent focus:outline-none focus:ring-0"
-            value={description || ''}
+            value={description || ""}
             onChange={(val) => setDescription(val)}
             placeholder="Add description..."
           />
@@ -147,8 +148,8 @@ function IssueModal({ isOpen, onDismiss }: Props) {
             </button>
           }
           onSelect={(val) => {
-            console.log(val)
-            setPriority(val)
+            console.log(val);
+            setPriority(val);
           }}
         />
       </div>
@@ -162,14 +163,14 @@ function IssueModal({ isOpen, onDismiss }: Props) {
         </button>
       </div>
     </div>
-  )
+  );
 
   return (
     <Modal isOpen={isOpen} center={false} size="large" onDismiss={onDismiss}>
       {body}
     </Modal>
-  )
+  );
 }
 
-const memoed = memo(IssueModal)
-export default memoed
+const memoed = memo(IssueModal);
+export default memoed;

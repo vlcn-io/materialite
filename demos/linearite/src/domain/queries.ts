@@ -1,11 +1,16 @@
 import { DifferenceStream } from "@vlcn.io/materialite";
 import { DB } from "./db";
-import { FilterState, Issue, StatusType } from "./SchemaType";
+import {
+  FilterState,
+  Issue,
+  StatusType,
+  defaultFilterState,
+} from "./SchemaType";
 export const queries = {
   filters(db: DB) {
     return db.appState.stream
-      .filter((s) => s._tag === "filter")
-      .materializeValue(null);
+      .filter((s): s is FilterState => s._tag === "filter")
+      .materializeValue(defaultFilterState);
   },
 
   selected(db: DB) {
@@ -21,6 +26,11 @@ export const queries = {
     );
   },
 
+  filteredIssuesCount(db: DB, filterState: FilterState) {
+    const source = db.issues.getSortedSource(filterState.orderBy);
+    return applyFilters(source.stream, filterState).size().materializeValue(0);
+  },
+
   kanbanSection(db: DB, status: StatusType, filterState: FilterState) {
     const source = db.issues.getSortedSource("kanbanorder");
     return applyFilters(
@@ -28,7 +38,7 @@ export const queries = {
       filterState
     ).materialize(source.comparator);
   },
-};
+} as const;
 
 function applyFilters(
   stream: DifferenceStream<Issue>,

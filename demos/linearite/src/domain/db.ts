@@ -7,7 +7,7 @@ import {
   Order,
 } from "./SchemaType";
 import { Materialite, MutableSetSource } from "@vlcn.io/materialite";
-import { createIssues } from "./seed";
+import { createIssues, getNextId } from "./seed";
 
 const m = new Materialite();
 
@@ -87,6 +87,10 @@ class IssueCollection {
     }
     return index;
   }
+
+  get base() {
+    return this.#base;
+  }
 }
 
 // TODO: support a reverse view of a source for `asc` vs `desc` order
@@ -95,6 +99,9 @@ export const db = {
   appState: m.newSortedSet(appStateComparator),
   comments: m.newSortedSet(commentComparator),
   descriptions: m.newSortedSet(descriptionComparator),
+  nextId<T>() {
+    return getNextId() as ID_of<T>;
+  },
   tx: m.tx.bind(m),
 } as const;
 

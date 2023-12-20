@@ -1,6 +1,5 @@
 import { ReactComponent as HelpIcon } from "../assets/icons/help.svg";
 import { ReactComponent as MenuIcon } from "../assets/icons/menu.svg";
-import { ReactComponent as VulcanIcon } from "../assets/images/icon.inverse.svg";
 import { ReactComponent as BacklogIcon } from "../assets/icons/circle-dot.svg";
 import { MenuContext } from "../App";
 import classnames from "classnames";
@@ -17,10 +16,9 @@ import IssueModal from "./IssueModal";
 import ItemGroup from "./ItemGroup";
 import ProfileMenu from "./ProfileMenu";
 import { mutations } from "../domain/mutations";
-import { DBName } from "../domain/Schema";
-import { first, useDB, useQuery2 } from "@vlcn.io/react";
-import { decodeFilterState } from "../domain/SchemaType";
+import { useQuery } from "@vlcn.io/materialite-react";
 import { queries } from "../domain/queries";
+import { db } from "../domain/db";
 
 // eslint-disable-next-line react-refresh/only-export-components
 function LeftMenu() {
@@ -31,10 +29,7 @@ function LeftMenu() {
   const { showMenu, setShowMenu } = useContext(MenuContext)!;
   // const { connectivityState } = useConnectivityState()
   const connectivityState = "connected";
-  const ctx = useDB(DBName);
-  const filterState = decodeFilterState(
-    first(useQuery2(ctx, queries.filterState).data)
-  );
+  const [, filterState] = useQuery(() => queries.filters(db), []);
 
   const classes = classnames(
     "absolute z-40 lg:static inset-0 transform duration-300 lg:relative lg:translate-x-0 bg-white flex flex-col flex-shrink-0 w-56 font-sans text-sm text-gray-700 border-r border-gray-100 lg:shadow-none justify-items-start",
@@ -115,8 +110,8 @@ function LeftMenu() {
             <Link
               to="/"
               onClick={() => {
-                mutations.putFilterState(ctx.db, {
-                  ...filterState,
+                mutations.putFilterState({
+                  ...filterState!,
                   status: null,
                   priority: null,
                 });
@@ -128,8 +123,8 @@ function LeftMenu() {
             </Link>
             <span
               onClick={() => {
-                mutations.putFilterState(ctx.db, {
-                  ...filterState,
+                mutations.putFilterState({
+                  ...filterState!,
                   status: ["todo", "in_progress"],
                 });
               }}
@@ -142,8 +137,8 @@ function LeftMenu() {
             </span>
             <span
               onClick={() => {
-                mutations.putFilterState(ctx.db, {
-                  ...filterState,
+                mutations.putFilterState({
+                  ...filterState!,
                   status: ["backlog"],
                 });
               }}

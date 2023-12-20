@@ -61,18 +61,4 @@ export type SchemaType = {
     issueId: ID_of<Issue>;
     created: number;
   }>;
-  // readonly filter_state: Readonly<{
-  //   id: "singleton";
-  //   orderBy:
-  //     | "title"
-  //     | "creator"
-  //     | "priority"
-  //     | "status"
-  //     | "created"
-  //     | "modified";
-  //   orderDirection: "asc" | "desc";
-  //   status: StatusType[] | null;
-  //   priority: PriorityType[] | null;
-  //   query: string | null;
-  // }>;
 };

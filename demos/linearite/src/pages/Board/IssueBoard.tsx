@@ -1,94 +1,62 @@
-import { DragDropContext, DropResult } from 'react-beautiful-dnd'
-import { useMemo, useState, useEffect } from 'react'
-import { Status, StatusDisplay } from '../../types/issue'
-import IssueCol from './IssueCol'
-import { Issue, StatusType } from '../../domain/SchemaType'
-import { DBName } from '../../domain/Schema'
-import { useDB } from '@vlcn.io/react'
-import { mutations } from '../../domain/mutations'
-import { ID_of } from '@vlcn.io/id'
+import { DragDropContext, DropResult } from "react-beautiful-dnd";
+import { Status, StatusDisplay } from "../../types/issue";
+import IssueCol from "./IssueCol";
+import { ID_of, Issue, StatusType } from "../../domain/SchemaType";
+import { mutations } from "../../domain/mutations";
+import { useQuery } from "@vlcn.io/materialite-react";
+import { queries } from "../../domain/queries";
+import { db } from "../../domain/db";
 
-export interface IssueBoardProps {
-  issues: readonly Issue[]
-}
+export interface IssueBoardProps {}
 
-interface MovedIssues {
-  [id: string]: {
-    status?: StatusType
-    kanbanorder?: string
-  }
-}
+export default function IssueBoard({}: IssueBoardProps) {
+  const [, filterState] = useQuery(() => queries.filters(db), []);
+  const issuesByStatus = {
+    [Status.BACKLOG]: useQuery(
+      () => queries.kanbanSection(db, Status.BACKLOG, filterState!),
+      [filterState]
+    )[1],
+    [Status.TODO]: useQuery(
+      () => queries.kanbanSection(db, Status.TODO, filterState!),
+      [filterState]
+    )[1],
+    [Status.IN_PROGRESS]: useQuery(
+      () => queries.kanbanSection(db, Status.IN_PROGRESS, filterState!),
+      [filterState]
+    )[1],
+    [Status.DONE]: useQuery(
+      () => queries.kanbanSection(db, Status.DONE, filterState!),
+      [filterState]
+    )[1],
+    [Status.CANCELED]: useQuery(
+      () => queries.kanbanSection(db, Status.CANCELED, filterState!),
+      [filterState]
+    )[1],
+  } as const;
 
-export default function IssueBoard({ issues }: IssueBoardProps) {
-  const ctx = useDB(DBName)
-  const [movedIssues, setMovedIssues] = useState<MovedIssues>({})
-
-  // Issues are coming from a live query, this may not have updated before we rerender
-  // after a drag and drop. So we keep track of moved issues and use that to override
-  // the status of the issue when sorting the issues into columns.
-
-  useEffect(() => {
-    // Reset moved issues when issues change
-    setMovedIssues({})
-  }, [issues])
-
-  // TODO: do this in the db itself. not here. Then we can page correctly.
-  const { issuesByStatus } = useMemo(() => {
-    const issuesByStatus: Partial<Record<StatusType, Issue[]>> = {}
-    issues.forEach((issue) => {
-      // If the issue has been moved, patch with new status and kanbanorder for sorting
-      if (movedIssues[issue.id]) {
-        issue = {
-          ...issue,
-          ...movedIssues[issue.id],
-        }
-      }
-      const status = issue.status
-      if (!issuesByStatus[status]) {
-        issuesByStatus[status] = []
-      }
-      issuesByStatus[status]!.push(issue)
-    })
-
-    // Sort issues in each column by kanbanorder and issue id
-    Object.keys(issuesByStatus).forEach((status) => {
-      issuesByStatus[status as StatusType]!.sort((a, b) => {
-        if (a.kanbanorder < b.kanbanorder) {
-          return -1
-        }
-        if (a.kanbanorder > b.kanbanorder) {
-          return 1
-        }
-        // Use unique issue id to break ties
-        if (a.id < b.id) {
-          return -1
-        } else {
-          return 1
-        }
-      })
-    })
-
-    return { issuesByStatus }
-  }, [issues, movedIssues])
-
-  const adjacentIssues = (column: StatusType, index: number, sameColumn = true, currentIndex: number) => {
-    const columnIssues = issuesByStatus[column] || []
-    let prevIssue: Issue | undefined
-    let nextIssue: Issue | undefined
+  const adjacentIssues = (
+    column: StatusType,
+    index: number,
+    sameColumn = true,
+    currentIndex: number
+  ) => {
+    const columnIssues = issuesByStatus[column];
+    let prevIssue: Issue | null;
+    let nextIssue: Issue | null;
     if (sameColumn) {
       if (currentIndex < index) {
-        prevIssue = columnIssues[index]
-        nextIssue = columnIssues[index + 1]
+        prevIssue = columnIssues.at(index);
+        nextIssue = columnIssues.at(index + 1);
       } else {
-        prevIssue = columnIssues[index - 1]
-        nextIssue = columnIssues[index]
+        prevIssue = columnIssues.at(index - 1);
+        nextIssue = columnIssues.at(index);
       }
     } else {
-      prevIssue = columnIssues[index - 1]
-      nextIssue = columnIssues[index]
+      prevIssue = columnIssues.at(index - 1);
+      nextIssue = columnIssues.at(index);
     }
-    return { prevIssue, nextIssue }
-  }
+    return { prevIssue, nextIssue };
+  };
 
   const onDragEnd = ({ source, destination, draggableId }: DropResult) => {
     if (destination && destination.droppableId) {
@@ -96,27 +64,21 @@ export default function IssueBoard({ issues }: IssueBoardProps) {
         destination.droppableId as StatusType,
         destination.index,
         destination.droppableId === source.droppableId,
-        source.index,
-      )
-
-      setMovedIssues((prev) => ({
-        ...prev,
-        [draggableId]: {
-          status: destination.droppableId as StatusType,
-        },
-      }))
+        source.index
+      );
 
       // Update the issue in the database
       if (prevIssue) {
-        mutations.moveIssue(ctx.db, draggableId as ID_of<Issue>, prevIssue.id, destination.droppableId as StatusType);
+        mutations.moveIssue();
       } else {
-        mutations.updateIssue(ctx.db, {
-          id: draggableId as ID_of<Issue>,
+        const issue = db.issues.get(parseInt(draggableId) as ID_of<Issue>);
+        mutations.putIssue({
+          ...issue!,
           status: destination.droppableId as StatusType,
-        })
+        });
       }
     }
-  }
+  };
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
@@ -126,13 +88,21 @@ export default function IssueBoard({ issues }: IssueBoardProps) {
           status={Status.BACKLOG}
           issues={issuesByStatus[Status.BACKLOG]}
         />
-        <IssueCol title={StatusDisplay[Status.TODO]} status={Status.TODO} issues={issuesByStatus[Status.TODO]} />
+        <IssueCol
+          title={StatusDisplay[Status.TODO]}
+          status={Status.TODO}
+          issues={issuesByStatus[Status.TODO]}
+        />
         <IssueCol
           title={StatusDisplay[Status.IN_PROGRESS]}
           status={Status.IN_PROGRESS}
           issues={issuesByStatus[Status.IN_PROGRESS]}
         />
-        <IssueCol title={StatusDisplay[Status.DONE]} status={Status.DONE} issues={issuesByStatus[Status.DONE]} />
+        <IssueCol
+          title={StatusDisplay[Status.DONE]}
+          status={Status.DONE}
+          issues={issuesByStatus[Status.DONE]}
+        />
         <IssueCol
           title={StatusDisplay[Status.CANCELED]}
           status={Status.CANCELED}
@@ -140,5 +110,5 @@ export default function IssueBoard({ issues }: IssueBoardProps) {
         />
       </div>
     </DragDropContext>
-  )
+  );
 }

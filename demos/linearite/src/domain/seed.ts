@@ -35,7 +35,7 @@ export const statuses = [
   "canceled",
 ] as const;
 
-let issueId = 0;
+let nextId = 0;
 export function* createIssues(
   numTasks: number
 ): Generator<[Issue, Description]> {
@@ -131,7 +131,7 @@ export function* createIssues(
   for (let i = 0; i < numTasks; i++) {
     const [title, description] = generateText();
     const task = {
-      id: ++issueId as ID_of<Issue>,
+      id: ++nextId as ID_of<Issue>,
       creator: getRandomItem(names),
       title,
       created: Date.now() - i * 5 * 24 * 60 * 60 * 1000,
@@ -148,4 +148,7 @@ export function* createIssues(
       },
     ];
   }
+}
+export function getNextId() {
+  return ++nextId;
 }

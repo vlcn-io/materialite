@@ -1,27 +1,25 @@
-import 'animate.css/animate.min.css'
-import Board from './pages/Board'
-import { useState, createContext } from 'react'
-import { Route, Routes, BrowserRouter } from 'react-router-dom'
-import { cssTransition, ToastContainer } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
-import List from './pages/List'
-import Issue from './pages/Issue'
-import LeftMenu from './components/LeftMenu'
+import "animate.css/animate.min.css";
+import Board from "./pages/Board";
+import { useState, createContext } from "react";
+import { Route, Routes, BrowserRouter } from "react-router-dom";
+import { cssTransition, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import List from "./pages/List";
+import Issue from "./pages/Issue";
+import LeftMenu from "./components/LeftMenu";
 import SyncWorker from "./sync-worker.js?worker";
-import { DBName } from './domain/Schema'
-import { useSync } from '@vlcn.io/react'
 
 interface MenuContextInterface {
-  showMenu: boolean
-  setShowMenu: (show: boolean) => void
+  showMenu: boolean;
+  setShowMenu: (show: boolean) => void;
 }
 
-export const MenuContext = createContext(null as MenuContextInterface | null)
+export const MenuContext = createContext(null as MenuContextInterface | null);
 
 const slideUp = cssTransition({
-  enter: 'animate__animated animate__slideInUp',
-  exit: 'animate__animated animate__slideOutDown',
-})
+  enter: "animate__animated animate__slideInUp",
+  exit: "animate__animated animate__slideOutDown",
+});
 
 function getEndpoint() {
   let proto = "ws:";
@@ -35,16 +33,7 @@ function getEndpoint() {
 
 const worker = new SyncWorker();
 const App = () => {
-  const [showMenu, setShowMenu] = useState(false)
-  useSync({
-    // Name of the local database to sync
-    dbname: DBName,
-    endpoint: getEndpoint(),
-    // Name of the remote database to sync
-    room: DBName,
-    // Worker process that carries out the sync
-    worker,
-  })
+  const [showMenu, setShowMenu] = useState(false);
 
   const router = (
     <Routes>
@@ -53,7 +42,7 @@ const App = () => {
       <Route path="/board" element={<Board />} />
       <Route path="/issue/:id" element={<Issue />} />
     </Routes>
-  )
+  );
 
   return (
     <MenuContext.Provider value={{ showMenu, setShowMenu }}>
@@ -76,7 +65,7 @@ const App = () => {
         />
       </BrowserRouter>
     </MenuContext.Provider>
-  )
-}
+  );
+};
 
-export default App
+export default App;

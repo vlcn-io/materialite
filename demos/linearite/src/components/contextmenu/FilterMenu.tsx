@@ -7,6 +7,8 @@ import { PriorityOptions, StatusOptions } from "../../types/issue";
 import { PriorityType, StatusType } from "../../domain/SchemaType";
 import { mutations } from "../../domain/mutations";
 import { db } from "../../domain/db";
+import { useQuery } from "@vlcn.io/materialite-react";
+import { queries } from "../../domain/queries";
 
 interface Props {
   id: string;
@@ -16,6 +18,8 @@ interface Props {
 
 function FilterMenu({ id, button, className }: Props) {
   const [keyword, setKeyword] = useState("");
+  // TODO: the view already has a default so should not require null checking
+  const [, filterState] = useQuery(() => queries.filters(db), []);
 
   let priorities = PriorityOptions;
   if (keyword !== "") {
@@ -43,7 +47,7 @@ function FilterMenu({ id, button, className }: Props) {
       >
         <Icon className="mr-3" />
         <span>{label}</span>
-        {filterState.priority?.includes(priority) && (
+        {filterState!.priority?.includes(priority) && (
           <BsCheck2 className="ml-auto" />
         )}
       </Menu.Item>
@@ -58,7 +62,7 @@ function FilterMenu({ id, button, className }: Props) {
       >
         <Icon className="mr-3" />
         <span>{label}</span>
-        {filterState.status?.includes(status) && (
+        {filterState!.status?.includes(status) && (
           <BsCheck2 className="ml-auto" />
         )}
       </Menu.Item>
@@ -67,28 +71,28 @@ function FilterMenu({ id, button, className }: Props) {
 
   const handlePrioritySelect = (priority: PriorityType) => {
     setKeyword("");
-    const newPriority = filterState.priority || [];
+    const newPriority = filterState!.priority || [];
     if (newPriority.includes(priority)) {
       newPriority.splice(newPriority.indexOf(priority), 1);
     } else {
       newPriority.push(priority);
     }
-    mutations.putFilterState(ctx.db, {
-      ...filterState,
+    mutations.putFilterState({
+      ...filterState!,
       priority: newPriority,
     });
   };
 
   const handleStatusSelect = (status: StatusType) => {
     setKeyword("");
-    const newStatus = filterState.status || [];
+    const newStatus = filterState!.status || [];
     if (newStatus.includes(status)) {
       newStatus.splice(newStatus.indexOf(status), 1);
     } else {
       newStatus.push(status);
     }
-    mutations.putFilterState(ctx.db, {
-      ...filterState,
+    mutations.putFilterState({
+      ...filterState!,
       status: newStatus,
     });
   };

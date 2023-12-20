@@ -1,37 +1,38 @@
-import { Transition } from '@headlessui/react'
-import { useClickOutside } from '../hooks/useClickOutside'
-import { useRef } from 'react'
-import Select from './Select'
-import { first, useDB, useQuery2 } from '@vlcn.io/react'
-import { DBName } from '../domain/Schema'
-import { mutations } from '../domain/mutations'
-import { decodeFilterState } from '../domain/SchemaType'
-import { queries } from '../domain/queries'
+import { Transition } from "@headlessui/react";
+import { useClickOutside } from "../hooks/useClickOutside";
+import { useRef } from "react";
+import Select from "./Select";
+import { mutations } from "../domain/mutations";
+import { Order } from "../domain/SchemaType";
+import { useQuery } from "@vlcn.io/materialite-react";
+import { queries } from "../domain/queries";
+import { db } from "../domain/db";
 
 interface Props {
-  isOpen: boolean
-  onDismiss?: () => void
+  isOpen: boolean;
+  onDismiss?: () => void;
 }
 export default function ViewOptionMenu({ isOpen, onDismiss }: Props) {
-  const ref = useRef(null)
-  const ctx = useDB(DBName)
+  const ref = useRef(null);
 
   useClickOutside(ref, () => {
-    if (isOpen && onDismiss) onDismiss()
-  })
+    if (isOpen && onDismiss) onDismiss();
+  });
+  const [, filterState] = useQuery(() => queries.filters(db), []);
 
-  const handleOrderByChange = (e: React.ChangeEvent<HTMLSelectElement>) => 
-    mutations.putFilterState(ctx.db, {
-      ...filterState,
-      orderBy: e.target.value as 'priority' | 'status' | 'created' | 'modified',
-    })
+  const handleOrderByChange = (e: React.ChangeEvent<HTMLSelectElement>) =>
+    mutations.putFilterState({
+      ...filterState!,
+      orderBy: e.target.value as Order,
+    });
 
-  const handleOrderDirectionChange = (e: React.ChangeEvent<HTMLSelectElement>) =>
-    mutations.putFilterState(ctx.db, {
-      ...filterState,
-      orderDirection: e.target.value as 'asc' | 'desc',
-    })
-  const filterState = decodeFilterState(first(useQuery2(ctx, queries.filterState).data))
+  const handleOrderDirectionChange = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) =>
+    mutations.putFilterState({
+      ...filterState!,
+      orderDirection: e.target.value as "asc" | "desc",
+    });
 
   return (
     <div ref={ref}>
@@ -45,7 +46,9 @@ export default function ViewOptionMenu({ isOpen, onDismiss }: Props) {
         leaveTo="transform opacity-0 scale-95"
         className="fixed right-0 z-30 flex flex-col bg-white rounded-lg shadow-modal top-12 w-70"
       >
-        <div className="font-medium border-b border-gray-200 px-4.5 py-2">View Options</div>
+        <div className="font-medium border-b border-gray-200 px-4.5 py-2">
+          View Options
+        </div>
 
         <div className="px-4.5 py-2 flex flex-col border-b border-gray-200">
           {/* <div className="flex items-center min-h-8">
@@ -64,7 +67,10 @@ export default function ViewOptionMenu({ isOpen, onDismiss }: Props) {
           <div className="flex items-center mt-1 min-h-8">
             <span className="text-gray-500">Ordering</span>
             <div className="flex ml-auto">
-              <Select value={filterState.orderBy} onChange={handleOrderByChange}>
+              <Select
+                value={filterState!.orderBy}
+                onChange={handleOrderByChange}
+              >
                 <option value="priority">Priority</option>
                 <option value="status">Status</option>
                 <option value="created">Created</option>
@@ -72,7 +78,10 @@ export default function ViewOptionMenu({ isOpen, onDismiss }: Props) {
               </Select>
             </div>
             <div className="flex ml-1">
-              <Select value={filterState.orderDirection} onChange={handleOrderDirectionChange}>
+              <Select
+                value={filterState!.orderDirection}
+                onChange={handleOrderDirectionChange}
+              >
                 <option value="desc">Desc</option>
                 <option value="asc">Asc</option>
               </Select>
@@ -81,5 +90,5 @@ export default function ViewOptionMenu({ isOpen, onDismiss }: Props) {
         </div>
       </Transition>
     </div>
-  )
+  );
 }

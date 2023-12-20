@@ -7,13 +7,18 @@ import {
   MaterialiteForSourceInternal,
   Version,
 } from "../core/types.js";
+import { ISignal } from "../index.js";
+import { IDerivation } from "../signal/ISignal.js";
 import { IStatefulSource, IUnsortedSource, KeyFn } from "./Source.js";
 
 /**
  * A MapSource which retains values in a mutable structure.
  */
 export class MutableMapSource<K, T>
-  implements IStatefulSource<T, Map<K, T>>, IUnsortedSource<T, K>
+  implements
+    IStatefulSource<T, Map<K, T>>,
+    IUnsortedSource<T, K>,
+    ISignal<Map<K, T>>
 {
   readonly _state = "stateful";
   readonly _sort = "unsorted";
@@ -117,6 +122,23 @@ export class MutableMapSource<K, T>
   onChange(cb: (data: Map<K, T>) => void) {
     this.#listeners.add(cb);
     return () => this.#listeners.delete(cb);
+  }
+
+  // TODO: implement these correctly.
+  on(fn: (value: Map<K, T>, version: number) => void): () => void {
+    return this.onChange(fn as any);
+  }
+
+  off(fn: (value: Map<K, T>, version: number) => void): void {
+    this.#listeners.delete(fn as any);
+  }
+
+  pipe<R>(_: (v: Map<K, T>) => R): ISignal<R> {
+    throw new Error("Method not implemented.");
+  }
+
+  _derive(_: IDerivation<Map<K, T>>): () => void {
+    throw new Error("Method not implemented.");
   }
 
   add(v: T): this {
