@@ -31,13 +31,27 @@ export function useQuery<T>(
   return useNewSignal(fn, deps, name);
 }
 
-export function useSignal<T>(signal: ISignal<T>) {
+export function useSignal<T>(signal: ISignal<T>, name: string = "") {
   const [value, setValue] = useState<T>(signal.value);
+  const [prevSignal, setPrevSignal] = useState<ISignal<T> | null>(null);
+  const subscriber = useRef<Subscriber<T>>();
+
   useEffect(() => {
-    return signal.on((value) => {
-      setValue(value);
-    });
-  }, [signal]);
+    return () => {
+      if (subscriber.current) {
+        subscriber.current.destroy();
+      }
+    };
+  }, []);
+
+  if (prevSignal !== signal) {
+    const lastSubscriber = subscriber.current;
+    if (lastSubscriber) {
+      lastSubscriber.destroy();
+    }
+    subscriber.current = new Subscriber(signal, setValue, name);
+    setPrevSignal(signal);
+  }
 
   return value;
 }
@@ -120,6 +134,7 @@ class Subscriber<T> {
     if (this.destroyed) {
       return;
     }
+    console.log(`[${this.id}] ${this.name} changed`);
     this.setValue(value);
   };
 }

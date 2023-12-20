@@ -12,8 +12,13 @@ import Editor from "../../components/editor/Editor";
 import DeleteModal from "./DeleteModal";
 import Comments from "./Comments";
 import { mutations } from "../../domain/mutations";
-import { PriorityType, StatusType } from "../../domain/SchemaType";
-import { useSignal } from "@vlcn.io/materialite-react";
+import {
+  ID_of,
+  Issue,
+  PriorityType,
+  StatusType,
+} from "../../domain/SchemaType";
+import { useNewSignal, useSignal } from "@vlcn.io/materialite-react";
 import { db } from "../../domain/db";
 
 function IssuePage() {
@@ -22,11 +27,14 @@ function IssuePage() {
 
   // TODO (mlaw): better way to get a single item from a collection
   // and a hoisted way.
-  const allIssues = useSignal(db.issues.base);
-  const issue = allIssues.get(parseInt(id || ""));
-  console.log(issue);
+  const [, issue] = useNewSignal(() => {
+    return db.issues.base.pipe((v) => {
+      return v.get(parseInt(id || "") as ID_of<Issue>);
+    });
+  }, [id]);
+
   // TODO (mlaw): https://github.com/vlcn-io/materialite/discussions/17
-  useSignal(db.descriptions);
+  // useSignal(db.descriptions);
   const description = db.descriptions.value.get({
     id: issue!.id,
     body: "",
@@ -57,6 +65,7 @@ function IssuePage() {
   };
 
   const handleTitleChange = (title: string) => {
+    console.log("putting issue ", title);
     mutations.putIssue({
       ...issue!,
       title,

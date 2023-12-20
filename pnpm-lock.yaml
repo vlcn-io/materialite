@@ -33,6 +33,9 @@ importers:
       '@headlessui/react':
         specifier: ^1.7.17
         version: 1.7.17(react-dom@18.2.0)(react@18.2.0)
+      '@schickling/fps-meter':
+        specifier: ^0.1.2
+        version: 0.1.2(react@18.2.0)
       '@tailwindcss/forms':
         specifier: ^0.5.6
         version: 0.5.7(tailwindcss@3.3.3)
@@ -60,6 +63,9 @@ importers:
       '@tiptap/starter-kit':
         specifier: ^2.1.8
         version: 2.1.13(@tiptap/pm@2.1.13)
+      '@vlcn.io/id':
+        specifier: 0.1.0-next.2
+        version: 0.1.0-next.2(react@18.2.0)
       '@vlcn.io/materialite':
         specifier: workspace:*
         version: link:../../packages/materialite
@@ -1194,6 +1200,14 @@ packages:
       picomatch: 2.3.1
     dev: true
 
+  /@schickling/fps-meter@0.1.2(react@18.2.0):
+    resolution: {integrity: sha512-aNZbZTBj7EuHYrSg8Yainb0wlF35Oi53pacj/UIY5IV9TBp/KA0Od7uYtqwWYVifSQ6BMBhck8LI3xIsAkR53Q==}
+    peerDependencies:
+      react: '*'
+    dependencies:
+      react: 18.2.0
+    dev: false
+
   /@sinclair/typebox@0.27.8:
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
     dev: true
@@ -2084,6 +2098,14 @@ packages:
       loupe: 2.3.7
       pretty-format: 29.7.0
     dev: true
+
+  /@vlcn.io/id@0.1.0-next.2(react@18.2.0):
+    resolution: {integrity: sha512-PzG4j4jPlz/N6mFp+12WCgtHVnWcWw+RawD15mhSdXalCHzgA6ozGlTsqFuE43M7uUVUP3uiKVsy4Nbq01COcg==}
+    peerDependencies:
+      react: ^18
+    dependencies:
+      react: 18.2.0
+    dev: false
 
   /@vlcn.io/type-gen-ts-adapter@0.3.0-next.2:
     resolution: {integrity: sha512-WWcVW3fm5mnAxRyYyg92T4Y4Fiu1J0eBT1ZpzimASwjAY/2TEtekTncXK057CaeBX8SBoaQ+VhcHSqFcbSLUnw==}

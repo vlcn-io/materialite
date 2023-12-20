@@ -25,6 +25,7 @@ export class MutableMapSource<K, T>
   readonly #internal: ISourceInternal;
   readonly #materialite: MaterialiteForSourceInternal;
   readonly #listeners = new Set<(data: Map<K, T>) => void>();
+  readonly #derivations = new Set<IDerivation<Map<K, T>>>();
   readonly keyFn: KeyFn<T, K>;
 
   #stream: RootDifferenceStream<T>;
@@ -85,13 +86,18 @@ export class MutableMapSource<K, T>
         } else {
           self.#stream.notify(version, "difference");
         }
-
-        for (const l of self.#listeners) {
-          l(self.#map);
+        for (const d of self.#derivations) {
+          d.onSignalChanged(self.value, version);
         }
       },
       onCommitted(v: Version) {
         self.#stream.notifyCommitted(v);
+        for (const l of self.#listeners) {
+          l(self.#map);
+        }
+        for (const d of self.#derivations) {
+          d.onCommitted(self.value, v);
+        }
       },
       onRollback() {
         self.#pending = [];
@@ -117,6 +123,7 @@ export class MutableMapSource<K, T>
   destroy(): void {
     this.detachPipelines();
     this.#listeners.clear();
+    this.#derivations.clear();
   }
 
   onChange(cb: (data: Map<K, T>) => void) {
@@ -133,12 +140,15 @@ export class MutableMapSource<K, T>
     this.#listeners.delete(fn as any);
   }
 
-  pipe<R>(_: (v: Map<K, T>) => R): ISignal<R> {
-    throw new Error("Method not implemented.");
+  pipe<R>(f: (v: Map<K, T>) => R): ISignal<R> {
+    return this.#materialite.materialite.compute(f, this);
   }
 
-  _derive(_: IDerivation<Map<K, T>>): () => void {
-    throw new Error("Method not implemented.");
+  _derive(derivation: IDerivation<Map<K, T>>): () => void {
+    this.#derivations.add(derivation);
+    return () => {
+      this.#derivations.delete(derivation);
+    };
   }
 
   add(v: T): this {

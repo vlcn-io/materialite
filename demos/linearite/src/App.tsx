@@ -7,6 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 import List from "./pages/List";
 import Issue from "./pages/Issue";
 import LeftMenu from "./components/LeftMenu";
+import { FPSMeter } from "@schickling/fps-meter";
 
 interface MenuContextInterface {
   showMenu: boolean;
@@ -34,6 +35,10 @@ const App = () => {
 
   return (
     <MenuContext.Provider value={{ showMenu, setShowMenu }}>
+      <FPSMeter
+        className="absolute right-0 top-0 z-50 bg-gray-800"
+        height={40}
+      />
       <BrowserRouter>
         <div className="flex w-full h-screen overflow-y-hidden">
           <LeftMenu />
