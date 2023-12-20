@@ -4,4 +4,4 @@ packages:
   - "packages/react"
   - "buildall"
   - "demos/react"
-  - "demos/react2"
+  - "demos/linearite"
