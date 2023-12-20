@@ -37,7 +37,7 @@ export default function TopFilter({
       ...filterState!,
       query: query,
     });
-  }, 10);
+  }, 100);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
