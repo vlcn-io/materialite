@@ -11,62 +11,66 @@ import { PriorityDisplay, StatusDisplay } from "../../types/issue";
 import Editor from "../../components/editor/Editor";
 import DeleteModal from "./DeleteModal";
 import Comments from "./Comments";
-import { DBName } from "../../domain/Schema";
-import { first, useCachedState, useDB, useQuery2 } from "@vlcn.io/react";
-import { queries } from "../../domain/queries";
 import { mutations } from "../../domain/mutations";
 import { PriorityType, StatusType } from "../../domain/SchemaType";
+import { useSignal } from "@vlcn.io/materialite-react";
+import { db } from "../../domain/db";
 
 function IssuePage() {
   const navigate = useNavigate();
-  const { id } = useParams() || "";
+  const { id } = useParams();
 
-  const ctx = useDB(DBName);
-  const issue = first(useQuery2(ctx, queries.issue, [id]).data);
-  const description = first(
-    useQuery2(ctx, queries.issueDescription, [id]).data
-  )?.body;
+  // TODO (mlaw): better way to get a single item from a collection
+  // and a hoisted way.
+  const allIssues = useSignal(db.issues.base);
+  const issue = allIssues.get(parseInt(id || ""));
+  // TODO (mlaw): https://github.com/vlcn-io/materialite/discussions/17
+  useSignal(db.descriptions);
+  const description = db.descriptions.value.get({
+    id: issue!.id,
+    body: "",
+  });
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [title, setTitle] = useCachedState(issue?.title || "");
 
   if (issue === undefined) {
-    return <div className="p-8 w-full text-center">Loading...</div>;
+    return (
+      <div className="p-8 w-full text-center">Could not find issue...</div>
+    );
   } else if (issue === null) {
     return <div className="p-8 w-full text-center">Issue not found</div>;
   }
 
   const handleStatusChange = (status: StatusType) => {
-    mutations.updateIssue(ctx.db, {
-      id: issue.id,
+    mutations.putIssue({
+      ...issue!,
       status,
     });
   };
 
   const handlePriorityChange = (priority: PriorityType) => {
-    mutations.updateIssue(ctx.db, {
-      id: issue.id,
+    mutations.putIssue({
+      ...issue!,
       priority,
     });
   };
 
   const handleTitleChange = (title: string) => {
-    setTitle(title);
-    mutations.updateIssue(ctx.db, {
-      id: issue.id,
+    mutations.putIssue({
+      ...issue!,
       title,
     });
   };
 
   const handleDescriptionChange = (body: string) => {
-    mutations.updateDescription(ctx.db, {
+    mutations.putDescription({
       id: issue.id,
       body,
     });
   };
 
   const handleDelete = async () => {
-    await mutations.deleteIssue(ctx.db, issue.id);
+    await mutations.deleteIssue(issue);
     handleClose();
   };
 
@@ -78,11 +82,7 @@ function IssuePage() {
   };
 
   const shortId = () => {
-    // if (issue.id.includes('-')) {
-    //   return issue.id.slice(issue.id.length - 8)
-    // } else {
     return issue.id;
-    // }
   };
 
   return (
@@ -92,7 +92,7 @@ function IssuePage() {
           <div className="flex justify-between flex-shrink-0 pr-6 border-b border-gray-200 h-14 pl-3 md:pl-5 lg:pl-9">
             <div className="flex items-center">
               <span className="font-semibold me-2">Issue</span>
-              <span className="text-gray-500" title={issue.id}>
+              <span className="text-gray-500" title={issue.id.toString()}>
                 {shortId()}
               </span>
             </div>
@@ -172,13 +172,13 @@ function IssuePage() {
             <input
               className="w-full px-3 py-1 text-lg font-semibold placeholder-gray-400 border-transparent rounded "
               placeholder="Issue title"
-              value={title}
+              value={issue.title}
               onChange={(e) => handleTitleChange(e.target.value)}
             />
 
             <Editor
               className="prose w-full max-w-full mt-2 font-normal appearance-none min-h-12 p-3 text-md rounded editor"
-              value={description || ""}
+              value={description?.body || ""}
               onChange={(val) => handleDescriptionChange(val)}
               placeholder="Add description..."
             />

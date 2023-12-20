@@ -3,13 +3,12 @@ import AutoSizer from "react-virtualized-auto-sizer";
 import IssueRow from "./IssueRow";
 import { Issue } from "../../domain/SchemaType";
 import OffsetVirtualTable from "./OffsetVirtualTable";
+import { PersistentTreap } from "@vlcn.io/materialite";
 
 export const ROW_HEIGHT = 36;
 export interface IssueListProps {
-  issues: readonly Issue[];
+  issues: PersistentTreap<Issue>;
   onPage: (topIdx: number) => void;
-  hasNextPage: boolean;
-  hasPrevPage: boolean;
   loading: boolean;
   startIndex: number;
   totalRows: number;
@@ -18,8 +17,6 @@ export interface IssueListProps {
 function IssueList({
   issues,
   onPage,
-  hasNextPage,
-  hasPrevPage,
   loading,
   startIndex,
   totalRows,
@@ -37,8 +34,6 @@ function IssueList({
             totalRows={totalRows}
             startIndex={startIndex}
             onPage={onPage}
-            hasNextPage={hasNextPage}
-            hasPrevPage={hasPrevPage}
             loading={loading}
           />
         )}

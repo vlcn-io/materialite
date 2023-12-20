@@ -8,8 +8,6 @@ import { memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { formatDate } from "../../utils/date";
 import { Issue, PriorityType, StatusType } from "../../domain/SchemaType";
-import { useDB } from "@vlcn.io/react";
-import { DBName } from "../../domain/Schema";
 import { mutations } from "../../domain/mutations";
 
 interface Props {
@@ -20,17 +18,16 @@ interface Props {
 // eslint-disable-next-line react-refresh/only-export-components
 function IssueRow({ issue, style }: Props) {
   const navigate = useNavigate();
-  const ctx = useDB(DBName);
 
   const handleChangeStatus = (status: StatusType) =>
-    mutations.updateIssue(ctx.db, {
-      id: issue.id,
+    mutations.putIssue({
+      ...issue,
       status,
     });
 
   const handleChangePriority = (priority: PriorityType) =>
-    mutations.updateIssue(ctx.db, {
-      id: issue.id,
+    mutations.putIssue({
+      ...issue,
       priority,
     });
 
@@ -38,7 +35,7 @@ function IssueRow({ issue, style }: Props) {
     <div
       key={issue.id}
       className="flex items-center flex-grow w-full min-w-0 pl-2 pr-8 text-sm border-b border-gray-100 hover:bg-gray-100 h-11 shrink-0"
-      id={issue.id}
+      id={issue.id.toString()}
       onClick={() => navigate(`/issue/${issue.id}`)}
       style={style}
     >

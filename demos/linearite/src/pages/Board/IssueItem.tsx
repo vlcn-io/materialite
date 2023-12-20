@@ -7,6 +7,7 @@ import PriorityMenu from "../../components/contextmenu/PriorityMenu";
 import PriorityIcon from "../../components/PriorityIcon";
 import { Issue, PriorityType } from "../../domain/SchemaType";
 import { mutations } from "../../domain/mutations";
+import { db } from "../../domain/db";
 
 interface IssueProps {
   issue: Issue;
@@ -31,7 +32,6 @@ function getStyle(
 
 // eslint-disable-next-line react-refresh/only-export-components
 const IssueItem = ({ issue, style, isDragging, provided }: IssueProps) => {
-  const ctx = useDB(DBName);
   const navigate = useNavigate();
   const priorityIcon = (
     <span className="inline-block m-0.5 rounded-sm border border-gray-100 hover:border-gray-200 p-0.5">
@@ -40,8 +40,8 @@ const IssueItem = ({ issue, style, isDragging, provided }: IssueProps) => {
   );
 
   const updatePriority = (priority: PriorityType) =>
-    mutations.updateIssue(ctx.db, {
-      id: issue.id,
+    mutations.putIssue({
+      ...db.issues.get(issue.id)!,
       priority,
     });
 

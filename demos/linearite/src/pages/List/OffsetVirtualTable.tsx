@@ -1,5 +1,6 @@
 import React, { memo, useState } from "react";
 import css from "./VirtualTable.module.css";
+import { PersistentTreap } from "@vlcn.io/materialite";
 
 /**
  * Same as `VirtualTable` but uses offset pagination.
@@ -29,8 +30,6 @@ function VirtualTableBase<T>({
   totalRows,
   startIndex,
   onPage,
-  hasNextPage,
-  hasPrevPage,
   loading,
   className,
 }: {
@@ -38,13 +37,11 @@ function VirtualTableBase<T>({
   width: string | number;
   height: number;
   rowHeight: number;
-  rows: readonly T[];
+  rows: PersistentTreap<T>;
   totalRows: number;
   startIndex: number;
   onPage: (offset: number) => void;
   loading: boolean;
-  hasPrevPage: boolean;
-  hasNextPage: boolean;
   rowRenderer: (
     row: T,
     style: { [key: string]: string | number }
@@ -58,7 +55,7 @@ function VirtualTableBase<T>({
     const bottomIdx = Math.floor((scrollTop + offset + vp) / rh);
     const topIdx = Math.floor((scrollTop + offset) / rh);
     if (loading) {
-      if (topIdx - startIndex < 0 || bottomIdx - startIndex > rows.length) {
+      if (topIdx - startIndex < 0 || bottomIdx - startIndex > rows.size) {
         e.preventDefault();
         target.scrollTop = prevScrollTop;
         return false;
@@ -74,9 +71,11 @@ function VirtualTableBase<T>({
 
     const scrollDirection = scrollTop - prevScrollTop > 0 ? "down" : "up";
 
-    const loadedItems = rows.length;
+    const loadedItems = rows.size;
     const lastSixthIndex = Math.floor(loadedItems * (5 / 6));
     const firstSixthIndex = Math.floor(loadedItems * (1 / 6));
+    const hasNextPage = totalRows > loadedItems;
+    const hasPrevPage = startIndex > 0;
     if (
       scrollDirection === "down" &&
       hasNextPage &&
@@ -174,7 +173,7 @@ function VirtualTableBase<T>({
 
   const renderedRows = [];
   for (let i = top; i <= bottom; ++i) {
-    const d = rows[i - startIndex];
+    const d = rows.at(i - startIndex);
     if (!d) {
       break;
     }

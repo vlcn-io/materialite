@@ -10,9 +10,11 @@ import { Entry, Multiset } from "../core/multiset.js";
 import { Hoisted } from "../core/graph/Msg.js";
 import { RootDifferenceStream } from "../core/graph/RootDifferenceStream.js";
 import { AbstractDifferenceStream } from "../core/graph/AbstractDifferenceStream.js";
+import { ISignal } from "../index.js";
+import { IDerivation } from "../signal/ISignal.js";
 
 export abstract class StatefulSetSource<T>
-  implements IStatefulSource<T, ITree<T>>
+  implements IStatefulSource<T, ITree<T>>, ISignal<ITree<T>>
 {
   readonly _state = "stateful";
   readonly _sort = "sorted";
@@ -145,6 +147,23 @@ export abstract class StatefulSetSource<T>
   onChange(cb: (data: PersistentTreap<T>) => void) {
     this.#listeners.add(cb);
     return () => this.#listeners.delete(cb);
+  }
+
+  // TODO: implement these correctly.
+  on(fn: (value: PersistentTreap<T>, version: number) => void): () => void {
+    return this.onChange(fn as any);
+  }
+
+  off(fn: (value: PersistentTreap<T>, version: number) => void): void {
+    this.#listeners.delete(fn as any);
+  }
+
+  pipe<R>(_: (v: PersistentTreap<T>) => R): ISignal<R> {
+    throw new Error("Method not implemented.");
+  }
+
+  _derive(_: IDerivation<PersistentTreap<T>>): () => void {
+    throw new Error("Method not implemented.");
   }
 
   add(v: T): this {

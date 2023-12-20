@@ -1,57 +1,65 @@
-import { useCallback, useState } from 'react'
-import ReactMarkdown from 'react-markdown'
-import Editor from '../../components/editor/Editor'
-import Avatar from '../../components/Avatar'
-import { formatDate } from '../../utils/date'
-import { showWarning } from '../../utils/notification'
-import { Comment, Issue } from '../../domain/SchemaType'
-import { DBName, newID } from '../../domain/Schema'
-import { useDB, useQuery2 } from '@vlcn.io/react'
-import { queries } from '../../domain/queries'
-import { mutations } from '../../domain/mutations'
+import { useCallback, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import Editor from "../../components/editor/Editor";
+import Avatar from "../../components/Avatar";
+import { formatDate } from "../../utils/date";
+import { showWarning } from "../../utils/notification";
+import { Comment, Issue } from "../../domain/SchemaType";
+import { mutations } from "../../domain/mutations";
+import { db } from "../../domain/db";
 
 export interface CommentsProps {
-  issue: Issue
+  issue: Issue;
 }
 
 function Comments({ issue }: CommentsProps) {
-  const [newCommentBody, setNewCommentBody] = useState<string>('')
-  const ctx = useDB(DBName)
-  const comments = useQuery2(ctx, queries.issueComments, [issue.id]).data
+  const [newCommentBody, setNewCommentBody] = useState<string>("");
+  // See https://github.com/vlcn-io/materialite/discussions/15
+  const comments: Comment[] = [];
 
   const commentList = () => {
     if (comments && comments.length > 0) {
       return comments.map((comment) => (
-        <div key={comment.id} className="flex flex-col w-full p-3 mb-3 bg-white rounded shadow-sm border">
+        <div
+          key={comment.id}
+          className="flex flex-col w-full p-3 mb-3 bg-white rounded shadow-sm border"
+        >
           <div className="flex items-center mb-2">
             <Avatar name={comment.creator} />
-            <span className="ms-2 text-sm text-gray-400">{comment.creator}</span>
-            <span className=" ms-auto text-sm text-gray-400 ml-2">{formatDate(new Date(comment.created))}</span>
+            <span className="ms-2 text-sm text-gray-400">
+              {comment.creator}
+            </span>
+            <span className=" ms-auto text-sm text-gray-400 ml-2">
+              {formatDate(new Date(comment.created))}
+            </span>
           </div>
           <div className="mt-2 text-md prose w-full max-w-full">
             <ReactMarkdown>{comment.body}</ReactMarkdown>
           </div>
         </div>
-      ))
+      ));
     }
-  }
+  };
 
-  const handlePost = async () => {
+  const handlePost = () => {
     if (!newCommentBody) {
-      showWarning('Please enter a comment before submitting', 'Comment required')
-      return
+      showWarning(
+        "Please enter a comment before submitting",
+        "Comment required"
+      );
+      return;
     }
 
     const comment: Comment = {
-      id: newID<Comment>(),
+      id: db.nextId<Comment>(),
       body: newCommentBody,
       issueId: issue.id,
       created: Date.now(),
-      creator: 'testuser',
-    }
-    await mutations.createComment(ctx.db, comment)
-    setNewCommentBody('')
-  }
+      creator: "testuser",
+    };
+    mutations.putComment(comment);
+    setNewCommentBody("");
+  };
 
   return (
     <>
@@ -63,12 +71,15 @@ function Comments({ issue }: CommentsProps) {
         placeholder="Add a comment..."
       />
       <div className="flex w-full py-3">
-        <button className="px-3 ml-auto text-white bg-indigo-600 rounded hover:bg-indigo-700 h-7" onClick={handlePost}>
+        <button
+          className="px-3 ml-auto text-white bg-indigo-600 rounded hover:bg-indigo-700 h-7"
+          onClick={handlePost}
+        >
           Post Comment
         </button>
       </div>
     </>
-  )
+  );
 }
 
-export default Comments
+export default Comments;
