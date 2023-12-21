@@ -92,7 +92,7 @@ function IssuePage() {
   };
 
   const shortId = () => {
-    return issue.id;
+    return issue.id.toLocaleString();
   };
 
   return (
