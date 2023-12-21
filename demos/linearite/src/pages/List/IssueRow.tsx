@@ -9,6 +9,7 @@ import { useMatch, useNavigate } from "react-router-dom";
 import { formatDate } from "../../utils/date";
 import { Issue, PriorityType, StatusType } from "../../domain/SchemaType";
 import { mutations } from "../../domain/mutations";
+import shallowEqual from "../../utils/shallowEqual";
 
 interface Props {
   issue: Issue;
@@ -17,6 +18,7 @@ interface Props {
 
 // eslint-disable-next-line react-refresh/only-export-components
 function IssueRow({ issue, style }: Props) {
+  console.log("render row", issue);
   const navigate = useNavigate();
   const match = useMatch(
     "/issue/:id" // The route pattern to match against
@@ -72,5 +74,13 @@ function IssueRow({ issue, style }: Props) {
   );
 }
 
-const memoed = memo(IssueRow);
+const memoed = memo(IssueRow, (prev, next) => {
+  if (prev.issue !== next.issue) {
+    return false;
+  }
+  if (!shallowEqual(prev.style, next.style)) {
+    return false;
+  }
+  return true;
+});
 export default memoed;

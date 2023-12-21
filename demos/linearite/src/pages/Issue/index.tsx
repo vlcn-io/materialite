@@ -185,7 +185,6 @@ function IssuePage() {
               value={issue.title}
               onChange={(e) => handleTitleChange(e.target.value)}
             />
-
             <Editor
               className="prose w-full max-w-full mt-2 font-normal appearance-none min-h-12 p-3 text-md rounded editor"
               value={description?.body || ""}
