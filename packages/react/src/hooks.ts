@@ -134,7 +134,6 @@ class Subscriber<T> {
     if (this.destroyed) {
       return;
     }
-    console.log(`[${this.id}] ${this.name} changed`);
     this.setValue(value);
   };
 }

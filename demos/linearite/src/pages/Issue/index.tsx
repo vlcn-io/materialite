@@ -20,6 +20,7 @@ import {
 } from "../../domain/SchemaType";
 import { useNewSignal, useSignal } from "@vlcn.io/materialite-react";
 import { db } from "../../domain/db";
+import css from "./index.module.css";
 
 function IssuePage() {
   const navigate = useNavigate();
@@ -65,7 +66,6 @@ function IssuePage() {
   };
 
   const handleTitleChange = (title: string) => {
-    console.log("putting issue ", title);
     mutations.putIssue({
       ...issue!,
       title,
@@ -80,7 +80,7 @@ function IssuePage() {
   };
 
   const handleDelete = async () => {
-    await mutations.deleteIssue(issue);
+    mutations.deleteIssue(issue);
     handleClose();
   };
 
@@ -97,7 +97,7 @@ function IssuePage() {
 
   return (
     <>
-      <div className="flex flex-col flex-1 overflow-hidden">
+      <div className={`flex flex-col flex-1 overflow-hidden ${css.root}`}>
         <div className="flex flex-col">
           <div className="flex justify-between flex-shrink-0 pr-6 border-b border-gray-200 h-14 pl-3 md:pl-5 lg:pl-9">
             <div className="flex items-center">
@@ -185,7 +185,6 @@ function IssuePage() {
               value={issue.title}
               onChange={(e) => handleTitleChange(e.target.value)}
             />
-
             <Editor
               className="prose w-full max-w-full mt-2 font-normal appearance-none min-h-12 p-3 text-md rounded editor"
               value={description?.body || ""}
