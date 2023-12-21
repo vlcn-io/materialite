@@ -39,7 +39,7 @@ const App = () => {
         className="absolute right-0 top-0 z-50 bg-gray-800"
         height={40}
       />
-      <BrowserRouter>
+      <BrowserRouter basename="/materialite/linearite">
         <div className="flex w-full h-screen overflow-y-hidden">
           <LeftMenu />
           {router}
