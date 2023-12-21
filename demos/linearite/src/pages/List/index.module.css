@@ -1,0 +1,8 @@
+.twoPane {
+}
+
+@media screen and (max-width: 1400px) {
+  .twoPane {
+    display: none;
+  }
+}

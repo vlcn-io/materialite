@@ -10,6 +10,7 @@ import { throttle } from "throttle-debounce";
 import { db } from "../domain/db";
 import { useQuery, useSignal } from "@vlcn.io/materialite-react";
 import { queries } from "../domain/queries";
+import { Route, Routes } from "react-router-dom";
 
 interface Props {
   hideSort?: boolean;
@@ -20,7 +21,6 @@ interface Props {
 
 export default function TopFilter({
   hideSort,
-  showSearch,
   count,
   title = "All issues",
 }: Props) {
@@ -154,18 +154,22 @@ export default function TopFilter({
         </div>
       )}
 
-      {showSearch && (
-        <div className="flex items-center justify-between flex-shrink-0 pl-2 pr-6 border-b border-gray-200 lg:pl-9 py-2">
-          <SearchIcon className="w-3.5 h-3.5 ms-3 absolute" />
-          <input
-            type="search"
-            className="w-full bg-gray-100 border-0 rounded px-2 py-1.5 ps-9"
-            value={searchQuery}
-            onChange={(e) => handleSearch(e.target.value)}
-          />
-        </div>
-      )}
-
+      <Routes>
+        <Route
+          path="search"
+          element={
+            <div className="flex items-center justify-between flex-shrink-0 pl-2 pr-6 border-b border-gray-200 lg:pl-9 py-2">
+              <SearchIcon className="w-3.5 h-3.5 ms-3 absolute" />
+              <input
+                type="search"
+                className="w-full bg-gray-100 border-0 rounded px-2 py-1.5 ps-9"
+                value={searchQuery}
+                onChange={(e) => handleSearch(e.target.value)}
+              />
+            </div>
+          }
+        />
+      </Routes>
       <ViewOptionMenu
         isOpen={showViewOption}
         onDismiss={() => setShowViewOption(false)}
