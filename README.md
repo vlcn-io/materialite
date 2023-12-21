@@ -19,8 +19,8 @@ which you don't want to re-run from scratch each time something in `data` change
 
 
 ## Demo UIs built on Materialite:
-- https://vlcn-io.github.io/materialite/ _Note: for the UI demos there's currently a virtual scroll bug where, if you drag the scroll bar, you need to nudge it after to load the data._
-- A walkthrough of building an app on top of materialite / differential dataflow: https://github.com/vlcn-io/materialite/blob/main/demos/react/walkthrough/walkthrough.md
+- [Simple Task App & Linear clone](https://vlcn-io.github.io/materialite/) _Note: for the UI demos there's currently a virtual scroll bug where, if you drag the scroll bar, you need to nudge it after to load the data._
+- [A walkthrough of building an app on top of materialite & differential dataflow](https://github.com/vlcn-io/materialite/blob/main/demos/react/walkthrough/walkthrough.md)
 
 ## Install & Build
 
