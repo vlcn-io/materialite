@@ -3,6 +3,7 @@ import { DB } from "./db";
 import {
   FilterState,
   Issue,
+  SelectionState,
   StatusType,
   defaultFilterState,
 } from "./SchemaType";
@@ -15,7 +16,7 @@ export const queries = {
 
   selected(db: DB) {
     return db.appState.stream
-      .filter((s) => s._tag === "selected")
+      .filter((s): s is SelectionState => s._tag === "selected")
       .materializeValue(null);
   },
 

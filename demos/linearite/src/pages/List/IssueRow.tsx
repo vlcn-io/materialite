@@ -5,7 +5,7 @@ import PriorityIcon from "../../components/PriorityIcon";
 import StatusIcon from "../../components/StatusIcon";
 import Avatar from "../../components/Avatar";
 import { memo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useMatch, useNavigate } from "react-router-dom";
 import { formatDate } from "../../utils/date";
 import { Issue, PriorityType, StatusType } from "../../domain/SchemaType";
 import { mutations } from "../../domain/mutations";
@@ -18,6 +18,9 @@ interface Props {
 // eslint-disable-next-line react-refresh/only-export-components
 function IssueRow({ issue, style }: Props) {
   const navigate = useNavigate();
+  const match = useMatch(
+    "/issue/:id" // The route pattern to match against
+  );
 
   const handleChangeStatus = (status: StatusType) =>
     mutations.putIssue({
@@ -34,7 +37,10 @@ function IssueRow({ issue, style }: Props) {
   return (
     <div
       key={issue.id}
-      className="flex items-center flex-grow w-full min-w-0 pl-2 pr-8 text-sm border-b border-gray-100 hover:bg-gray-100 h-11 shrink-0"
+      className={
+        "flex items-center flex-grow w-full min-w-0 pl-2 pr-8 text-sm cursor-pointer border-b border-gray-100 hover:bg-gray-100 h-11 shrink-0" +
+        (match?.params.id == issue.id.toString() ? " bg-gray-100" : "")
+      }
       id={issue.id.toString()}
       onClick={() => navigate(`/issue/${issue.id}`)}
       style={style}
