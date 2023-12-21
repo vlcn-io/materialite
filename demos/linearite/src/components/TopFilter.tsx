@@ -10,7 +10,7 @@ import { throttle } from "throttle-debounce";
 import { db } from "../domain/db";
 import { useQuery, useSignal } from "@vlcn.io/materialite-react";
 import { queries } from "../domain/queries";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useMatch } from "react-router-dom";
 
 interface Props {
   hideSort?: boolean;
@@ -27,9 +27,10 @@ export default function TopFilter({
   const [, filterState] = useQuery(() => queries.filters(db), []);
   const [showViewOption, setShowViewOption] = useState(false);
   const { showMenu, setShowMenu } = useContext(MenuContext)!;
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(filterState?.query || "");
 
   const allIssues = useSignal(db.issues.base);
+  const searchMatch = useMatch("search");
 
   const handleSearchInner = throttle(
     250,
@@ -154,22 +155,18 @@ export default function TopFilter({
         </div>
       )}
 
-      <Routes>
-        <Route
-          path="search"
-          element={
-            <div className="flex items-center justify-between flex-shrink-0 pl-2 pr-6 border-b border-gray-200 lg:pl-9 py-2">
-              <SearchIcon className="w-3.5 h-3.5 ms-3 absolute" />
-              <input
-                type="search"
-                className="w-full bg-gray-100 border-0 rounded px-2 py-1.5 ps-9"
-                value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
-              />
-            </div>
-          }
-        />
-      </Routes>
+      {searchMatch || filterState?.query ? (
+        <div className="flex items-center justify-between flex-shrink-0 pl-2 pr-6 border-b border-gray-200 lg:pl-9 py-2">
+          <SearchIcon className="w-3.5 h-3.5 ms-3 absolute" />
+          <input
+            type="search"
+            className="w-full bg-gray-100 border-0 rounded px-2 py-1.5 ps-9"
+            value={searchQuery}
+            onChange={(e) => handleSearch(e.target.value)}
+          />
+        </div>
+      ) : null}
+
       <ViewOptionMenu
         isOpen={showViewOption}
         onDismiss={() => setShowViewOption(false)}

@@ -20,9 +20,7 @@ interface Props {
 function IssueRow({ issue, style }: Props) {
   console.log("render row", issue);
   const navigate = useNavigate();
-  const match = useMatch(
-    "/issue/:id" // The route pattern to match against
-  );
+  const match = useMatch("issue/:id");
 
   const handleChangeStatus = (status: StatusType) =>
     mutations.putIssue({
