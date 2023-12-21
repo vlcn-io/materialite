@@ -5,6 +5,9 @@
 
 ----
 
+Demos of UIs on Materialite:
+- https://vlcn-io.github.io/materialite/ _Note: for the UI demos there's currently a virtual scroll bug where, if you drag the scroll bar, you need to nudge it after to load the data._
+
 Incremental view maintenance for JavaScript.
 
 Problem --
