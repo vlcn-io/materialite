@@ -147,13 +147,6 @@ function LeftMenu() {
               <BacklogIcon className="w-3.5 h-3.5 mr-2" />
               <span>Backlog</span>
             </span>
-            <Link
-              to="/board"
-              className="flex items-center pl-6 rounded cursor-pointer h-7 hover:bg-gray-100"
-            >
-              <BoardIcon className="w-3.5 h-3.5 mr-2" />
-              <span>Board</span>
-            </Link>
           </ItemGroup>
 
           {/* extra space */}
