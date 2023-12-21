@@ -5,9 +5,6 @@
 
 ----
 
-Demos of UIs on Materialite:
-- https://vlcn-io.github.io/materialite/ _Note: for the UI demos there's currently a virtual scroll bug where, if you drag the scroll bar, you need to nudge it after to load the data._
-
 Incremental view maintenance for JavaScript.
 
 Problem --
@@ -19,6 +16,10 @@ data.map(...).filter(...).reduce(...)
 ```
 
 which you don't want to re-run from scratch each time something in `data` changes. Instead you'd like to only run against the data that changed and have your result incrementally updated. That's what this is for.
+
+
+## Demo UIs built on Materialite:
+- https://vlcn-io.github.io/materialite/ _Note: for the UI demos there's currently a virtual scroll bug where, if you drag the scroll bar, you need to nudge it after to load the data._
 
 ## Install & Build
 
