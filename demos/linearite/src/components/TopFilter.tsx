@@ -6,7 +6,7 @@ import { MenuContext } from "../App";
 import FilterMenu from "./contextmenu/FilterMenu";
 import { PriorityDisplay, StatusDisplay } from "../types/issue";
 import { mutations } from "../domain/mutations";
-import debounce from "lodash.debounce";
+import { throttle } from "throttle-debounce";
 import { db } from "../domain/db";
 import { useQuery, useSignal } from "@vlcn.io/materialite-react";
 import { queries } from "../domain/queries";
@@ -31,13 +31,18 @@ export default function TopFilter({
 
   const allIssues = useSignal(db.issues.base);
 
-  // is debounce required?
-  const handleSearchInner = debounce((query: string) => {
-    mutations.putFilterState({
-      ...filterState!,
-      query: query,
-    });
-  }, 100);
+  const handleSearchInner = throttle(
+    250,
+    (query: string) => {
+      mutations.putFilterState({
+        ...filterState!,
+        query: query,
+      });
+    },
+    {
+      noLeading: true,
+    }
+  );
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);

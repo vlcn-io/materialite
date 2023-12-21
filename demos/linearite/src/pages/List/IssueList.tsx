@@ -6,7 +6,7 @@ import { useQuery } from "@vlcn.io/materialite-react";
 import { applyFilters, queries } from "../../domain/queries";
 import { db } from "../../domain/db";
 import { DifferenceStream } from "@vlcn.io/materialite";
-import VirtualTable2 from "./VirtualTable2";
+import VirtualTable from "./VirtualTable-GrowingLimit";
 
 export const ROW_HEIGHT = 36;
 export interface IssueListProps {
@@ -38,7 +38,7 @@ function IssueList({ count }: IssueListProps) {
     <div className="grow">
       <AutoSizer>
         {({ height, width }: { width: number; height: number }) => (
-          <VirtualTable2
+          <VirtualTable
             rowRenderer={rowRenderer}
             width={width}
             height={height}

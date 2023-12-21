@@ -3,6 +3,15 @@ import css from "./VirtualTable.module.css";
 import { useQuery } from "@vlcn.io/materialite-react";
 import { DifferenceStream, PersistentTreeView } from "@vlcn.io/materialite";
 
+/**
+ * A virtual table where `onNextPage` we just increase the limit of the source query to load more data.
+ *
+ * `Materialite` currently efficiently supports this with a `rematerialize` operator. This
+ * hoists a cursor to the source and resumes the query from that cursor to grab `new_limit - old_limit` items
+ * and add to the current view.
+ *
+ * There is never an `onPrevPage` as all data for previous pages is always loaded.
+ */
 type Comparator<T> = (a: T, b: T) => number;
 function VirtualTableBase<T>({
   rowRenderer,
