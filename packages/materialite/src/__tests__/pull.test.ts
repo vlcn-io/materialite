@@ -70,6 +70,44 @@ test("late arrivals signal a pull to get old data.", () => {
   }
 });
 
-// test("late arrivals do not push new data down forks that do not want it", () => {});
+test("late arrivals do not push new data down forks that do not want it", () => {
+  const m = new Materialite();
+  const source = m.newSortedSet<number>(compareNums);
+
+  let v1Notified = null;
+  let v2Notified = null;
+
+  m.tx(() => {
+    source.add(1);
+    source.add(2);
+  });
+
+  // v1 does not ask for initial data
+  const v1 = source.stream.materialize(compareNums, {
+    wantInitialData: false,
+    name: "v1",
+  });
+  // so it should be empty
+  expect([...v1.value]).toEqual([]);
+  v1.on((value) => {
+    v1Notified = [...value];
+  });
+
+  // adding v2 shouldn't change v1
+  const v2 = source.stream.materialize(compareNums, {
+    wantInitialData: true,
+    name: "v2",
+  });
+  v2.on((value) => {
+    v2Notified = [...value];
+  });
+  expect([...v1.value]).toEqual([]);
+  expect([...v2.value]).toEqual([1, 2]);
+
+  // v2 shouldn't be notified -- value is set up before listener is registered
+  expect(v2Notified).toBe(null);
+  // v1 shouldn't be notified -- it lives on a separate branch than v2 who pulled for data
+  expect(v1Notified).toBe(null);
+});
 
 // test("linear count", () => {});

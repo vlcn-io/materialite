@@ -1,7 +1,8 @@
-import { test, expect } from "vitest";
+import { test, expect, vi } from "vitest";
 import { Materialite } from "../materialite.js";
 
 test("cleaning up the only user of a stream cleans up the entire pipeline", () => {
+  vi.useFakeTimers();
   const materialite = new Materialite();
   const set = materialite.newStatelessSet<number>();
 
@@ -14,6 +15,7 @@ test("cleaning up the only user of a stream cleans up the entire pipeline", () =
   set.add(1);
   expect(notifyCount).toBe(3);
   final.destroy();
+  vi.runAllTimers();
   set.add(2);
   // stream was cleaned up, all the way to the root
   // so no more notifications.
@@ -21,6 +23,7 @@ test("cleaning up the only user of a stream cleans up the entire pipeline", () =
 });
 
 test("cleaning up the only user of a stream cleans up the entire pipeline but stops at a used fork", () => {
+  vi.useFakeTimers();
   const materialite = new Materialite();
   const set = materialite.newStatelessSet<number>();
 
@@ -38,10 +41,12 @@ test("cleaning up the only user of a stream cleans up the entire pipeline but st
   set.add(1);
   expect(notifyCount).toBe(3);
   stream3.destroy();
+  vi.runAllTimers();
   set.add(2);
   // stream was cleaned up to fork, so still 2 notification
   expect(notifyCount).toBe(5);
   stream2.destroy();
+  vi.runAllTimers();
   set.add(3);
   // stream was cleaned up, all the way to the root
   // so no more notifications.

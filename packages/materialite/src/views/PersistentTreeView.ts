@@ -14,20 +14,23 @@ import { Materialite } from "../materialite.js";
  * Copying the tree is relatively cheap (O(logn)) as we share structure with old versions
  * of the tree.
  */
+let id = 0;
 export class PersistentTreeView<T> extends View<T, PersistentTreap<T>> {
   #data: PersistentTreap<T> = new PersistentTreap<T>(this.comparator);
 
   #limit?: number;
   #min?: T;
   #max?: T;
+  readonly id = id++;
 
   constructor(
     materialite: Materialite,
     stream: AbstractDifferenceStream<T>,
     comparator: (a: T, b: T) => number,
-    limit?: number
+    limit?: number,
+    name: string = ""
   ) {
-    super(materialite, stream, comparator);
+    super(materialite, stream, comparator, name);
     this.#limit = limit;
     if (limit !== undefined) {
       this.#addAll = this.#limitedAddAll;

@@ -1,6 +1,6 @@
 import { JoinResultVariadic } from "@vlcn.io/ds-and-algos/tuple";
 import { Entry, Multiset } from "../multiset.js";
-import { Version } from "../types.js";
+import { Cause, Version } from "../types.js";
 import { MapOperator } from "./ops/MapOperator.js";
 import { FilterOperator } from "./ops/FilterOperator.js";
 import { NegateOperator } from "./ops/NegateOperator.js";
@@ -176,7 +176,13 @@ export abstract class AbstractDifferenceStream<T>
   ): PersistentTreeView<T> {
     return this.materializeInto(
       (stream) =>
-        new PersistentTreeView(this.materialite, stream, c, options.limit),
+        new PersistentTreeView(
+          this.materialite,
+          stream,
+          c,
+          options.limit,
+          options.name
+        ),
       options
     );
   }
@@ -234,9 +240,9 @@ export abstract class AbstractDifferenceStream<T>
     this.writer.queueData(data);
   }
 
-  notify(v: Version) {
+  notify(v: Version, cause: Cause) {
     // tell the writer to notify all readers
-    this.writer.notify(v);
+    this.writer.notify(v, cause);
   }
   notifyCommitted(v: Version) {
     this.writer.notifyCommitted(v);

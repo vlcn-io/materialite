@@ -7,19 +7,25 @@ import {
   MaterialiteForSourceInternal,
   Version,
 } from "../core/types.js";
+import { ISignal } from "../index.js";
+import { IDerivation } from "../signal/ISignal.js";
 import { IStatefulSource, IUnsortedSource, KeyFn } from "./Source.js";
 
 /**
  * A MapSource which retains values in a mutable structure.
  */
 export class MutableMapSource<K, T>
-  implements IStatefulSource<T, Map<K, T>>, IUnsortedSource<T, K>
+  implements
+    IStatefulSource<T, Map<K, T>>,
+    IUnsortedSource<T, K>,
+    ISignal<Map<K, T>>
 {
   readonly _state = "stateful";
   readonly _sort = "unsorted";
   readonly #internal: ISourceInternal;
   readonly #materialite: MaterialiteForSourceInternal;
   readonly #listeners = new Set<(data: Map<K, T>) => void>();
+  readonly #derivations = new Set<IDerivation<Map<K, T>>>();
   readonly keyFn: KeyFn<T, K>;
 
   #stream: RootDifferenceStream<T>;
@@ -76,17 +82,22 @@ export class MutableMapSource<K, T>
       onCommitPhase2(version: Version) {
         if (self.#recomputeAll) {
           self.#recomputeAll = false;
-          self.#stream.notify(version);
+          self.#stream.notify(version, "full_recompute");
         } else {
-          self.#stream.notify(version);
+          self.#stream.notify(version, "difference");
         }
-
-        for (const l of self.#listeners) {
-          l(self.#map);
+        for (const d of self.#derivations) {
+          d.onSignalChanged(self.value, version);
         }
       },
       onCommitted(v: Version) {
         self.#stream.notifyCommitted(v);
+        for (const l of self.#listeners) {
+          l(self.#map);
+        }
+        for (const d of self.#derivations) {
+          d.onCommitted(self.value, v);
+        }
       },
       onRollback() {
         self.#pending = [];
@@ -112,11 +123,32 @@ export class MutableMapSource<K, T>
   destroy(): void {
     this.detachPipelines();
     this.#listeners.clear();
+    this.#derivations.clear();
   }
 
   onChange(cb: (data: Map<K, T>) => void) {
     this.#listeners.add(cb);
     return () => this.#listeners.delete(cb);
+  }
+
+  // TODO: implement these correctly.
+  on(fn: (value: Map<K, T>, version: number) => void): () => void {
+    return this.onChange(fn as any);
+  }
+
+  off(fn: (value: Map<K, T>, version: number) => void): void {
+    this.#listeners.delete(fn as any);
+  }
+
+  pipe<R>(f: (v: Map<K, T>) => R): ISignal<R> {
+    return this.#materialite.materialite.compute(f, this);
+  }
+
+  _derive(derivation: IDerivation<Map<K, T>>): () => void {
+    this.#derivations.add(derivation);
+    return () => {
+      this.#derivations.delete(derivation);
+    };
   }
 
   add(v: T): this {

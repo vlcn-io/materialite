@@ -155,6 +155,22 @@ export class Treap<T> implements ITree<T> {
     return null;
   }
 
+  findIndex(value: T): number | null {
+    return this._findIndex(this.root, value, 0);
+  }
+
+  _findIndex(node: Node<T> | null, value: T, offset: number): number | null {
+    if (!node) return null;
+
+    const cmp = this.comparator(value, node.value);
+    const thisIndex = (node.left?.size ?? 0) + offset;
+    if (cmp === 0) {
+      return thisIndex;
+    }
+    if (cmp < 0) return this._findIndex(node.left, value, offset);
+    return this._findIndex(node.right, value, thisIndex + 1);
+  }
+
   getMin(): T | null {
     if (!this.root) return null;
     return this._findMin(this.root).value;

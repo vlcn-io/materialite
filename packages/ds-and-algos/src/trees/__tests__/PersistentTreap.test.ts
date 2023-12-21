@@ -156,3 +156,17 @@ test("getting an iterator", () => {
   expect(iter.next().value).toBe(15);
   expect(iter.next().value).toBe(null);
 });
+
+test("finding an index", () => {
+  let t = new PersistentTreap<number>((a, b) => a - b);
+  for (let i = 0; i < 10; ++i) {
+    t = t.add(i);
+  }
+  for (let i = 0; i < 10; ++i) {
+    const index = t.findIndex(i)!;
+    expect(index).toBe(t.at(index));
+    expect(index).toBe(i);
+  }
+  expect(t.findIndex(100)).toBe(null);
+  expect(t.findIndex(-1)).toBe(null);
+});
