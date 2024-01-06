@@ -10,7 +10,7 @@ import { throttle } from "throttle-debounce";
 import { db } from "../domain/db";
 import { useQuery, useSignal } from "@vlcn.io/materialite-react";
 import { queries } from "../domain/queries";
-import { Route, Routes, useMatch } from "react-router-dom";
+import { useMatch } from "react-router-dom";
 
 interface Props {
   hideSort?: boolean;

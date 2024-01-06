@@ -1,9 +1,10 @@
 # materialite
-----
+
+---
 
 **This project is not ready for public consumption**. All APIs are currently being overhauled to better support integration with existing databases. Join and Reduce are naively implemented at the moment.
 
-----
+---
 
 Incremental view maintenance for JavaScript.
 
@@ -17,9 +18,9 @@ data.map(...).filter(...).reduce(...)
 
 which you don't want to re-run from scratch each time something in `data` changes. Instead you'd like to only run against the data that changed and have your result incrementally updated. That's what this is for.
 
-
 ## Demo UIs built on Materialite:
-- [Simple Task App & Linear clone](https://vlcn-io.github.io/materialite/) _Note: for the UI demos there's currently a virtual scroll bug where, if you drag the scroll bar, you need to nudge it after to load the data._
+
+- [Simple Task App & Linear clone](https://vlcn-io.github.io/materialite/)
 - [A walkthrough of building an app on top of materialite & differential dataflow](https://github.com/vlcn-io/materialite/blob/main/demos/react/walkthrough/walkthrough.md)
 
 ## Install & Build
@@ -136,7 +137,7 @@ source.stream.filter(...).map(...)...;
 
 ### materialite.newImmutableSortedSet<T>(comparator)
 
-The same as `sortedSet` except that the underlying set is a [persistent or immutable data structure](https://en.wikipedia.org/wiki/Persistent_data_structure). This means that every modification of the set creates a new version of that set. `Materialite` uses [structural sharing](https://en.wikipedia.org/wiki/Persistent_data_structure#Trees) between versions so this copying is relatively cheap and efficient. 
+The same as `sortedSet` except that the underlying set is a [persistent or immutable data structure](https://en.wikipedia.org/wiki/Persistent_data_structure). This means that every modification of the set creates a new version of that set. `Materialite` uses [structural sharing](https://en.wikipedia.org/wiki/Persistent_data_structure#Trees) between versions so this copying is relatively cheap and efficient.
 
 `ImmutableSortedSet` does not hold on to old versions automatically but allows the developer to retain them if needed.
 
@@ -163,7 +164,7 @@ Each source has an associated `stream` object. It is against the `stream` object
 const timesThree = source.stream.map((n) => n * 3);
 ```
 
-This allows forking streams and creating a graph of computation. 
+This allows forking streams and creating a graph of computation.
 In other words, you can share sections of streams with other streams.
 
 ```ts
@@ -199,7 +200,6 @@ installed & built.
 cd demos/react
 pnpm dev
 ```
-
 
 # TODO:
 

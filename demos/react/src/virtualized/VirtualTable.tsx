@@ -41,15 +41,16 @@ function VirtualTableBase<T>({
     const scrollTop = target.scrollTop;
     setScrollTop(scrollTop);
 
+    let nextOffset = offset;
     if (Math.abs(scrollTop - prevScrollTop) > vp) {
-      onJump();
+      nextOffset = onJump();
     } else {
-      onNearScroll();
+      nextOffset = onNearScroll();
     }
 
     // TODO: change this so scroll bar represents
     // total height and we page in when hitting a virtual region that is missing data.
-    const bottomIdx = Math.floor((scrollTop + offset + vp) / rh);
+    const bottomIdx = Math.floor((scrollTop + nextOffset + vp) / rh);
     const scrollDirection = scrollTop - prevScrollTop > 0 ? "down" : "up";
 
     if (
@@ -66,43 +67,48 @@ function VirtualTableBase<T>({
   function onJump() {
     const viewport = tableContainerRef.current;
     if (!viewport) {
-      return;
+      return offset;
     }
     const scrollTop = viewport.scrollTop;
     const newPage = Math.floor(scrollTop * ((th - vp) / (h - vp)) * (1 / ph));
     setPage(newPage);
-    setOffest(Math.round(newPage * cj));
+    const nextOffset = Math.round(newPage * cj);
+    setOffset(nextOffset);
     setPrevScrollTop(scrollTop);
+    return nextOffset;
   }
 
   function onNearScroll() {
     const viewport = tableContainerRef.current;
     if (!viewport) {
-      return;
+      return offset;
     }
     const scrollTop = viewport.scrollTop;
 
     // next page
+    let nextOffset = offset;
     if (scrollTop + offset > (page + 1) * ph) {
       const nextPage = page + 1;
-      const nextOffset = Math.round(nextPage * cj);
+      nextOffset = Math.round(nextPage * cj);
       const newPrevScrollTop = scrollTop - cj;
       viewport.scrollTop = prevScrollTop;
       setPage(nextPage);
-      setOffest(nextOffset);
+      setOffset(nextOffset);
       setPrevScrollTop(newPrevScrollTop);
     } else if (scrollTop + offset < page * ph) {
       // prev page
       const nextPage = page - 1;
-      const nextOffset = Math.round(nextPage * cj);
+      nextOffset = Math.round(nextPage * cj);
       const newPrevScrollTop = scrollTop + cj;
       viewport.scrollTop = prevScrollTop;
       setPage(nextPage);
-      setOffest(nextOffset);
+      setOffset(nextOffset);
       setPrevScrollTop(newPrevScrollTop);
     } else {
       setPrevScrollTop(scrollTop);
     }
+
+    return nextOffset;
   }
 
   const viewRef = useRef<PersistentTreeView<T>>();
@@ -141,7 +147,7 @@ function VirtualTableBase<T>({
 
   // virtual pages, not real pages. Unrelated to items entirely.
   const [page, setPage] = useState(0);
-  const [offset, setOffest] = useState(0);
+  const [offset, setOffset] = useState(0);
   const [prevScrollTop, setPrevScrollTop] = useState(0);
   const [scrollTop, setScrollTop] = useState(
     tableContainerRef.current?.scrollTop || 0

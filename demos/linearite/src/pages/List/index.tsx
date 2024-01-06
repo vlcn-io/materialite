@@ -13,9 +13,7 @@ function List() {
     () => queries.filteredIssuesCount(db, filterState!),
     [filterState]
   );
-  const match = useMatch(
-    "/issue/:id" // The route pattern to match against
-  );
+  const match = useMatch("/issue/:id");
   const twoPane = match != null ? css.twoPane : "";
 
   return (
