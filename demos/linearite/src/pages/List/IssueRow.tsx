@@ -18,7 +18,6 @@ interface Props {
 
 // eslint-disable-next-line react-refresh/only-export-components
 function IssueRow({ issue, style }: Props) {
-  console.log("render row", issue);
   const navigate = useNavigate();
   const match = useMatch("issue/:id");
 
