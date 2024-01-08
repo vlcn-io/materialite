@@ -2,6 +2,7 @@ packages:
   - "packages/materialite"
   - "packages/ds-and-algos"
   - "packages/react"
+  - "packages/dbidb"
   - "buildall"
   - "demos/react"
   - "demos/linearite"

@@ -1,3 +1,45 @@
+# todo
+
+- full test suite
+- hoisted filter
+- source with hoisting interface
+
+Is a hoisted filter a problem?
+
+- for joins? no.. if it isn't there it isn't there. User must put filter before join or other operators that could cause problems.
+
+Can you do a comment example without hoisting?
+Or with your current after? after and before? after and until? Prefix scan?
+
+```ts
+comment: {
+  id,
+  issue_id,
+  created_time
+}
+
+comparator() {
+  by issue_id
+  by created_time
+  by id
+}
+
+after(Partial<Comment>)
+```
+
+The source is sorted be we don't know _how_ it is sorted.
+Can we recreate a partial equality with a comparator?
+
+Hmm... After looks up from the treap the lower bound.
+Presumably the comparator could handle undefined or sentinel values to match ranges of things and we can hack `after` to become `filter`
+Well we need to know when to stop... and take won't do that for us.
+
+```ts
+filter(Partial<Comment>);
+```
+
+We could return an iterator bounded by upper and lower bound via comparator hacking.
+
 # re-write the reactive graph
 
 Transactions have three stages:
