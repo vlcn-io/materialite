@@ -70,7 +70,10 @@ function VirtualTableBase<T>({
       return offset;
     }
     const scrollTop = viewport.scrollTop;
-    const newPage = Math.floor(scrollTop * ((th - vp) / (h - vp)) * (1 / ph));
+    const newPage = Math.max(
+      Math.floor(scrollTop * ((th - vp) / (h - vp)) * (1 / ph)),
+      0
+    );
     setPage(newPage);
     const nextOffset = Math.round(newPage * cj);
     setOffset(nextOffset);
@@ -83,7 +86,7 @@ function VirtualTableBase<T>({
     if (!viewport) {
       return offset;
     }
-    const scrollTop = viewport.scrollTop;
+    const scrollTop = Math.max(viewport.scrollTop, 0);
 
     // next page
     let nextOffset = offset;
