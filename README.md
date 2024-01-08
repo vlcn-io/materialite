@@ -18,6 +18,10 @@ data.map(...).filter(...).reduce(...)
 
 which you don't want to re-run from scratch each time something in `data` changes. Instead you'd like to only run against the data that changed and have your result incrementally updated. That's what this is for.
 
+## Benchmarking & Usage Example
+
+- https://observablehq.com/@tantaman/materialite
+
 ## Demo UIs built on Materialite:
 
 - [Simple Task App & Linear clone](https://vlcn-io.github.io/materialite/)
