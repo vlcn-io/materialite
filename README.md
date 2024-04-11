@@ -2,6 +2,8 @@
 
 ---
 
+**Note:** This project is currently being worked in a closed source repo. To be re-opened in a few months.
+
 **This project is not ready for public consumption**. All APIs are currently being overhauled to better support integration with existing databases. Join and Reduce are naively implemented at the moment.
 
 ---
