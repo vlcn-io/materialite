@@ -5,7 +5,7 @@ import { TreeIterator } from "./TreeIterator.js";
 type Comparator<T> = (a: T, b: T) => number;
 
 export class Treap<T> implements ITree<T> {
-  private comparator: Comparator<T>;
+  #comparator: Comparator<T>;
   private root: Node<T> | null = null;
   private _version;
 
@@ -13,8 +13,12 @@ export class Treap<T> implements ITree<T> {
     return this._version;
   }
 
+  get comparator() {
+    return this.#comparator;
+  }
+
   constructor(comparator: Comparator<T>) {
-    this.comparator = comparator;
+    this.#comparator = comparator;
     this._version = 0;
   }
 
@@ -33,7 +37,7 @@ export class Treap<T> implements ITree<T> {
   iteratorAfter(data: T) {
     const iter = this.lowerBound(data);
 
-    while (iter.data !== null && this.comparator(iter.data, data) === 0) {
+    while (iter.data !== null && this.#comparator(iter.data, data) === 0) {
       iter.next();
     }
 
@@ -45,7 +49,7 @@ export class Treap<T> implements ITree<T> {
     const iter = new TreeIterator(this);
 
     while (cur !== null) {
-      const c = this.comparator(data, cur.value);
+      const c = this.#comparator(data, cur.value);
       if (c === 0) {
         iter.cursor = cur;
         return iter;
@@ -56,7 +60,7 @@ export class Treap<T> implements ITree<T> {
 
     for (let i = iter.ancestors.length - 1; i >= 0; --i) {
       cur = iter.ancestors[i]!;
-      if (this.comparator(data, cur.value) < 0) {
+      if (this.#comparator(data, cur.value) < 0) {
         iter.cursor = cur;
         iter.ancestors.length = i;
         return iter;
@@ -141,7 +145,7 @@ export class Treap<T> implements ITree<T> {
     let currentNode = this.root;
 
     while (currentNode) {
-      const cmp = this.comparator(value, currentNode.value);
+      const cmp = this.#comparator(value, currentNode.value);
 
       if (cmp === 0) {
         return currentNode.value;
@@ -162,7 +166,7 @@ export class Treap<T> implements ITree<T> {
   _findIndex(node: Node<T> | null, value: T, offset: number): number | null {
     if (!node) return null;
 
-    const cmp = this.comparator(value, node.value);
+    const cmp = this.#comparator(value, node.value);
     const thisIndex = (node.left?.size ?? 0) + offset;
     if (cmp === 0) {
       return thisIndex;
@@ -202,7 +206,7 @@ export class Treap<T> implements ITree<T> {
   private _contains(node: Node<T> | null, value: T): boolean {
     if (!node) return false;
 
-    const cmp = this.comparator(value, node.value);
+    const cmp = this.#comparator(value, node.value);
 
     if (cmp === 0) return true; // Found the value
     if (cmp < 0) return this._contains(node.left, value);
@@ -218,7 +222,7 @@ export class Treap<T> implements ITree<T> {
       return new Node(value, priority);
     }
 
-    const cmp = this.comparator(value, node.value);
+    const cmp = this.#comparator(value, node.value);
     const newNode = node;
     newNode.left = node.left;
     newNode.right = node.right;
@@ -241,7 +245,7 @@ export class Treap<T> implements ITree<T> {
 
     let newNode = node;
 
-    const cmp = this.comparator(value, newNode.value);
+    const cmp = this.#comparator(value, newNode.value);
     if (cmp < 0) {
       newNode.left = this._remove(newNode.left, value);
     } else if (cmp > 0) {

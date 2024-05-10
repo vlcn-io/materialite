@@ -26,6 +26,7 @@
   "devDependencies": {
     "fast-check": "^3.13.1",
     "immutable": "5.0.0-beta.4",
-    "vitest": "^0.34.6"
+    "vitest": "^0.34.6",
+    "sorted-btree": "workspace:*"
   }
 }

@@ -3,6 +3,7 @@ packages:
   - "packages/ds-and-algos"
   - "packages/react"
   - "packages/idbdb"
+  - "git_modules/btree"
   - "buildall"
   - "demos/react"
   - "demos/linearite"

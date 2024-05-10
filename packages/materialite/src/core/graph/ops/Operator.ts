@@ -14,7 +14,6 @@ export interface IOperator {
  */
 export class Operator<O> implements IOperator {
   readonly #fn;
-  protected _pendingWork: boolean = false;
 
   constructor(
     protected readonly inputs: DifferenceStreamReader[],
@@ -34,18 +33,6 @@ export class Operator<O> implements IOperator {
 
   notifyCommitted(v: Version) {
     this.output.notifyCommitted(v);
-  }
-
-  pendingWork() {
-    if (this._pendingWork) {
-      return true;
-    }
-    for (const input of this.inputs) {
-      if (!input.isEmpty()) {
-        return true;
-      }
-    }
-    return false;
   }
 
   /**

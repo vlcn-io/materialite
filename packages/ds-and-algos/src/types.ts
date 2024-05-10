@@ -28,6 +28,7 @@ export interface ITree<T> {
   readonly size: number;
   readonly _root: Node<T> | null;
   readonly version: number;
+  readonly comparator: Comparator<T>;
 
   add(value: T): ITree<T>;
   delete(value: T): ITree<T>;
